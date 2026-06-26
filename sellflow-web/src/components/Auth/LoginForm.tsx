@@ -1,86 +1,158 @@
-import React from 'react';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
-import { AuthField } from './AuthField';
+import React, { useState } from "react";
+import { Mail, Lock, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import { AuthField } from "./AuthField";
+import { authService } from "../../Services/auth";
 
 interface LoginFormProps {
   onSwitch: () => void;
 }
+
+interface LoginData {
+  email: string;
+  password: string;
+}
+
 export function LoginForm({ onSwitch }: LoginFormProps) {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState<LoginData>({
+    email: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+
+      const response = await authService.login(form);
+
+      console.log("Login Success", response.data);
+
+      localStorage.setItem(
+        "token",
+        response.data.data.token
+      );
+
+      navigate("/dashboard");
+
+    } catch (error: any) {
+      console.error(error);
+
+      alert(
+        error.response?.data?.message ??
+          "Login failed."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="mb-6">
         <h2 className="font-display text-2xl font-bold text-ink">
           Welcome back
         </h2>
+
         <p className="text-sm text-muted mt-1">
           Sign in to manage your SellFlow catalog.
         </p>
       </div>
 
-      
-
       <div className="flex items-center gap-3 my-6">
         <div className="h-px flex-1 bg-line" />
+
         <span className="text-xs font-medium text-muted">
           or continue with email
         </span>
+
         <div className="h-px flex-1 bg-line" />
       </div>
 
       <form
         className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-        }}>
-        
+        onSubmit={handleSubmit}
+      >
         <AuthField
-          id="login-email"
+          id="email"
           label="Email"
           type="email"
           placeholder="you@business.com"
           icon={Mail}
-          autoComplete="email" />
-        
+          autoComplete="email"
+          value={form.email}
+          onChange={handleChange}
+        />
+
         <AuthField
-          id="login-password"
+          id="password"
           label="Password"
           type="password"
           placeholder="••••••••"
           icon={Lock}
-          autoComplete="current-password" />
-        
+          autoComplete="current-password"
+          value={form.password}
+          onChange={handleChange}
+        />
 
         <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 text-ink/80 cursor-pointer">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              className="rounded border-line text-brand focus:ring-brand/30" />
-            
+              className="rounded border-line text-brand"
+            />
             Remember me
           </label>
-          <a href="#" className="font-medium text-brand hover:underline">
+
+          <button
+            type="button"
+            className="text-brand hover:underline"
+          >
             Forgot password?
-          </a>
+          </button>
         </div>
 
         <button
           type="submit"
-          className="w-full inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-hover text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all shadow-glow hover:shadow-none hover:-translate-y-0.5 active:translate-y-0">
-          
-          Sign in
-          <ArrowRight className="w-4 h-4" />
+          disabled={loading}
+          className="w-full bg-brand text-white py-3 rounded-xl font-semibold disabled:opacity-60"
+        >
+          {loading ? "Signing In..." : "Sign In"}
+
+          {!loading && (
+            <ArrowRight className="w-4 h-4 inline ml-2" />
+          )}
         </button>
       </form>
 
-      <p className="text-center text-sm text-muted mt-6">
-        Don't have an account?{' '}
+      <p className="text-center text-sm mt-6">
+        Don't have an account?
+
         <button
+          type="button"
           onClick={onSwitch}
-          className="font-semibold text-brand hover:underline">
-          
+          className="ml-2 font-semibold text-brand hover:underline"
+        >
           Sign up free
         </button>
       </p>
-    </div>);
-
+    </div>
+  );
 }
