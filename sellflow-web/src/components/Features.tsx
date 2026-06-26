@@ -62,7 +62,7 @@ export function Features() {
   }];
 
   return (
-    <section id="features" className="py-24 bg-white">
+    <section id="features" className="py-24 bg-gradient-to-b from-zinc-100 via-white to-cyan-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.h2
@@ -123,7 +123,7 @@ export function Features() {
             whileHover={{
               y: -5
             }}
-            className="p-8 rounded-2xl border border-zinc-200 bg-zinc-50 hover:shadow-card transition-all duration-300 group">
+            className="p-8 rounded-2xl border border-zinc-200/90 bg-white hover:shadow-card shadow-md transition-all duration-300 group">
             
               <div
               className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
