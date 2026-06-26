@@ -33,9 +33,9 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-2' : 'bg-transparent py-4  '}`}>
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-0' : 'bg-transparent py-4  '}`}>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 glass bg-slate-50/90 ackdrop-blur-lg rounded-xl  py-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 glass bg-slate-50/50 ackdrop-blur-lg rounded-xl  py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export function Navbar() {
             opacity: 0,
             height: 0
           }}
-          className="md:hidden glass bg-white/90 border-b border-line overflow-hidden">
+          className="md:hidden glass bg-white/50 border-b border-line overflow-hidden">
           
             <div className="px-4 py-6 flex flex-col gap-4">
               {navLinks.map((link) =>

@@ -3,17 +3,17 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   Play,
-  BarChart3,
-  Package,
-  ShoppingCart,
   QrCode,
 } from "lucide-react";
+
+// Import your dashboard mockup image
+import dashboardMockup from "../assets/images/dashboard-hero.jpg"; // ← Adjust path if needed
 
 export function Hero() {
   return (
     <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden bg-zinc-50">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-cyan-100 via-white to-purple-400" />
+      <div className="absolute inset-0 bg-gradient-to-b from-cyan-300 via-white to-white" />
       
       <div className="absolute top-[-15%] right-[-10%] w-[700px] h-[700px] lg:w-[800px] lg:h-[800px] rounded-full bg-gradient-to-br from-violet-400/10 via-indigo-400/10 to-transparent blur-3xl" />
       <div className="absolute bottom-[-25%] left-[-10%] w-[600px] h-[600px] lg:w-[700px] lg:h-[700px] rounded-full bg-gradient-to-br from-emerald-400/8 via-cyan-400/8 to-transparent blur-3xl" />
@@ -25,7 +25,7 @@ export function Hero() {
         {/* Top Content */}
         <div className="max-w-4xl mx-auto text-center mb-12 lg:mb-16">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/30  backdrop-blur-xl border border-zinc-100 text-zinc-700 text-sm font-medium mb-8 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/30 backdrop-blur-xl border border-zinc-100 text-zinc-700 text-sm font-medium mb-8 shadow-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -46,20 +46,31 @@ export function Hero() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md sm:max-w-none mx-auto px-4">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="group inline-flex items-center justify-center gap-3 bg-purple-400 hover:bg-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-md shadow-zinc-900/30 transition-all duration-300"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 
+                         bg-gradient-to-r from-purple-600 to-violet-600 
+                         hover:from-purple-700 hover:to-violet-700
+                         text-white px-8 py-3.5 rounded-full
+                         text-base font-semibold shadow-lg shadow-purple-500/40 
+                         transition-all duration-300 active:scale-95"
             >
               Start Free — No Card Needed
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </motion.button>
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center justify-center gap-3 bg-white/50 backdrop-blur-xl hover:bg-zinc-50 border border-zinc-200 px-8 py-4 rounded-full text-lg font-semibold text-zinc-700 transition-all duration-300"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 
+                         bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl 
+                         hover:bg-white dark:hover:bg-zinc-800 
+                         border border-zinc-200 dark:border-zinc-700 
+                         px-7 py-3.5 rounded-full
+                         text-base font-semibold text-zinc-800 dark:text-zinc-100 
+                         transition-all duration-300"
             >
               <Play className="w-5 h-5" />
               Watch 90-sec Demo
@@ -85,129 +96,38 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Dashboard Mockup */}
+        {/* === REAL IMAGE DASHBOARD MOCKUP === */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.2 }}
-          className="relative max-w-5xl mx-auto"
+          className="relative max-w-5xl mx-auto "
         >
-          <div className="relative rounded-3xl border border-zinc-200/70 bg-white/95 backdrop-blur-2xl shadow-2xl overflow-hidden aspect-[16/9.8] lg:aspect-[16/10.2] w-full">
-            {/* Browser Header */}
-            <div className="h-11 border-b border-zinc-100 flex items-center px-4 bg-zinc-50/90">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400" />
-                <div className="w-3 h-3 rounded-full bg-amber-400" />
-                <div className="w-3 h-3 rounded-full bg-emerald-400" />
-              </div>
-              <div className="mx-auto text-xs text-zinc-400 font-mono tracking-tight bg-white/80 px-5 py-0.5 rounded-full border border-zinc-100 flex items-center gap-1.5">
-                <QrCode className="w-3.5 h-3.5" />
-                sellflow.app/dashboard
-              </div>
-            </div>
+          {/* Gradient Shadow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-cyan-400 to-purple-600 blur-[50px] opacity-90  scale-[1] " />
 
-            {/* Dashboard Content */}
-            <div className="flex-1 p-6 lg:p-8 flex flex-col gap-6 lg:gap-8">
-              {/* Stats Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  { label: "Today’s Revenue", value: "$2,847", icon: BarChart3, color: "text-emerald-600", bg: "bg-emerald-50" },
-                  { label: "Live Catalogs", value: "18", icon: Package, color: "text-violet-600", bg: "bg-violet-50" },
-                  { label: "Orders Today", value: "47", icon: ShoppingCart, color: "text-amber-600", bg: "bg-amber-50" },
-                ].map((stat, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 + i * 0.1 }}
-                    className="bg-white rounded-3xl p-6 border border-zinc-100 shadow-sm hover:shadow transition-shadow"
-                  >
-                    <div className={`w-10 h-10 rounded-2xl ${stat.bg} flex items-center justify-center mb-5`}>
-                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                    </div>
-                    <div className="text-xs text-zinc-500 mb-1 tracking-wide">{stat.label}</div>
-                    <div className="font-display text-3xl font-semibold tracking-tighter text-zinc-900">
-                      {stat.value}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Catalog + Chart */}
-              <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-4">
-                {/* Mini Catalog Preview */}
-                <div className="lg:col-span-3 bg-white rounded-3xl border border-zinc-100 p-6 shadow-sm flex flex-col">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="font-semibold text-sm">Signature Menu</div>
-                    <div className="text-emerald-600 text-xs font-medium flex items-center gap-1">
-                      ● Live
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4 flex-1">
-                    {[
-                      { name: "Truffle Carbonara", price: "24" },
-                      { name: "Wagyu Ribeye", price: "68" },
-                      { name: "Matcha Tiramisu", price: "14" },
-                    ].map((item, i) => (
-                      <div key={i} className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
-                        <div className="font-medium text-sm">{item.name}</div>
-                        <div className="font-mono text-sm text-zinc-500">€{item.price}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Revenue Chart */}
-                <div className="lg:col-span-2 rounded-3xl border border-zinc-100 p-6 shadow-sm bg-white flex flex-col">
-                  <div className="text-sm font-semibold mb-5">This Week</div>
-                  <div className="flex-1 flex items-end gap-1.5">
-                    {[38, 65, 47, 82, 71, 95, 100].map((height, i) => (
-                      <div key={i} className="flex-1 flex flex-col justify-end h-40 group relative">
-                        <motion.div
-                          initial={{ height: 0 }}
-                          animate={{ height: `${height}%` }}
-                          transition={{ duration: 1.4, delay: 0.5 + i * 0.07 }}
-                          className="bg-gradient-to-t from-violet-600 to-indigo-500 rounded-t-xl w-full"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="relative rounded-3xl overflow-hidden border border-zinc-100 ">
+            <img
+              src={dashboardMockup}
+              alt="Sellflow Dashboard Preview"
+              className="w-full h-auto object-cover"
+            />
           </div>
 
-          {/* Floating Elements - Hidden on mobile */}
+          {/* Optional Floating Element */}
           <motion.div
             animate={{ y: [-10, 10, -10] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden lg:block absolute -right-6 top-16 bg-white rounded-3xl border border-zinc-100 shadow-2xl p-5 w-72 backdrop-blur-xl"
+            className="hidden lg:block absolute -right-20 top-16 bg-white/10 rounded-3xl border border-zinc-100 shadow-2xl p-5 w-72 backdrop-blur-xl"
           >
             <div className="flex items-center gap-4">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
-                <ShoppingCart className="w-5 h-5 text-white" />
+                <QrCode className="w-5 h-5 text-white" />
               </div>
               <div className="min-w-0">
                 <div className="font-semibold text-sm">Table 7 • Just now</div>
-                <div className="text-emerald-600 text-sm">€142.50 • 3 items</div>
+                <div className="text-emerald-600 text-sm">Order received</div>
               </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            animate={{ y: [10, -10, 10] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-            className="hidden lg:block absolute -left-6 bottom-20 bg-white rounded-3xl border border-zinc-100 shadow-2xl p-5 flex gap-4 items-center backdrop-blur-xl"
-          >
-            <img
-              src="https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=https://sellflow.app/c/italian-bistro"
-              alt="QR Code"
-              className="w-16 h-16 rounded-2xl shadow-sm"
-            />
-            <div>
-              <div className="font-semibold text-sm leading-tight">Scan for Menu</div>
-              <div className="text-xs text-zinc-500">Italian Bistro • Live</div>
             </div>
           </motion.div>
         </motion.div>
