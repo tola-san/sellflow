@@ -6,7 +6,7 @@
 
 # 📖 Overview
 
-SellFlow is a modern digital product catalog that helps small businesses showcase products online through a unique URL and QR code.
+Sellflow is a modern digital product catalog that helps small businesses showcase products online through a unique URL and QR code.
 
 Customers can browse products without creating an account, while business owners manage everything from a dashboard.
 
@@ -84,71 +84,7 @@ Current Phase
 * Git
 * GitHub
 * Postman
-* Bruno
 
----
-
-# 📂 Planned Project Structure
-
-```text
-sellflow-api/
-
-app/
-routes/
-database/
-storage/
-tests/
-config/
-public/
-```
-
----
-
-# 🗄 Planned Database
-
-* Users
-* Businesses
-* Categories
-* Products
-* Orders
-* Order Items
-* Catalog Views
-
----
-
-# 📅 Day 1 Checklist
-
-## Planning
-
-* [x] Choose project name
-* [x] Define project goal
-* [x] Define target users
-* [x] Define MVP features
-
-## Design
-
-* [ ] Draw ERD
-* [ ] Design database schema
-* [ ] Plan API endpoints
-
-## Development
-
-* [ ] Create Laravel project
-* [ ] Configure PostgreSQL
-* [ ] Install Sanctum
-* [ ] Create Git repository
-
----
-
-# 📌 Current Progress
-
-**Status**
-
-Planning Phase
-
-**Current Task**
-
-Design the database schema and ERD.
 
 ---
 
