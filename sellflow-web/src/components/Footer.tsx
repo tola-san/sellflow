@@ -1,14 +1,14 @@
-import React from 'react';
+import React from "react";
 import {
   ShoppingBag,
   Github,
   Linkedin,
   MessageSquare,
-  Mail } from
-'lucide-react';
+  Mail,
+} from "lucide-react";
 export function Footer() {
   return (
-    <footer className="bg-zinc-100 backdrop-blur-lg border-t border-line pt-16 pb-8">
+    <footer className="bg-zinc-100 backdrop-blur-lg border-t  pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
           <div className="col-span-2 lg:col-span-2">
@@ -27,26 +27,26 @@ export function Footer() {
             <div className="flex items-center gap-4">
               <a
                 href="#"
-                className="text-muted/80 hover:text-ink transition-colors">
-                
+                className="text-muted/80 hover:text-ink transition-colors"
+              >
                 <Github className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="text-muted/80 hover:text-ink transition-colors">
-                
+                className="text-muted/80 hover:text-ink transition-colors"
+              >
                 <Linkedin className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="text-muted/80 hover:text-ink transition-colors">
-                
+                className="text-muted/80 hover:text-ink transition-colors"
+              >
                 <MessageSquare className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="text-muted/80 hover:text-ink transition-colors">
-                
+                className="text-muted/80 hover:text-ink transition-colors"
+              >
                 <Mail className="w-5 h-5" />
               </a>
             </div>
@@ -55,17 +55,17 @@ export function Footer() {
           <div>
             <h4 className="font-bold text-ink mb-4">Product</h4>
             <ul className="space-y-3">
-              {['Features', 'Integrations', 'Pricing', 'Changelog', 'Docs'].map(
-                (item) =>
-                <li key={item}>
+              {["Features", "Integrations", "Pricing", "Changelog", "Docs"].map(
+                (item) => (
+                  <li key={item}>
                     <a
-                    href="#"
-                    className="text-muted hover:text-brand transition-colors text-sm">
-                    
+                      href="#"
+                      className="text-muted hover:text-brand transition-colors text-sm"
+                    >
                       {item}
                     </a>
                   </li>
-
+                ),
               )}
             </ul>
           </div>
@@ -73,17 +73,17 @@ export function Footer() {
           <div>
             <h4 className="font-bold text-ink mb-4">Resources</h4>
             <ul className="space-y-3">
-              {['Community', 'Help Center', 'Partners', 'Blog', 'Guides'].map(
-                (item) =>
-                <li key={item}>
+              {["Community", "Help Center", "Partners", "Blog", "Guides"].map(
+                (item) => (
+                  <li key={item}>
                     <a
-                    href="#"
-                    className="text-muted hover:text-brand transition-colors text-sm">
-                    
+                      href="#"
+                      className="text-muted hover:text-brand transition-colors text-sm"
+                    >
                       {item}
                     </a>
                   </li>
-
+                ),
               )}
             </ul>
           </div>
@@ -92,20 +92,20 @@ export function Footer() {
             <h4 className="font-bold text-ink mb-4">Legal</h4>
             <ul className="space-y-3">
               {[
-              'Privacy Policy',
-              'Terms of Service',
-              'Cookie Policy',
-              'License'].
-              map((item) =>
-              <li key={item}>
+                "Privacy Policy",
+                "Terms of Service",
+                "Cookie Policy",
+                "License",
+              ].map((item) => (
+                <li key={item}>
                   <a
-                  href="#"
-                  className="text-muted hover:text-brand transition-colors text-sm">
-                  
+                    href="#"
+                    className="text-muted hover:text-brand transition-colors text-sm"
+                  >
                     {item}
                   </a>
                 </li>
-              )}
+              ))}
             </ul>
           </div>
         </div>
@@ -122,6 +122,6 @@ export function Footer() {
           </div>
         </div>
       </div>
-    </footer>);
-
+    </footer>
+  );
 }
