@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 import LandingPage from "./pages/LandingPage";
 import { DashboardPage } from "./pages/DashboardPage";
-import { AuthProvider } from "./components/AuthContext";
+import { AuthProvider } from "./components/Auth/AuthContext";
 
 export function App() {
     return (
