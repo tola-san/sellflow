@@ -11,7 +11,7 @@ import { Pricing } from "../components/Pricing";
 import { CTA } from "../components/CTA";
 import { FinalCTA } from "../components/FinalCTA";
 import { Footer } from "../components/Footer";
-import { AuthModal } from "../components/auth/AuthModal";
+import { AuthModal } from "../components/Auth/AuthModal";
 
 export default function LandingPage() {
   return (
