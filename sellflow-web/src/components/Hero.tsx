@@ -9,9 +9,14 @@ import {
   Star,
 } from "lucide-react";
 
+
 import dashboardMockup from "../assets/images/dashboard-hero.jpg";
+import { useAuth } from "./Auth/AuthContext";
+
 
 export function Hero() {
+
+  const { openAuth } = useAuth();
   return (
     <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden bg-zinc-50">
       {/* Background Elements */}
@@ -40,43 +45,46 @@ export function Hero() {
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-zinc-600 leading-relaxed max-w-2xl mx-auto mb-10">
-              បង្កើតកាតាឡុក និងម៉ឺនុយឌីជីថលដ៏ទាក់ទាញសម្រាប់ភោជនីយដ្ឋាន ហាងកាហ្វេ
-              ហាងលក់រាយ ឬសណ្ឋាគាររបស់អ្នក។ រួមបញ្ចូលទាំងការកម្មង់អនឡាញ
-              ការវិភាគទិន្នន័យផ្ទាល់ និងការគ្រប់គ្រងយ៉ាងងាយស្រួល។
+            
+            {/* អត្ថបទពិពណ៌នា (Description) */}
+            <p className="text-base sm:text-lg text-zinc-600 leading-relaxed max-w-2xl mx-auto mb-10">
+              ជំនួយការពិសេសសម្រាប់អ្នកលក់អនឡាញលើ Facebook និងអាជីវកម្មខ្នាតតូច! 
+              រៀបចំកាតាឡុកផលិតផលឱ្យមានរបៀប រួចផ្ញើ Link ទៅកាន់អតិថិជនដើម្បីកម្មង់ទិញ និងមើលតម្លៃភ្លាមៗ 
+              ងាយស្រួលគ្រប់គ្រងការបញ្ជាទិញ ដោះស្រាយបញ្ហាបាត់ Order និងចំណេញពេលខ្លាំង។
             </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md sm:max-w-none mx-auto px-4">
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 
-                         bg-gradient-to-r from-purple-600 to-violet-600 
-                         hover:from-purple-700 hover:to-violet-700
-                         text-white px-8 py-3.5 rounded-full
-                         text-base font-semibold shadow-lg shadow-purple-500/40 
-                         transition-all duration-300 active:scale-95"
-              >
-                Start Free — No Card Needed
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </motion.button>
+             {/* ប៊ូតុងសកម្មភាព (CTA Buttons) */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md sm:max-w-none mx-auto px-4">
+        <motion.button
+          onClick={( ) => openAuth("login")}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 
+                     bg-gradient-to-r from-purple-600 to-violet-600 
+                     hover:from-purple-700 hover:to-violet-700
+                     text-white px-8 py-3.5 rounded-full
+                     text-base font-semibold shadow-lg shadow-purple-500/40 
+                     transition-all duration-300"
+        >
+          សាកល្បងឥតគិតថ្លៃ — មិនទាមទារកាត
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+        </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 
-                         bg-white/80 dark:bg-white/30 backdrop-blur-2xl 
-                         hover:bg-white dark:hover:bg-white/60
-                         border border- zinc-200 dark:border-white
-                         px-7 py-3.5 rounded-full
-                         text-base font-semibold text-zinc-800 dark:text-zinc-800 
-                         transition-all duration-300"
-              >
-                <Play className="w-5 h-5" />
-                Watch 90-sec Demo
-              </motion.button>
-            </div>
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-3 
+                     bg-white/80 dark:bg-white/30 backdrop-blur-2xl 
+                     hover:bg-white dark:hover:bg-white/60
+                     border border-zinc-200 dark:border-white
+                     px-7 py-3.5 rounded-full
+                     text-base font-semibold text-zinc-800 
+                     transition-all duration-300"
+        >
+          <Play className="w-5 h-5" />
+          មើលវីដេអូណែនាំ ៩០ វិនាទី
+        </motion.button>
+      </div>
 
             {/* Trust Bar */}
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm">
