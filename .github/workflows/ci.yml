@@ -1,0 +1,43 @@
+name: SellFlow CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  frontend:
+    name: Build Frontend
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: sellflow-web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sellflow-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build application
+        run: npm run build
