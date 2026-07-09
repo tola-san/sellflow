@@ -10,6 +10,7 @@ import { Testimonials } from "../components/Testimonials";
 import { FinalCTA } from "../components/FinalCTA";
 import { Footer } from "../components/Footer";
 import {Pricing} from "../components/Pricing";
+import { FAQ } from "../components/FAQ";
 import { AuthModal } from "../components/Auth/AuthModal";
 
 export default function LandingPage() {
@@ -23,12 +24,11 @@ export default function LandingPage() {
         <Features />
         <DashboardPreview />
         <HowItWorks />
-        <Benefits />
         <Testimonials />
         {/* <Pricing /> */}
         <Pricing />
-        <FinalCTA />
-        {/* <CTA /> */}
+        <FAQ />
+  
       </main>
 
       <Footer />
