@@ -41,26 +41,28 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Telegram notify success
-        if: success()
+      - name: Telegram notify production deployment
+        if: success() && github.ref == 'refs/heads/main'
         run: |
+          MESSAGE=$(cat <<EOF
+          <b>🚀 SellFlow Deployment</b>
+
+          <b>✅ Status</b>: Success
+          <b>🌿 Branch</b>: <code>${{ github.ref_name }}</code>
+          <b>👤 Merged By</b>: <b>${{ github.actor }}</b>
+          <b>📦 Repository</b>: <code>${{ github.repository }}</code>
+
+          <b>📝 Commit</b>
+          <code>${{ github.event.head_commit.message }}</code>
+
+          <b>🔗 Workflow</b>
+          https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          🎉 Your latest changes have been successfully merged and built.
+          EOF
+          )
+
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="✅ SellFlow CI SUCCESS
-
-          Branch: ${{ github.ref_name }}
-          User: ${{ github.actor }}
-          Commit: ${{ github.sha }}
-          Repository: ${{ github.repository }}"
-
-      - name: Telegram notify failed
-        if: failure()
-        run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="❌ SellFlow CI FAILED
-
-          Branch: ${{ github.ref_name }}
-          User: ${{ github.actor }}
-          Commit: ${{ github.sha }}
-          Repository: ${{ github.repository }}"
+            -d parse_mode="HTML" \
+            --data-urlencode text="$MESSAGE"
