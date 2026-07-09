@@ -3,215 +3,394 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   Play,
-  QrCode,
   TrendingUp,
   Users,
   Star,
 } from "lucide-react";
 
-
 import dashboardMockup from "../assets/images/dashboard-hero.jpg";
 import { useAuth } from "./Auth/AuthContext";
 
+// Customizable Connection Grid
+function ConnectionGrid() {
+  const config = {
+    width: 1500,
+    height: 800,
+    gridSize: 20,
+    lineOpacity: 0.10,
+    primaryColor: "#8b5cf6",
+    accentColor: "#22d3ee",
+    glowStd: 4,
+  };
+
+  const nodes = [
+    [100, 200], [400, 200], [400, 400], [800, 400],
+    [800, 600], [1100, 600], [900, 100], [600, 300],
+    [200, 500], [300, 650], [700, 150], [1050, 350],
+  ];
+
+   const paths = [
+  // Facebook -> Dashboard
+  {
+    d: "M 120 220 L 350 220 L 520 380 L 700 380",
+    duration: 6,
+    delay: 0,
+  },
+
+  // Telegram -> Dashboard
+  {
+    d: "M 150 450 L 350 450 L 520 380 L 700 380",
+    duration: 7,
+    delay: 1,
+  },
+
+  // AI -> Dashboard
+  {
+    d: "M 700 120 L 700 220 L 700 380",
+    duration: 5,
+    delay: 2,
+  },
+
+  // Cloud -> Dashboard
+  {
+    d: "M 520 180 L 620 220 L 700 380",
+    duration: 6,
+    delay: 3,
+  },
+
+  // Analytics -> Dashboard
+  {
+    d: "M 900 180 L 800 240 L 700 380",
+    duration: 6,
+    delay: 4,
+  },
+
+  // Dashboard -> QR
+  {
+    d: "M 700 380 L 900 380 L 1100 300 L 1220 220",
+    duration: 8,
+    delay: 1,
+  },
+
+  // Dashboard -> Catalog
+  {
+    d: "M 700 380 L 900 380 L 1180 380",
+    duration: 7,
+    delay: 2,
+  },
+
+  // Dashboard -> Payment
+  {
+    d: "M 700 380 L 900 450 L 1100 520 L 1220 560",
+    duration: 8,
+    delay: 3,
+  },
+
+  // Dashboard -> Customer
+  {
+    d: "M 700 380 L 700 500 L 700 620",
+    duration: 6,
+    delay: 4,
+  },
+
+  // API -> Dashboard
+  {
+    d: "M 520 380 L 700 380",
+    duration: 4,
+    delay: 2,
+  },
+
+  // Dashboard -> Orders
+  {
+    d: "M 700 380 L 900 380",
+    duration: 4,
+    delay: 3,
+  },
+];
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-60">
+      <svg
+        className="absolute inset-0 h-full w-full"
+        viewBox={`0 0 ${config.width} ${config.height}`}
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <defs>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation={config.glowStd} result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={config.primaryColor} stopOpacity="0" />
+            <stop offset="90%" stopColor={config.accentColor} stopOpacity="1" />
+            <stop offset="100%" stopColor={config.primaryColor} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Grid Lines */}
+        {Array.from({ length: Math.floor(config.width / config.gridSize) + 1 }).map((_, i) => (
+          <line
+            key={`v${i}`}
+            x1={i * config.gridSize}
+            y1="0"
+            x2={i * config.gridSize}
+            y2={config.height}
+            stroke="#2b2b92"
+            strokeWidth="1"
+            opacity={config.lineOpacity}
+          />
+        ))}
+
+        {Array.from({ length: Math.floor(config.height / config.gridSize) + 1 }).map((_, i) => (
+          <line
+            key={`h${i}`}
+            x1="0"
+            y1={i * config.gridSize}
+            x2={config.width}
+            y2={i * config.gridSize}
+            stroke="#631c75"
+            strokeWidth="1"
+            opacity={config.lineOpacity}
+          />
+        ))}
+
+        {/* Flowing Paths + Moving Dots */}
+        {paths.map((path, i) => (
+          <React.Fragment key={i}>
+            <motion.path
+              d={path.d}
+              fill="none"
+              stroke="url(#flowGradient)"
+              strokeWidth="1"
+              filter="url(#glow)"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: [0, 1, 1], opacity: [0, 1, 0] }}
+              transition={{
+                duration: path.duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: path.delay,
+              }}
+            />
+
+            <polygon
+  points="-6,-3 6,0 -6,3 -2,0"
+  fill={config.primaryColor}
+  filter="url(#glow)"
+>
+  <animateMotion
+    dur={`${path.duration}s`}
+    repeatCount="indefinite"
+    path={path.d}
+    begin={`${path.delay}s`}
+    rotate="auto"
+  />
+</polygon>
+          </React.Fragment>
+        ))}
+
+        {/* Pulsing Nodes */}
+        {nodes.map(([x, y], i) => (
+          <motion.circle
+            key={i}
+            cx={x}
+            cy={y}
+            r="1"
+            fill={config.primaryColor}
+            filter="url(#glow)"
+            animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.9, 1] }}
+            transition={{
+              duration: 2.8,
+              repeat: Infinity,
+              delay: i * 0.1,
+            }}
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 export function Hero() {
-
   const { openAuth } = useAuth();
+
   return (
-    <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden bg-zinc-50">
-      {/* Background Elements */}
-         {/* <div className="absolute top-1 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-to-b from-cyan-300 via-purple-300 to-purple-500/50 opacity-80 blur-[100px] rounded-full pointer-events-none"></div> */}
+    <section className="relative overflow-hidden bg-zinc-50 pt-20 pb-16 lg:pt-32 lg:pb-24">
+     
+      {/* Animated Connection Grid */}
+      <ConnectionGrid />
 
+      {/* Soft Overlay for Text Readability */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-zinc-50/70 via-zinc-50/50 to-zinc-50" />
 
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e5e5_1px,transparent_1px),linear-gradient(to_bottom,#e5e5e5_1px,transparent_1px)] bg-[size:40px_40px] opacity-30" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Top Content */}
+        <div className="mx-auto mb-12 max-w-4xl text-center lg:mb-16">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-medium text-purple-500 shadow-sm backdrop-blur-xl"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            Now with Catalog Builder
+          </motion.div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Top Content - unchanged */}
-        <div className="max-w-4xl mx-auto text-center mb-12 lg:mb-16">
-          <div className="max-w-4xl mx-auto text-center mb-12 lg:mb-16">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-50 backdrop-blur-xl border border-white text-purple-500 text-sm font-medium mb-8 shadow-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              Now with Catalog Builder
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="mb-8 text-4xl font-semibold leading-[1.05] tracking-tighter text-zinc-800 sm:text-5xl lg:text-4xl xl:text-6xl"
+          >
+            ម៉ឺនុយឌីជីថលដ៏ស្រស់ស្អាត។
+            <br className="hidden sm:block" />
+            <span className="mt-3 bg-gradient-to-r from-blue-600 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+              Catelog QR ភ្លាមៗ។
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-lg"
+          >
+            ជំនួយការពិសេសសម្រាប់អ្នកលក់អនឡាញលើ Facebook និងអាជីវកម្មខ្នាតតូច! 
+            រៀបចំកាតាឡុកផលិតផលឱ្យមានរបៀប រួចផ្ញើ Link ទៅកាន់អតិថិជនដើម្បីកម្មង់ទិញ 
+            និងមើលតម្លៃភ្លាមៗ ងាយស្រួលគ្រប់គ្រងការបញ្ជាទិញ។
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="mx-auto flex w-full max-w-md flex-col items-center justify-center gap-4 px-4 sm:max-w-none sm:flex-row"
+          >
+            <motion.button
+              onClick={() => openAuth("login")}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-500/40 transition-all duration-300 hover:from-purple-700 hover:to-violet-700 sm:w-auto"
+            >
+              សាកល្បងឥតគិតថ្លៃ — មិនទាមទារកាត
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-zinc-200 bg-white/80 px-7 py-3.5 text-base font-semibold text-zinc-800 backdrop-blur-2xl transition-all duration-300 hover:bg-white sm:w-auto"
+            >
+              <Play className="h-5 w-5" />
+              មើលវីដេអូណែនាំ ៩០ វិនាទី
+            </motion.button>
+          </motion.div>
+
+          {/* Trust Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="mt-12 flex flex-col items-center justify-center gap-6 text-sm sm:flex-row"
+          >
+            <div className="flex -space-x-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <img
+                  key={i}
+                  src={`https://i.pravatar.cc/96?img=${i + 20}`}
+                  alt={`Customer ${i}`}
+                  className="h-9 w-9 rounded-full object-cover ring-2 ring-white"
+                />
+              ))}
             </div>
 
-            <h1 className=" text-4xl sm:text-5xl lg:text-4xl xl:text-6xl font-semibold tracking-tighter text-zinc-700 leading-[1.05] mb-8">
-              ម៉ឺនុយឌីជីថលដ៏ស្រស់ស្អាត។
-              <br className="hidden sm:block" />
-              <span className="bg-gradient-to-r from-blue-600 via-purple-300 to-cyan-400 bg-clip-text text-transparent mt-3">
-                Catelog QR ភ្លាមៗ។
-              </span>
-            </h1>
-
-            
-            {/* អត្ថបទពិពណ៌នា (Description) */}
-            <p className="text-base sm:text-lg text-zinc-600 leading-relaxed max-w-2xl mx-auto mb-10">
-              ជំនួយការពិសេសសម្រាប់អ្នកលក់អនឡាញលើ Facebook និងអាជីវកម្មខ្នាតតូច! 
-              រៀបចំកាតាឡុកផលិតផលឱ្យមានរបៀប រួចផ្ញើ Link ទៅកាន់អតិថិជនដើម្បីកម្មង់ទិញ និងមើលតម្លៃភ្លាមៗ 
-              ងាយស្រួលគ្រប់គ្រងការបញ្ជាទិញ ដោះស្រាយបញ្ហាបាត់ Order និងចំណេញពេលខ្លាំង។
-            </p>
-
-             {/* ប៊ូតុងសកម្មភាព (CTA Buttons) */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md sm:max-w-none mx-auto px-4">
-        <motion.button
-          onClick={( ) => openAuth("login")}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 
-                     bg-gradient-to-r from-purple-600 to-violet-600 
-                     hover:from-purple-700 hover:to-violet-700
-                     text-white px-8 py-3.5 rounded-full
-                     text-base font-semibold shadow-lg shadow-purple-500/40 
-                     transition-all duration-300"
-        >
-          សាកល្បងឥតគិតថ្លៃ — មិនទាមទារកាត
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </motion.button>
-
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-3 
-                     bg-white/80 dark:bg-white/30 backdrop-blur-2xl 
-                     hover:bg-white dark:hover:bg-white/60
-                     border border-zinc-200 dark:border-white
-                     px-7 py-3.5 rounded-full
-                     text-base font-semibold text-zinc-800 
-                     transition-all duration-300"
-        >
-          <Play className="w-5 h-5" />
-          មើលវីដេអូណែនាំ ៩០ វិនាទី
-        </motion.button>
-      </div>
-
-            {/* Trust Bar */}
-            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <img
-                    key={i}
-                    src={`https://i.pravatar.cc/96?img=${i + 20}`}
-                    alt={`Customer ${i}`}
-                    className="w-9 h-9 rounded-full ring-2 ring-white object-cover"
-                  />
-                ))}
-              </div>
-              <div className="text-center sm:text-left">
-                <p className="font-medium text-zinc-700">
-                  Trusted by 12,000+ businesses
-                </p>
-                <p className="text-xs text-zinc-500">
-                  from Michelin-starred restaurants to local cafés
-                </p>
-              </div>
+            <div className="text-center sm:text-left">
+              <p className="font-medium text-zinc-700">Trusted by 12,000+ businesses</p>
+              <p className="text-xs text-zinc-500">from online sellers to local cafés</p>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* === DASHBOARD MOCKUP WITH MULTIPLE FLOATING ELEMENTS === */}
+        {/* Dashboard Mockup */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.2 }}
-          className="relative max-w-5xl mx-auto"
+          className="relative mx-auto max-w-5xl"
         >
-          {/* Glow behind the mockup */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-cyan-400 to-purple-600 blur-[80px] opacity-90c scale-[0.96]" />
-          <div className="relative rounded-3xl overflow-hidden border border-zinc-100 shadow-2xl">
+          <div className="absolute inset-0 scale-[0.96] rounded-[2rem] bg-gradient-to-br from-purple-500/40 via-cyan-400/30 to-fuchsia-500/40 opacity-80 blur-[90px]" />
+
+          <div className="relative overflow-hidden rounded-3xl border border-white/50 bg-white/30 shadow-[0_30px_100px_rgba(124,58,237,.20)] backdrop-blur-xl">
+            <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-r from-violet-500/10 via-transparent to-cyan-400/10" />
             <img
               src={dashboardMockup}
               alt="Sellflow Dashboard Preview"
-              className="w-full h-auto object-cover"
+              className="relative z-10 h-auto w-full object-cover"
             />
           </div>
-          {/* ==================== FLOATING ELEMENTS ==================== */}
-          {/* 1. Order Notification (Existing + improved) */}
-          {/* <motion.div
-            animate={{ y: [-12, 12, -12] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden lg:block absolute right-8 top-20 bg-white/95 backdrop-blur-2xl rounded-3xl border border-zinc-100 shadow-2xl p-5 w-72 z-10"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
-                <QrCode className="w-5 h-5 text-white" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-semibold text-sm">Table 7 • ពេលនេះ</div>
-                <div className="text-emerald-600 text-sm font-medium">
-                  ការកម្មង់ត្រូវបានទទួល
-                </div>
-                <div className="text-xs text-zinc-500 mt-1">2 នាទីមុន</div>
-              </div>
-            </div>
-          </motion.div> */}
 
-          {/* 3. Live Stats Card (Top Right) */}
+          {/* Floating Elements */}
           <motion.div
             animate={{ y: [-8, 8, -8] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden xl:block absolute -right-24 -top-24 bg-white/95 backdrop-blur-2xl rounded-3xl border border-zinc-100 shadow-2xl p-5 w-64 z-10"
+            className="absolute -right-24 -top-24 z-10 hidden w-64 rounded-3xl border border-white/60 bg-white/80 p-5 shadow-2xl backdrop-blur-2xl xl:block"
           >
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 text-emerald-600">
-                  <TrendingUp className="w-4 h-4" />
+                  <TrendingUp className="h-4 w-4" />
                   <span className="text-xs font-medium">Today</span>
                 </div>
-                <div className="text-3xl font-semibold text-zinc-800 mt-1">
-                  $842
-                </div>
-                <div className="text-sm text-emerald-600">
-                  +18% from yesterday
-                </div>
+                <div className="mt-1 text-3xl font-semibold text-zinc-800">$842</div>
+                <div className="text-sm text-emerald-600">+18% from yesterday</div>
               </div>
-              <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-emerald-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
+                <Users className="h-6 w-6 text-emerald-600" />
               </div>
             </div>
           </motion.div>
-          {/* 4. Menu Item Preview (Bottom Left) */}
+
           <motion.div
             animate={{ rotate: [-3, 3, -3] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden lg:block absolute -left-40 bottom-24 bg-white/95 backdrop-blur-2xl rounded-3xl border border-zinc-100 shadow-2xl p-4 w-56 z-10"
+            className="absolute -left-40 bottom-24 z-10 hidden w-56 rounded-3xl border border-white/60 bg-white/80 p-4 shadow-2xl backdrop-blur-2xl lg:block"
           >
             <div className="flex gap-4">
               <img
                 src="https://picsum.photos/seed/food1/80/80"
                 alt="Amok"
-                className="w-16 h-16 object-cover rounded-2xl"
+                className="h-16 w-16 rounded-2xl object-cover"
               />
               <div className="flex-1">
-                <div className="font-medium text-sm">អាម៉ុកត្រី</div>
-                <div className="text-xs text-zinc-500">
-                  Traditional Khmer • $8.50
-                </div>
-                <div className="flex gap-1 mt-2">
+                <div className="text-sm font-medium">អាម៉ុកត្រី</div>
+                <div className="text-xs text-zinc-500">Traditional Khmer • $8.50</div>
+                <div className="mt-2 flex gap-1">
                   {[1, 2, 3, 4].map((i) => (
-                    <Star
-                      key={i}
-                      className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400"
-                    />
+                    <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
               </div>
             </div>
           </motion.div>
-          {/* 5. Customer Review Bubble (Bottom Right) */}
+
           <motion.div
             animate={{ y: [10, -10, 10] }}
             transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden xl:block absolute -right-28 bottom-20 bg-white/90 backdrop-blur-2xl rounded-3xl border border-zinc-100 shadow-2xl p-4 w-64 z-10"
+            className="absolute -right-28 bottom-20 z-10 hidden w-64 rounded-3xl border border-white/60 bg-white/80 p-4 shadow-2xl backdrop-blur-2xl xl:block"
           >
-            <div className="italic text-sm text-zinc-600">
+            <div className="text-sm italic text-zinc-600">
               "QR code ងាយស្រួលណាស់! អតិថិជនចូលចិត្តខ្លាំង។"
             </div>
-            <div className="mt-3 text-xs font-medium">
-              — លោក សុខា, Owner @ Cafe 25
-            </div>
+            <div className="mt-3 text-xs font-medium">— លោក សុខា, Owner @ Cafe 25</div>
           </motion.div>
         </motion.div>
       </div>
