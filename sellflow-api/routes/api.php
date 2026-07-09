@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Business\BusinessController;
 
+// Authentication routes
 Route::prefix('v1')->group(function () {
 
     Route::post('/register', [AuthController::class, 'register']);
@@ -18,7 +19,7 @@ Route::prefix('v1')->group(function () {
 
 });
 
-
+// Business routes
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     
     Route::get('/me', [AuthController::class, 'me']);
