@@ -1,135 +1,136 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Star } from "lucide-react";
+
+type Testimonial = {
+  name: string;
+  business: string;
+  image: string;
+  quote: string;
+};
 
 export function Testimonials() {
-  const testimonials = [
+  const testimonials: Testimonial[] = [
     {
-      name: 'ម៉ារីណា',
-      business: 'ហាងលក់សម្លៀកបំពាក់អនឡាញ នារីស្អាត',
-      image: 'https://i.pravatar.cc/150?img=44',
+      name: "ម៉ារីណា",
+      business: "ហាងលក់សម្លៀកបំពាក់អនឡាញ នារីស្អាត",
+      image: "https://i.pravatar.cc/150?img=44",
       quote:
-        'SellFlow ជួយសម្រួលការលក់លើ Facebook របស់ខ្ញុំខ្លាំងណាស់! ពីមុនភ្ញៀវសួរតម្លៃច្រើនដដែលៗ ឥឡូវគ្រាន់តែផ្ញើ Link កាតាឡុកទៅ ភ្ញៀវអាចមើលម៉ូដ និងតម្លៃ រួចកុម្ម៉ង់ទិញខ្លួនឯងបានភ្លាមៗតែម្តង។',
+        "SellFlow ជួយសម្រួលការលក់លើ Facebook របស់ខ្ញុំខ្លាំងណាស់! ឥឡូវគ្រាន់តែផ្ញើ Link កាតាឡុកទៅ ភ្ញៀវអាចមើលម៉ូដ និងតម្លៃបានភ្លាមៗ។",
     },
     {
-      name: 'ចាន់ដារ៉ា',
-      business: 'ដារ៉ា កាហ្វេដុត (Dara Artisan Coffee)',
-      image: 'https://i.pravatar.cc/150?img=11',
+      name: "ចាន់ដារ៉ា",
+      business: "ដារ៉ា កាហ្វេដុត",
+      image: "https://i.pravatar.cc/150?img=11",
       quote:
-        'នេះជាប្រព័ន្ធ SaaS ដែលទំនើប និងមានតម្លៃសមរម្យបំផុត។ ប្រព័ន្ធដំណើរការលឿន ងាយស្រួលគ្រប់គ្រងស្តុកផលិតផល និងមានមុខងារទិន្នន័យច្បាស់លាស់ ត្រូវចិត្តហាងកាហ្វេរបស់ខ្ញុំតែម្តង។',
+        "ប្រព័ន្ធដំណើរការលឿន ងាយស្រួលគ្រប់គ្រងស្តុកផលិតផល និងមានមុខងារទិន្នន័យច្បាស់លាស់។",
     },
     {
-      name: 'សុភ័ក្រ',
-      business: 'ហាងលក់គ្រឿងសម្អាងធម្មជាតិ',
-      image: 'https://i.pravatar.cc/150?img=5',
+      name: "សុភ័ក្រ",
+      business: "ហាងលក់គ្រឿងសម្អាងធម្មជាតិ",
+      image: "https://i.pravatar.cc/150?img=5",
       quote:
-        'ខ្ញុំមិនសូវចេះខាងបច្ចេកវិទ្យាទេ ប៉ុន្តែខ្ញុំអាចបង្កើតហាង និងរៀបចំកាតាឡុកផលិតផលទាំងអស់រួចរាល់ក្នុងពេលមិនដល់មួយម៉ោងផង។ ប្រព័ន្ធគ្រប់គ្រង (Dashboard) គឺងាយស្រួលយល់មែនទែន។',
+        "ខ្ញុំអាចបង្កើតហាង និងរៀបចំកាតាឡុកផលិតផលរួចរាល់ក្នុងពេលមិនដល់មួយម៉ោង។ Dashboard ងាយស្រួលយល់។",
+    },
+    {
+      name: "វិច្ឆិកា",
+      business: "ហាងទូរស័ព្ទអនឡាញ",
+      image: "https://i.pravatar.cc/150?img=32",
+      quote:
+        "SellFlow ធ្វើឲ្យការលក់តាម Chat កាន់តែងាយ។ ខ្ញុំអាចផ្ញើ Link ផលិតផលទៅអតិថិជន ហើយទទួល Order បានលឿនជាងមុន។",
     },
   ];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
+  const marqueeTestimonials = [...testimonials, ...testimonials];
 
   return (
-    <section className="py-24 bg-zinc-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+    <section className="relative overflow-hidden py-24">
+      {/* Background glow */}
+      <div className="pointer-events-none absolute -top-40 left-1/4 h-96 w-96 rounded-full bg-violet-500/10 blur-[140px]" />
+      <div className="pointer-events-none absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-cyan-500/10 blur-[120px]" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-14 max-w-3xl text-center">
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 mb-4 leading-tight"
+            transition={{ duration: 0.6 }}
+            className="mb-4 text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl"
           >
             ទទួលបានការស្រឡាញ់ពីម្ចាស់អាជីវកម្មខ្នាតតូច
           </motion.h2>
-          <p className="text-zinc-600 text-base sm:text-lg">
+
+          <p className="text-base text-zinc-600 sm:text-lg">
             បទពិសោធន៍ពិតៗពីអ្នកលក់ដែលបានផ្លាស់ប្តូរមកប្រើប្រាស់ SellFlow
           </p>
         </div>
 
-        {/* Swiper-like Carousel */}
-        <div className="relative max-w-2xl mx-auto">
-          <div className="overflow-hidden rounded-3xl">
-            <AnimatePresence mode="wait">
+        <div className="relative overflow-hidden">
+          {/* Fade left/right */}
+          <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-24 bg-gradient-to-r from-white to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-24 bg-gradient-to-l from-white to-transparent" />
+
+          <motion.div
+            className="flex w-max gap-6"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{
+              duration: 30,
+              ease: "linear",
+              repeat: Infinity,
+            }}
+          >
+            {marqueeTestimonials.map((item, index) => (
               <motion.div
-                key={currentIndex}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="bg-white p-8 md:p-12 shadow-xl"
+                key={`${item.name}-${index}`}
+                whileHover={{
+                  y: -8,
+                  scale: 1.03,
+                }}
+                transition={{ duration: 0.25 }}
+                className="group relative w-[340px] shrink-0 overflow-hidden rounded-3xl border border-zinc-100  p-8  md:w-[420px]"
               >
-                <div className="flex flex-col items-center text-center">
-                  {/* Stars */}
-                  <div className="flex gap-1 mb-8">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="w-6 h-6 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
+                {/* Card glow */}
+                <div className="absolute inset-0 -z-10">
+                  <div className="absolute inset-0 rounded-3xl bg-white" />
 
-                  {/* Quote */}
-                  <p className="text-zinc-700 text-lg md:text-xl leading-relaxed mb-12 italic">
-                    « {testimonials[currentIndex].quote} »
-                  </p>
+                  <div className="absolute -left-10 -top-16 h-40 w-40 rounded-full bg-violet-400/20 blur-3xl transition-all duration-700 group-hover:bg-violet-500/30" />
 
-                  {/* Author */}
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={testimonials[currentIndex].image}
-                      alt={testimonials[currentIndex].name}
-                      className="w-16 h-16 rounded-2xl object-cover ring-4 ring-violet-100"
+                  <div className="absolute bottom-0 right-0 h-32 w-32 rounded-full bg-sky-400/20 blur-3xl transition-all duration-700 group-hover:bg-sky-500/30" />
+
+                  <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fuchsia-400/10 blur-2xl" />
+                </div>
+
+                <div className="mb-5 flex gap-1">
+                  {Array.from({ length: 5 }).map((_, starIndex) => (
+                    <Star
+                      key={starIndex}
+                      className="h-5 w-5 fill-purple-500 text-purple-500 drop-shadow-[]"
                     />
-                    <div className="text-left">
-                      <div className="font-bold text-xl text-zinc-900">
-                        {testimonials[currentIndex].name}
-                      </div>
-                      <div className="text-zinc-500 mt-1">
-                        {testimonials[currentIndex].business}
-                      </div>
-                    </div>
+                  ))}
+                </div>
+
+                <p className="mb-8 line-clamp-4 text-[17px] leading-8 text-zinc-700">
+                  “{item.quote}”
+                </p>
+
+                <div className="flex items-center gap-4">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-14 w-14 rounded-2xl object-cover ring-4 ring-violet-100 shadow-lg shadow-violet-500/20"
+                  />
+
+                  <div>
+                    <h3 className="font-bold text-zinc-900">{item.name}</h3>
+                    <p className="mt-1 text-sm text-zinc-500">
+                      {item.business}
+                    </p>
                   </div>
                 </div>
               </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Navigation Buttons */}
-          <button
-            onClick={prevSlide}
-            className="absolute -left-5 top-1/2 -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:bg-violet-50 transition-colors border border-zinc-100"
-          >
-            <ChevronLeft className="w-6 h-6 text-zinc-700" />
-          </button>
-
-          <button
-            onClick={nextSlide}
-            className="absolute -right-5 top-1/2 -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:bg-violet-50 transition-colors border border-zinc-100"
-          >
-            <ChevronRight className="w-6 h-6 text-zinc-700" />
-          </button>
-
-          {/* Pagination Dots */}
-          <div className="flex justify-center gap-3 mt-10">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentIndex 
-                    ? 'bg-violet-600 w-8' 
-                    : 'bg-zinc-300 hover:bg-zinc-400'
-                }`}
-              />
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
