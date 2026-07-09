@@ -88,7 +88,7 @@ export function Testimonials() {
                   scale: 1.03,
                 }}
                 transition={{ duration: 0.25 }}
-                className="group relative w-[340px] shrink-0 overflow-hidden rounded-3xl border  p-8  backdrop-blur-xl transition-all duration-500  md:w-[420px]"
+                className="group relative w-[340px] shrink-0 overflow-hidden rounded-3xl border border-slate-100 p-8  backdrop-blur-xl transition-all duration-500 hover:shadow-[0_20px_70px_rgba(124,58,237,0.18)] md:w-[420px]"
               >
                 {/* Card glow */}
                 <div className="absolute inset-0 -z-10">
