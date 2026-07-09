@@ -1,14 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import {
-  Store,
-  ShoppingBag,
-  Smartphone,
-  Coffee,
   Shirt,
   Flower2,
+  Smartphone,
+  Coffee,
   Cake,
-  Laptop,
 } from "lucide-react";
 
 type Logo = {
@@ -18,30 +15,15 @@ type Logo = {
 
 export function TrustedBy() {
   const logos: Logo[] = [
-    {
-      name: "Fashion Store",
-      icon: <Shirt className="w-6 h-6" />,
-    },
-    {
-      name: "Beauty Shop",
-      icon: <Flower2 className="w-6 h-6" />,
-    },
-    {
-      name: "Phone Store",
-      icon: <Smartphone className="w-6 h-6" />,
-    },
-    {
-      name: "Coffee Shop",
-      icon: <Coffee className="w-6 h-6" />,
-    },
-    {
-      name: "Bakery",
-      icon: <Cake className="w-6 h-6" />,
-    }
+    { name: "Fashion Store", icon: <Shirt className="w-6 h-6" /> },
+    { name: "Beauty Shop", icon: <Flower2 className="w-6 h-6" /> },
+    { name: "Phone Store", icon: <Smartphone className="w-6 h-6" /> },
+    { name: "Coffee Shop", icon: <Coffee className="w-6 h-6" /> },
+    { name: "Bakery", icon: <Cake className="w-6 h-6" /> },
   ];
 
-  // Duplicate for infinite marquee
-  const marqueeLogos = [...logos, ...logos];
+  // Duplicate twice for smoother infinite loop
+  const marqueeLogos = [...logos, ...logos, ...logos];
 
   return (
     <section className="relative overflow-hidden border-y border-surface bg-canvas/50 py-14">
@@ -63,30 +45,28 @@ export function TrustedBy() {
         <motion.div
           className="flex w-max gap-6"
           animate={{
-            x: ["0%", "-50%"],
+            x: [0, "-50%"],        // ← Reversed + smoother
           }}
           transition={{
             repeat: Infinity,
-            duration: 24,
+            duration: 25,
             ease: "linear",
+            repeatType: "loop",
+          }}
+          style={{
+            x: "-25%",              // Important: start from middle of first set
           }}
         >
           {marqueeLogos.map((logo, index) => (
             <motion.div
               key={`${logo.name}-${index}`}
-              whileHover={{
-                y: -4,
-                scale: 1.03,
-              }}
-              transition={{
-                duration: 0.2,
-              }}
-              className="flex items-center gap-4 rounded-2xl border border-surface/60  px-6 py-4  backdrop-blur-md"
+              whileHover={{ y: -4, scale: 1.03 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-4 rounded-2xl border border-surface/60 px-6 py-4 backdrop-blur-md"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 {logo.icon}
               </div>
-
               <span className="whitespace-nowrap text-sm font-semibold text-foreground">
                 {logo.name}
               </span>
