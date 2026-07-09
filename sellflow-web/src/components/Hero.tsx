@@ -20,9 +20,10 @@ export function Hero() {
   return (
     <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden bg-zinc-50">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-300 via-white to-purple-500/50" />
+         {/* <div className="absolute top-1 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-to-b from-cyan-300 via-purple-300 to-purple-500/50 opacity-80 blur-[100px] rounded-full pointer-events-none"></div> */}
 
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e5e5_1px,transparent_1px),linear-gradient(to_bottom,#e5e5e5_1px,transparent_1px)] bg-[size:10px_10px] opacity-30" />
+
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e5e5_1px,transparent_1px),linear-gradient(to_bottom,#e5e5e5_1px,transparent_1px)] bg-[size:40px_40px] opacity-30" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Top Content - unchanged */}
