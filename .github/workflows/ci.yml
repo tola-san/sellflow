@@ -47,18 +47,26 @@ jobs:
           MESSAGE=$(cat <<EOF
           <b>🚀 SellFlow Deployment</b>
 
-          <b>✅ Status</b>: Success
-          <b>🌿 Branch</b>: <code>${{ github.ref_name }}</code>
-          <b>👤 Merged By</b>: <b>${{ github.actor }}</b>
-          <b>📦 Repository</b>: <code>${{ github.repository }}</code>
+          <blockquote>
+          ✅ <b>Status</b>: Success
+          🌿 <b>Branch</b>: <code>${{ github.ref_name }}</code>
+          👤 <b>Merged By</b>: <b>${{ github.actor }}</b>
+          📦 <b>Repository</b>: <code>${{ github.repository }}</code>
+          </blockquote>
 
-          <b>📝 Commit</b>
+          <b>📝 Commit Message</b>
+
+          <blockquote>
           <code>${{ github.event.head_commit.message }}</code>
+          </blockquote>
 
           <b>🔗 Workflow</b>
-          https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-          🎉 Your latest changes have been successfully merged and built.
+          <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">
+          View GitHub Actions
+          </a>
+
+          🎉 <b>Production deployment completed successfully.</b>
           EOF
           )
 
