@@ -126,7 +126,6 @@ export function Navbar() {
               {currentLang.tryFree}
             </button>
           </div>
-
           {/* Mobile Actions */}
           <div className="md:hidden flex items-center gap-2">
             <button

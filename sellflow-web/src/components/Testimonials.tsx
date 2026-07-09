@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function Testimonials() {
   const testimonials = [
@@ -27,16 +27,26 @@ export function Testimonials() {
     },
   ];
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  };
+
   return (
     <section className="py-24 bg-zinc-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header / ផ្នែកក្បាល */}
+        {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className=" text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 mb-4 leading-tight"
+            className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 mb-4 leading-tight"
           >
             ទទួលបានការស្រឡាញ់ពីម្ចាស់អាជីវកម្មខ្នាតតូច
           </motion.h2>
@@ -45,54 +55,81 @@ export function Testimonials() {
           </p>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={testimonial.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -8 }}
-              className="group bg-white rounded-3xl p-8 shadow-sm border border-zinc-100 hover:shadow-xl hover:border-violet-100 transition-all duration-300 flex flex-col"
-            >
-              {/* Stars / ផ្កាយ */}
-              <div className="flex gap-1 mb-6">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className="w-5 h-5 fill-amber-400 text-amber-400"
-                  />
-                ))}
-              </div>
-
-              {/* Quote / សម្ដីអតិថិជន */}
-              <p className="text-zinc-700 text-base sm:text-[16px] leading-relaxed mb-10 flex-1">
-                « {testimonial.quote} »
-              </p>
-
-              {/* Author / អ្នកប្រើប្រាស់ */}
-              <div className="flex items-center gap-4 mt-auto">
-                <img
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-2xl object-cover ring-2 ring-zinc-100 group-hover:ring-violet-200 transition-colors"
-                />
-                <div>
-                  <div className="font-bold text-zinc-900 font-display text-sm">
-                    {testimonial.name}
+        {/* Swiper-like Carousel */}
+        <div className="relative max-w-2xl mx-auto">
+          <div className="overflow-hidden rounded-3xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="bg-white p-8 md:p-12 shadow-xl"
+              >
+                <div className="flex flex-col items-center text-center">
+                  {/* Stars */}
+                  <div className="flex gap-1 mb-8">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} className="w-6 h-6 fill-amber-400 text-amber-400" />
+                    ))}
                   </div>
-                  <div className="text-xs text-zinc-500 mt-0.5">
-                    {testimonial.business}
+
+                  {/* Quote */}
+                  <p className="text-zinc-700 text-lg md:text-xl leading-relaxed mb-12 italic">
+                    « {testimonials[currentIndex].quote} »
+                  </p>
+
+                  {/* Author */}
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={testimonials[currentIndex].image}
+                      alt={testimonials[currentIndex].name}
+                      className="w-16 h-16 rounded-2xl object-cover ring-4 ring-violet-100"
+                    />
+                    <div className="text-left">
+                      <div className="font-bold text-xl text-zinc-900">
+                        {testimonials[currentIndex].name}
+                      </div>
+                      <div className="text-zinc-500 mt-1">
+                        {testimonials[currentIndex].business}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-              {/* Subtle accent line */}
-              <div className="h-0.5 w-12 bg-gradient-to-r from-violet-500 to-transparent mt-8 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </motion.div>
-          ))}
+          {/* Navigation Buttons */}
+          <button
+            onClick={prevSlide}
+            className="absolute -left-5 top-1/2 -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:bg-violet-50 transition-colors border border-zinc-100"
+          >
+            <ChevronLeft className="w-6 h-6 text-zinc-700" />
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute -right-5 top-1/2 -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:bg-violet-50 transition-colors border border-zinc-100"
+          >
+            <ChevronRight className="w-6 h-6 text-zinc-700" />
+          </button>
+
+          {/* Pagination Dots */}
+          <div className="flex justify-center gap-3 mt-10">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`w-3 h-3 rounded-full transition-all ${
+                  index === currentIndex 
+                    ? 'bg-violet-600 w-8' 
+                    : 'bg-zinc-300 hover:bg-zinc-400'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
