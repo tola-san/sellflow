@@ -44,7 +44,7 @@ export function Testimonials() {
   const marqueeTestimonials = [...testimonials, ...testimonials];
 
   return (
-    <section className="relative overflow-hidden py-24">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-violet-50/40 to-white py-24">
       {/* Background glow */}
       <div className="pointer-events-none absolute -top-40 left-1/4 h-96 w-96 rounded-full bg-violet-500/10 blur-[140px]" />
       <div className="pointer-events-none absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-cyan-500/10 blur-[120px]" />
@@ -88,7 +88,7 @@ export function Testimonials() {
                   scale: 1.03,
                 }}
                 transition={{ duration: 0.25 }}
-                className="group relative w-[340px] shrink-0 overflow-hidden rounded-3xl border border-zinc-100  p-8  md:w-[420px]"
+                className="group relative w-[340px] shrink-0 overflow-hidden rounded-3xl border  p-8  backdrop-blur-xl transition-all duration-500  md:w-[420px]"
               >
                 {/* Card glow */}
                 <div className="absolute inset-0 -z-10">
@@ -105,7 +105,7 @@ export function Testimonials() {
                   {Array.from({ length: 5 }).map((_, starIndex) => (
                     <Star
                       key={starIndex}
-                      className="h-5 w-5 fill-purple-500 text-purple-500 drop-shadow-[]"
+                      className="h-5 w-5 fill-amber-400 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"
                     />
                   ))}
                 </div>
