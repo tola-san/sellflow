@@ -26,8 +26,8 @@ export default {
         '4xl': '24px',
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        // Defines 'font-sans' or 'font-kantumruy'
+        sans: ['Kantumruy Pro', 'sans-serif'],
       },
       boxShadow: {
         soft: '0 4px 24px -4px rgba(53, 49, 72, 0.08)',
