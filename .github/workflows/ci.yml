@@ -14,7 +14,6 @@ on:
 jobs:
   frontend:
     name: Build Frontend
-
     runs-on: ubuntu-latest
 
     defaults:
@@ -41,3 +40,27 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: Telegram notify success
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="✅ SellFlow CI SUCCESS
+
+          Branch: ${{ github.ref_name }}
+          User: ${{ github.actor }}
+          Commit: ${{ github.sha }}
+          Repository: ${{ github.repository }}"
+
+      - name: Telegram notify failed
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="❌ SellFlow CI FAILED
+
+          Branch: ${{ github.ref_name }}
+          User: ${{ github.actor }}
+          Commit: ${{ github.sha }}
+          Repository: ${{ github.repository }}"
