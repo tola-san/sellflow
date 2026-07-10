@@ -1,14 +1,58 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import dashboardImage from "../assets/images/feature-analytics.jpg";
 import { Send, CheckCircle2 } from "lucide-react";
-// ← Adjust path if needed
 
 export function DashboardPreview() {
+  const sectionRef = useRef(null);
+
+  // Track mouse position within the section
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = (e) => {
+    const rect = sectionRef.current.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
+  };
+
+  // Radial gradient mask that follows the cursor to reveal the dot grid
+  const maskImage = useTransform(
+    [mouseX, mouseY],
+    ([x, y]) =>
+      `radial-gradient(300px circle at ${x}px ${y}px, black 0%, transparent 100%)`
+  );
+
   return (
-    <section className="relative py-20 lg:py-28 overflow-hidden bg-zinc-50">
-      {/* Background Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e5e5_1px,transparent_3px),linear-gradient(to_bottom,#e5e5e5_1px,transparent_2px)] bg-[size:40px_40px] opacity-30" />
+    <section
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
+      className="relative py-20 lg:py-28 overflow-hidden bg-zinc-50 group"
+    >
+      {/* Base Animated Background Grid (always subtly moving) */}
+      <motion.div
+        className="absolute inset-0 bg-[linear-gradient(to_right,#e5e5e5_1px,transparent_1px),linear-gradient(to_bottom,#e5e5e5_1px,transparent_1px)] bg-[size:20px_20px] opacity-40 pointer-events-none"
+        animate={{
+          backgroundPosition: ["0px 0px", "20px 20px"],
+        }}
+        transition={{
+          duration: 25,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+      />
+
+      {/* Cursor-following Spotlight Grid Layer */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{
+          backgroundImage:
+            "radial-gradient(#c27aff 0.8px, transparent 5px)",
+          backgroundSize: "10px 10px",
+          WebkitMaskImage: maskImage,
+          maskImage: maskImage,
+        }}
+      />
 
       {/* Refined Gradient Shadow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-6">
@@ -21,7 +65,7 @@ export function DashboardPreview() {
         />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-6">
+      <div className="relative max-w-7xl mx-auto px-6 z-10">
         {/* Section Header */}
         <div className="text-center mb-16">
           <motion.div
@@ -51,6 +95,7 @@ export function DashboardPreview() {
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
           className="relative rounded-3xl overflow-hidden border border-zinc-200 shadow-2xl shadow-zinc-900/30 bg-white mx-auto max-w-5xl"
+          whileHover={{ scale: 1.01 }}
         >
           <motion.img
             src={dashboardImage}
@@ -59,7 +104,7 @@ export function DashboardPreview() {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.9, delay: 0.2 }}
-            whileHover={{ scale: 1.015 }}
+            whileHover={{ scale: 1.02 }}
           />
         </motion.div>
 
@@ -67,7 +112,7 @@ export function DashboardPreview() {
         <motion.div
           animate={{ y: [-12, 8, -12] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute right-4 lg:right-8 top-44 lg:top-30 bg-white p-5 rounded-2xl shadow-xl border border-zinc-100 flex items-center gap-4 w-72 hidden xl:flex z-10"
+          className="absolute right-4 lg:right-8 top-44 lg:top-30 bg-white p-5 rounded-2xl shadow-xl border border-zinc-100 flex items-center gap-4 w-72 hidden xl:flex z-20"
         >
           <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">
             <Send className="w-5 h-5 text-blue-600" />
@@ -90,7 +135,7 @@ export function DashboardPreview() {
             ease: "easeInOut",
             delay: 1.2,
           }}
-          className="absolute top-40 bg-white p-5 rounded-2xl shadow-xl border border-zinc-100 flex items-center gap-4 w-64 hidden xl:flex z-10"
+          className="absolute top-40 bg-white p-5 rounded-2xl shadow-xl border border-zinc-100 flex items-center gap-4 w-64 hidden xl:flex z-20"
         >
           <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />

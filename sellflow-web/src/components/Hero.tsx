@@ -15,7 +15,7 @@ import { useAuth } from "./Auth/AuthContext";
 function ConnectionGrid() {
   const config = {
     width: 1500,
-    height: 800,
+    height: 1500,
     gridSize: 20,
     lineOpacity: 0.10,
     primaryColor: "#8b5cf6",
@@ -88,7 +88,7 @@ function ConnectionGrid() {
 
   // Dashboard -> Customer
   {
-    d: "M 700 380 L 700 500 L 700 620",
+    d: "M 700 380 L 700 500 L 700 700",
     duration: 6,
     delay: 4,
   },
@@ -109,7 +109,7 @@ function ConnectionGrid() {
 ];
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-60">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-90">
       <svg
         className="absolute inset-0 h-full w-full"
         viewBox={`0 0 ${config.width} ${config.height}`}
@@ -117,7 +117,7 @@ function ConnectionGrid() {
       >
         <defs>
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation={config.glowStd} result="blur" />
+            <feGaussianBlur stdDeviation={config.primaryColor} result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -165,9 +165,9 @@ function ConnectionGrid() {
               d={path.d}
               fill="none"
               stroke="url(#flowGradient)"
-              strokeWidth="1"
+              strokeWidth="3"
               filter="url(#glow)"
-              initial={{ pathLength: 0, opacity: 0 }}
+              initial={{ pathLength: 0, opacity: 0}}
               animate={{ pathLength: [0, 1, 1], opacity: [0, 1, 0] }}
               transition={{
                 duration: path.duration,
@@ -194,12 +194,12 @@ function ConnectionGrid() {
         ))}
 
         {/* Pulsing Nodes */}
-        {nodes.map(([x, y], i) => (
+        {/* {nodes.map(([x, y], i) => (
           <motion.circle
             key={i}
             cx={x}
             cy={y}
-            r="1"
+            r="4"
             fill={config.primaryColor}
             filter="url(#glow)"
             animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.9, 1] }}
@@ -209,7 +209,7 @@ function ConnectionGrid() {
               delay: i * 0.1,
             }}
           />
-        ))}
+        ))} */}
       </svg>
     </div>
   );
@@ -279,7 +279,7 @@ export function Hero() {
               onClick={() => openAuth("login")}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-500/40 transition-all duration-300 hover:from-purple-700 hover:to-violet-700 sm:w-auto"
+              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 px-8 py-2.5 text-base font-semibold text-white shadow-lg shadow-purple-500/40 transition-all duration-300 hover:from-purple-700 hover:to-violet-700 sm:w-auto"
             >
               សាកល្បងឥតគិតថ្លៃ — មិនទាមទារកាត
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
