@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, Star } from 'lucide-react';
 import { FadeIn } from './ui/FadeIn';
 import { GlassCard } from './ui/GlassCard';
 
@@ -98,7 +98,6 @@ export function Pricing() {
                     </span>
                     <span className="text-brand-muted text-sm font-medium">/ខែ</span>
                   </div>
-                </div>
 
                 {/* Features List */}
                 <ul className="flex-1 space-y-4 mb-8">

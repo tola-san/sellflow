@@ -414,9 +414,7 @@ export function Hero() {
             <div className="text-sm italic text-zinc-600">
               "QR code ងាយស្រួលណាស់! អតិថិជនចូលចិត្តខ្លាំង។"
             </div>
-            <div className="mt-3 text-xs font-medium">
-              — លោក សុខា, Owner @ Cafe 25
-            </div>
+            <div className="mt-3 text-xs font-medium">— លោក សុខា, Owner @ Cafe 25</div>
           </motion.div>
         </motion.div>
       </div>
