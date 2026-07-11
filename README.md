@@ -86,33 +86,3 @@ Current Phase
 * Postman
 
 
----
-
-
-✅ Sprint 1
-Authentication
-
-⬜ Sprint 2
-Business
-
-⬜ Sprint 3
-Categories
-
-⬜ Sprint 4
-Products
-
-⬜ Sprint 5
-Public Catalog
-
-⬜ Sprint 6
-Orders
-
-⬜ Sprint 7
-Analytics
-
-⬜ Sprint 8
-Deployment
-
-# 📖 License
-
-MIT License

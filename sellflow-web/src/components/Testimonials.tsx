@@ -1,98 +1,136 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Star } from "lucide-react";
+
+type Testimonial = {
+  name: string;
+  business: string;
+  image: string;
+  quote: string;
+};
 
 export function Testimonials() {
-  const testimonials = [
+  const testimonials: Testimonial[] = [
     {
-      name: 'Sarah Jenkins',
-      business: 'Bloom Floral Studio',
-      image: 'https://i.pravatar.cc/150?img=44',
+      name: "ម៉ារីណា",
+      business: "ហាងលក់សម្លៀកបំពាក់អនឡាញ នារីស្អាត",
+      image: "https://i.pravatar.cc/150?img=44",
       quote:
-        'SellFlow completely transformed how we take orders. The QR code feature means customers can browse our arrangements right from their table.',
+        "SellFlow ជួយសម្រួលការលក់លើ Facebook របស់ខ្ញុំខ្លាំងណាស់! ឥឡូវគ្រាន់តែផ្ញើ Link កាតាឡុកទៅ ភ្ញៀវអាចមើលម៉ូដ និងតម្លៃបានភ្លាមៗ។",
     },
     {
-      name: 'Marcus Chen',
-      business: 'Artisan Roasters',
-      image: 'https://i.pravatar.cc/150?img=11',
+      name: "ចាន់ដារ៉ា",
+      business: "ដារ៉ា កាហ្វេដុត",
+      image: "https://i.pravatar.cc/150?img=11",
       quote:
-        "Finally, an open-source platform that looks and feels like a premium SaaS product. It's fast, beautiful, and exactly what my coffee shop needed.",
+        "ប្រព័ន្ធដំណើរការលឿន ងាយស្រួលគ្រប់គ្រងស្តុកផលិតផល និងមានមុខងារទិន្នន័យច្បាស់លាស់។",
     },
     {
-      name: 'Elena Rodriguez',
-      business: 'Handcrafted Ceramics',
-      image: 'https://i.pravatar.cc/150?img=5',
+      name: "សុភ័ក្រ",
+      business: "ហាងលក់គ្រឿងសម្អាងធម្មជាតិ",
+      image: "https://i.pravatar.cc/150?img=5",
       quote:
-        "I'm not technical at all, but I had my entire catalog set up in under an hour. The dashboard is incredibly intuitive.",
+        "ខ្ញុំអាចបង្កើតហាង និងរៀបចំកាតាឡុកផលិតផលរួចរាល់ក្នុងពេលមិនដល់មួយម៉ោង។ Dashboard ងាយស្រួលយល់។",
+    },
+    {
+      name: "វិច្ឆិកា",
+      business: "ហាងទូរស័ព្ទអនឡាញ",
+      image: "https://i.pravatar.cc/150?img=32",
+      quote:
+        "SellFlow ធ្វើឲ្យការលក់តាម Chat កាន់តែងាយ។ ខ្ញុំអាចផ្ញើ Link ផលិតផលទៅអតិថិជន ហើយទទួល Order បានលឿនជាងមុន។",
     },
   ];
 
+  const marqueeTestimonials = [...testimonials, ...testimonials];
+
   return (
-    <section className="py-24 bg-zinc-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-violet-50/40 to-white py-24">
+      {/* Background glow */}
+      <div className="pointer-events-none absolute -top-40 left-1/4 h-96 w-96 rounded-full bg-violet-500/10 blur-[140px]" />
+      <div className="pointer-events-none absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-cyan-500/10 blur-[120px]" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-14 max-w-3xl text-center">
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-display text-4xl md:text-5xl font-semibold tracking-tighter text-zinc-900 mb-4"
+            transition={{ duration: 0.6 }}
+            className="mb-4 text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl"
           >
-            Loved by small business owners
+            ទទួលបានការស្រឡាញ់ពីម្ចាស់អាជីវកម្មខ្នាតតូច
           </motion.h2>
-          <p className="text-zinc-600 text-lg">
-            Real stories from people who switched to SellFlow
+
+          <p className="text-base text-zinc-600 sm:text-lg">
+            បទពិសោធន៍ពិតៗពីអ្នកលក់ដែលបានផ្លាស់ប្តូរមកប្រើប្រាស់ SellFlow
           </p>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={testimonial.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -8 }}
-              className="group bg-white rounded-3xl p-8 shadow-sm border border-zinc-100 hover:shadow-xl hover:border-violet-100 transition-all duration-300 flex flex-col"
-            >
-              {/* Stars */}
-              <div className="flex gap-1 mb-6">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className="w-5 h-5 fill-amber-400 text-amber-400"
+        <div className="relative overflow-hidden">
+          {/* Fade left/right */}
+          <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-24 bg-gradient-to-r from-white to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-24 bg-gradient-to-l from-white to-transparent" />
+
+          <motion.div
+            className="flex w-max gap-6"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{
+              duration: 30,
+              ease: "linear",
+              repeat: Infinity,
+            }}
+          >
+            {marqueeTestimonials.map((item, index) => (
+              <motion.div
+                key={`${item.name}-${index}`}
+                whileHover={{
+                  y: -8,
+                  scale: 1.03,
+                }}
+                transition={{ duration: 0.25 }}
+                className="group relative w-[340px] shrink-0 overflow-hidden rounded-3xl border border-slate-100 p-8  backdrop-blur-xl transition-all duration-500 hover:shadow-[0_20px_70px_rgba(124,58,237,0.18)] md:w-[420px]"
+              >
+                {/* Card glow */}
+                <div className="absolute inset-0 -z-10">
+                  <div className="absolute inset-0 rounded-3xl bg-white" />
+
+                  <div className="absolute -left-10 -top-16 h-40 w-40 rounded-full bg-violet-400/20 blur-3xl transition-all duration-700 group-hover:bg-violet-500/30" />
+
+                  <div className="absolute bottom-0 right-0 h-32 w-32 rounded-full bg-sky-400/20 blur-3xl transition-all duration-700 group-hover:bg-sky-500/30" />
+
+                  <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fuchsia-400/10 blur-2xl" />
+                </div>
+
+                <div className="mb-5 flex gap-1">
+                  {Array.from({ length: 5 }).map((_, starIndex) => (
+                    <Star
+                      key={starIndex}
+                      className="h-5 w-5 fill-amber-400 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                    />
+                  ))}
+                </div>
+
+                <p className="mb-8 line-clamp-4 text-[17px] leading-8 text-zinc-700">
+                  “{item.quote}”
+                </p>
+
+                <div className="flex items-center gap-4">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-14 w-14 rounded-2xl object-cover ring-4 ring-violet-100 shadow-lg shadow-violet-500/20"
                   />
-                ))}
-              </div>
 
-              {/* Quote */}
-              <p className="text-zinc-700 text-[17px] leading-relaxed mb-10 flex-1">
-                “{testimonial.quote}”
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center gap-4 mt-auto">
-                <img
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-2xl object-cover ring-2 ring-zinc-100 group-hover:ring-violet-200 transition-colors"
-                />
-                <div>
-                  <div className="font-semibold text-zinc-900">
-                    {testimonial.name}
-                  </div>
-                  <div className="text-sm text-zinc-500">
-                    {testimonial.business}
+                  <div>
+                    <h3 className="font-bold text-zinc-900">{item.name}</h3>
+                    <p className="mt-1 text-sm text-zinc-500">
+                      {item.business}
+                    </p>
                   </div>
                 </div>
-              </div>
-
-              {/* Subtle accent line */}
-              <div className="h-0.5 w-12 bg-gradient-to-r from-violet-500 to-transparent mt-8 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </div>
     </section>

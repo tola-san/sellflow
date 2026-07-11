@@ -1,0 +1,76 @@
+name: SellFlow CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: sellflow-web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sellflow-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check formatting
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build application
+        run: npm run build
+
+      - name: Telegram notify production deployment
+        if: success() && github.ref == 'refs/heads/main'
+        run: |
+          MESSAGE=$(cat <<EOF
+          <b>🚀 SellFlow Deployment</b>
+
+          <blockquote>
+          ✅ <b>Status</b>: Success
+          🌿 <b>Branch</b>: <code>${{ github.ref_name }}</code>
+          👤 <b>Merged By</b>: <b>${{ github.actor }}</b>
+          📦 <b>Repository</b>: <code>${{ github.repository }}</code>
+          </blockquote>
+
+          <b>📝 Commit Message</b>
+
+          <blockquote>
+          <code>${{ github.event.head_commit.message }}</code>
+          </blockquote>
+
+          <b>🔗 Workflow</b>
+
+          <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">
+          View GitHub Actions
+          </a>
+
+          🎉 <b>Production deployment completed successfully.</b>
+          EOF
+          )
+
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            --data-urlencode text="$MESSAGE"

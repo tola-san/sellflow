@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
 
     environment:
-      MYSQL_DATABASE: laravel
+      MYSQL_DATABASE: sellflow_db
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: laravel
       MYSQL_PASSWORD: secret
