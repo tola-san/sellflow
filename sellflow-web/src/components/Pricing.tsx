@@ -58,7 +58,7 @@ export function Pricing() {
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-bold text-brand-dark mb-4 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-bold text-brand-dark mb-4  leading-tight">
               គម្រោងតម្លៃងាយស្រួល និងតម្លាភាព
             </h2>
             <p className="text-base sm:text-lg text-brand-muted">
@@ -72,84 +72,59 @@ export function Pricing() {
           {tiers.map((tier, index) => (
             <FadeIn key={index} delay={index * 0.15} className="h-full">
               <GlassCard
-                className={`p-8 h-full flex flex-col relative transition-all duration-500 hover:-translate-y-1 group overflow-hidden ${
+                className={`p-8 h-full flex flex-col relative ${
                   tier.highlighted 
-                    ? 'border-2 border-transparent md:-translate-y-4 md:scale-105 bg-white/90' 
-                    : 'border-2 border-transparent'
+                    ? 'border-brand-blue shadow-xl shadow-brand-blue/10 md:-translate-y-4 md:scale-105 bg-white/90' 
+                    : 'border-brand-gray/50'
                 }`}
-                style={{
-                  // Glowing gradient border on hover
-                  boxShadow: tier.highlighted 
-                    ? '0 10px 30px -10px rgb(59 130 246 / 0.3)' 
-                    : 'none',
-                }}
               >
-                {/* Popular Badge with Star */}
+                {/* ផ្លាកពេញនិយមបំផុត */}
                 {tier.highlighted && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-gradient-to-r from-brand-blue to-purple-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg z-10">
-                    <Star size={14} className="fill-white" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-blue text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
                     ពេញនិយមបំផុត
                   </div>
                 )}
 
-                {/* Glowing Gradient Border Layer */}
-                <div className={`absolute inset-0 rounded-3xl transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-none
-                  ${tier.highlighted 
-                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400' 
-                    : 'bg-gradient-to-r from-blue-400 to-cyan-400'
-                  }`}
-                  style={{
-                    padding: '2px',
-                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    maskComposite: 'exclude',
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                  }}
-                />
-
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="mb-8">
-                    <h3 className="text-xl font-bold text-brand-dark mb-2 transition-colors group-hover:text-brand-blue">
-                      {tier.name}
-                    </h3>
-                    <p className="text-sm text-brand-muted mb-6 h-12 leading-relaxed">
-                      {tier.description}
-                    </p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-extrabold text-brand-dark">
-                        ${tier.price}
-                      </span>
-                      <span className="text-brand-muted text-sm font-medium">/ខែ</span>
-                    </div>
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-brand-dark mb-2 ">
+                    {tier.name}
+                  </h3>
+                  <p className="text-sm text-brand-muted mb-6 h-12 leading-relaxed">
+                    {tier.description}
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-brand-dark">
+                      ${tier.price}
+                    </span>
+                    <span className="text-brand-muted text-sm font-medium">/ខែ</span>
                   </div>
 
-                  {/* Features List */}
-                  <ul className="flex-1 space-y-4 mb-8">
-                    {tier.features.map((feature, fIndex) => (
-                      <li key={fIndex} className="flex items-start gap-3">
-                        <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-cyan flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
-                          <Check
-                            size={12}
-                            className="text-brand-blue"
-                            strokeWidth={3}
-                          />
-                        </div>
-                        <span className="text-brand-dark text-sm leading-normal">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                {/* Features List */}
+                <ul className="flex-1 space-y-4 mb-8">
+                  {tier.features.map((feature, fIndex) => (
+                    <li key={fIndex} className="flex items-start gap-3">
+                      <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-cyan flex items-center justify-center shrink-0">
+                        <Check
+                          size={12}
+                          className="text-brand-blue"
+                          strokeWidth={3}
+                        />
+                      </div>
+                      <span className="text-brand-dark text-sm leading-normal">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
 
-                  {/* CTA Button */}
-                  <button
-                    className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 mt-auto ${
-                      tier.highlighted 
-                        ? 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-500/30' 
-                        : 'bg-brand-gray/20 text-brand-dark hover:bg-brand-gray/40'
-                    }`}
-                  >
-                    {tier.cta}
-                  </button>
-                </div>
+                {/* CTA Button */}
+                <button
+                  className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
+                    tier.highlighted 
+                      ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-md hover:shadow-lg' 
+                      : 'bg-brand-gray/20 text-brand-dark hover:bg-brand-gray/40'
+                  }`}
+                >
+                  {tier.cta}
+                </button>
               </GlassCard>
             </FadeIn>
           ))}

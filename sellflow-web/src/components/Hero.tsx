@@ -1,12 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  Play,
-  TrendingUp,
-  Users,
-  Star,
-} from "lucide-react";
+import { ArrowRight, Play, TrendingUp, Users, Star } from "lucide-react";
 
 import dashboardMockup from "../assets/images/dashboard-hero.jpg";
 import { useAuth } from "./Auth/AuthContext";
@@ -16,100 +10,109 @@ function ConnectionGrid() {
   const config = {
     width: 1500,
     height: 1500,
-    gridSize: 20,
-    lineOpacity: 0.10,
+    gridSize: 30,
+    lineOpacity: 0.1,
     primaryColor: "#8b5cf6",
     accentColor: "#22d3ee",
-    glowStd: 4,
+    glowStd: 5,
   };
 
   const nodes = [
-    [100, 200], [400, 200], [400, 400], [800, 400],
-    [800, 600], [1100, 600], [900, 100], [600, 300],
-    [200, 500], [300, 650], [700, 150], [1050, 350],
+    [100, 200],
+    [400, 200],
+    [400, 400],
+    [800, 400],
+    [800, 600],
+    [1100, 600],
+    [900, 100],
+    [600, 300],
+    [200, 500],
+    [300, 650],
+    [700, 150],
+    [1050, 350],
   ];
 
-   const paths = [
-  // Facebook -> Dashboard
-  {
-    d: "M 120 220 L 350 220 L 520 380 L 700 380",
-    duration: 6,
-    delay: 0,
-  },
+  const paths = [
+    // Facebook -> Dashboard
+    {
+      d: "M 120 220 L 350 220 L 520 380 L 700 380",
+      duration: 6,
+      delay: 0,
+    },
 
-  // Telegram -> Dashboard
-  {
-    d: "M 150 450 L 350 450 L 520 380 L 700 380",
-    duration: 7,
-    delay: 1,
-  },
+    // Telegram -> Dashboard
+    {
+      d: "M 150 450 L 350 450 L 520 380 L 700 380",
+      duration: 7,
+      delay: 1,
+    },
 
-  // AI -> Dashboard
-  {
-    d: "M 700 120 L 700 220 L 700 380",
-    duration: 5,
-    delay: 2,
-  },
+    // AI -> Dashboard
+    {
+      d: "M 700 120 L 700 220 L 700 380",
+      duration: 5,
+      delay: 2,
+    },
 
-  // Cloud -> Dashboard
-  {
-    d: "M 520 180 L 620 220 L 700 380",
-    duration: 6,
-    delay: 3,
-  },
+    // Cloud -> Dashboard
+    {
+      d: "M 520 180 L 620 220 L 700 380",
+      duration: 6,
+      delay: 3,
+    },
 
-  // Analytics -> Dashboard
-  {
-    d: "M 900 180 L 800 240 L 700 380",
-    duration: 6,
-    delay: 4,
-  },
+    // Analytics -> Dashboard
+    {
+      d: "M 900 180 L 800 240 L 700 380",
+      duration: 6,
+      delay: 4,
+    },
 
-  // Dashboard -> QR
-  {
-    d: "M 700 380 L 900 380 L 1100 300 L 1220 220",
-    duration: 8,
-    delay: 1,
-  },
+    // Dashboard -> QR
+    {
+      d: "M 700 380 L 900 380 L 1100 300 L 1220 220",
+      duration: 8,
+      delay: 1,
+    },
 
-  // Dashboard -> Catalog
-  {
-    d: "M 700 380 L 900 380 L 1180 380",
-    duration: 7,
-    delay: 2,
-  },
+    // Dashboard -> Catalog
+    {
+      d: "M 700 380 L 900 380 L 1180 380",
+      duration: 7,
+      delay: 2,
+    },
 
-  // Dashboard -> Payment
-  {
-    d: "M 700 380 L 900 450 L 1100 520 L 1220 560",
-    duration: 8,
-    delay: 3,
-  },
+    // Dashboard -> Payment
+    {
+      d: "M 700 380 L 900 450 L 1100 520 L 1220 560",
+      duration: 8,
+      delay: 3,
+    },
 
-  // Dashboard -> Customer
-  {
-    d: "M 700 380 L 700 500 L 700 700",
-    duration: 6,
-    delay: 4,
-  },
+    // Dashboard -> Customer
+    {
+      d: "M 700 380 L 700 500 L 700 620",
+      duration: 6,
+      delay: 4,
+    },
 
-  // API -> Dashboard
-  {
-    d: "M 520 380 L 700 380",
-    duration: 4,
-    delay: 2,
-  },
+    // API -> Dashboard
+    {
+      d: "M 520 380 L 700 380",
+      duration: 4,
+      delay: 2,
+    },
 
-  // Dashboard -> Orders
-  {
-    d: "M 700 380 L 900 380",
-    duration: 4,
-    delay: 3,
-  },
-];
+    // Dashboard -> Orders
+    {
+      d: "M 700 380 L 900 380",
+      duration: 4,
+      delay: 3,
+    },
+  ];
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-90">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-60">
       <svg
         className="absolute inset-0 h-full w-full"
         viewBox={`0 0 ${config.width} ${config.height}`}
@@ -117,7 +120,7 @@ function ConnectionGrid() {
       >
         <defs>
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation={config.primaryColor} result="blur" />
+            <feGaussianBlur stdDeviation={config.glowStd} result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -127,12 +130,18 @@ function ConnectionGrid() {
           <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor={config.primaryColor} stopOpacity="0" />
             <stop offset="90%" stopColor={config.accentColor} stopOpacity="1" />
-            <stop offset="100%" stopColor={config.primaryColor} stopOpacity="0" />
+            <stop
+              offset="100%"
+              stopColor={config.primaryColor}
+              stopOpacity="0"
+            />
           </linearGradient>
         </defs>
 
         {/* Grid Lines */}
-        {Array.from({ length: Math.floor(config.width / config.gridSize) + 1 }).map((_, i) => (
+        {Array.from({
+          length: Math.floor(config.width / config.gridSize) + 1,
+        }).map((_, i) => (
           <line
             key={`v${i}`}
             x1={i * config.gridSize}
@@ -140,12 +149,14 @@ function ConnectionGrid() {
             x2={i * config.gridSize}
             y2={config.height}
             stroke="#2b2b92"
-            strokeWidth="1"
+            strokeWidth="2"
             opacity={config.lineOpacity}
           />
         ))}
 
-        {Array.from({ length: Math.floor(config.height / config.gridSize) + 1 }).map((_, i) => (
+        {Array.from({
+          length: Math.floor(config.height / config.gridSize) + 1,
+        }).map((_, i) => (
           <line
             key={`h${i}`}
             x1="0"
@@ -153,7 +164,7 @@ function ConnectionGrid() {
             x2={config.width}
             y2={i * config.gridSize}
             stroke="#631c75"
-            strokeWidth="1"
+            strokeWidth="2"
             opacity={config.lineOpacity}
           />
         ))}
@@ -165,9 +176,9 @@ function ConnectionGrid() {
               d={path.d}
               fill="none"
               stroke="url(#flowGradient)"
-              strokeWidth="3"
+              strokeWidth="4"
               filter="url(#glow)"
-              initial={{ pathLength: 0, opacity: 0}}
+              initial={{ pathLength: 0, opacity: 0 }}
               animate={{ pathLength: [0, 1, 1], opacity: [0, 1, 0] }}
               transition={{
                 duration: path.duration,
@@ -178,28 +189,28 @@ function ConnectionGrid() {
             />
 
             <polygon
-  points="-6,-3 6,0 -6,3 -2,0"
-  fill={config.primaryColor}
-  filter="url(#glow)"
->
-  <animateMotion
-    dur={`${path.duration}s`}
-    repeatCount="indefinite"
-    path={path.d}
-    begin={`${path.delay}s`}
-    rotate="auto"
-  />
-</polygon>
+              points="-6,-3 6,0 -6,3 -2,0"
+              fill={config.primaryColor}
+              filter="url(#glow)"
+            >
+              <animateMotion
+                dur={`${path.duration}s`}
+                repeatCount="indefinite"
+                path={path.d}
+                begin={`${path.delay}s`}
+                rotate="auto"
+              />
+            </polygon>
           </React.Fragment>
         ))}
 
         {/* Pulsing Nodes */}
-        {/* {nodes.map(([x, y], i) => (
+        {nodes.map(([x, y], i) => (
           <motion.circle
             key={i}
             cx={x}
             cy={y}
-            r="4"
+            r="1"
             fill={config.primaryColor}
             filter="url(#glow)"
             animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.9, 1] }}
@@ -209,7 +220,7 @@ function ConnectionGrid() {
               delay: i * 0.1,
             }}
           />
-        ))} */}
+        ))}
       </svg>
     </div>
   );
@@ -220,12 +231,11 @@ export function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-zinc-50 pt-20 pb-16 lg:pt-32 lg:pb-24">
-     
       {/* Animated Connection Grid */}
       <ConnectionGrid />
 
       {/* Soft Overlay for Text Readability */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-zinc-50/70 via-zinc-50/50 to-zinc-50" />
+      {/* <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-zinc-50/70 via-zinc-50/50 to-zinc-50" /> */}
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Top Content */}
@@ -263,9 +273,10 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-lg"
           >
-            ជំនួយការពិសេសសម្រាប់អ្នកលក់អនឡាញលើ Facebook និងអាជីវកម្មខ្នាតតូច! 
-            រៀបចំកាតាឡុកផលិតផលឱ្យមានរបៀប រួចផ្ញើ Link ទៅកាន់អតិថិជនដើម្បីកម្មង់ទិញ 
-            និងមើលតម្លៃភ្លាមៗ ងាយស្រួលគ្រប់គ្រងការបញ្ជាទិញ។
+            ជំនួយការពិសេសសម្រាប់អ្នកលក់អនឡាញលើ Facebook និងអាជីវកម្មខ្នាតតូច!
+            រៀបចំកាតាឡុកផលិតផលឱ្យមានរបៀប រួចផ្ញើ Link
+            ទៅកាន់អតិថិជនដើម្បីកម្មង់ទិញ និងមើលតម្លៃភ្លាមៗ
+            ងាយស្រួលគ្រប់គ្រងការបញ្ជាទិញ។
           </motion.p>
 
           {/* CTA Buttons */}
@@ -279,7 +290,7 @@ export function Hero() {
               onClick={() => openAuth("login")}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 px-8 py-2.5 text-base font-semibold text-white shadow-lg shadow-purple-500/40 transition-all duration-300 hover:from-purple-700 hover:to-violet-700 sm:w-auto"
+              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-500/40 transition-all duration-300 hover:from-purple-700 hover:to-violet-700 sm:w-auto"
             >
               សាកល្បងឥតគិតថ្លៃ — មិនទាមទារកាត
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -314,8 +325,12 @@ export function Hero() {
             </div>
 
             <div className="text-center sm:text-left">
-              <p className="font-medium text-zinc-700">Trusted by 12,000+ businesses</p>
-              <p className="text-xs text-zinc-500">from online sellers to local cafés</p>
+              <p className="font-medium text-zinc-700">
+                Trusted by 12,000+ businesses
+              </p>
+              <p className="text-xs text-zinc-500">
+                from online sellers to local cafés
+              </p>
             </div>
           </motion.div>
         </div>
@@ -350,8 +365,12 @@ export function Hero() {
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-xs font-medium">Today</span>
                 </div>
-                <div className="mt-1 text-3xl font-semibold text-zinc-800">$842</div>
-                <div className="text-sm text-emerald-600">+18% from yesterday</div>
+                <div className="mt-1 text-3xl font-semibold text-zinc-800">
+                  $842
+                </div>
+                <div className="text-sm text-emerald-600">
+                  +18% from yesterday
+                </div>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
                 <Users className="h-6 w-6 text-emerald-600" />
@@ -372,10 +391,15 @@ export function Hero() {
               />
               <div className="flex-1">
                 <div className="text-sm font-medium">អាម៉ុកត្រី</div>
-                <div className="text-xs text-zinc-500">Traditional Khmer • $8.50</div>
+                <div className="text-xs text-zinc-500">
+                  Traditional Khmer • $8.50
+                </div>
                 <div className="mt-2 flex gap-1">
                   {[1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
                 </div>
               </div>

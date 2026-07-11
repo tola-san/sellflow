@@ -27,7 +27,6 @@ export default function LandingPage() {
         <Testimonials />
         {/* <Pricing /> */}
         <Pricing />
-        {/* <OpenSource /> */}
         <FAQ />
   
       </main>
