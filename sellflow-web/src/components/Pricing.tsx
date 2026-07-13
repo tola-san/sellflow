@@ -61,7 +61,7 @@ export function Pricing() {
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-bold text-brand-dark mb-4 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-bold text-brand-dark mb-4  leading-tight">
               គម្រោងតម្លៃងាយស្រួល និងតម្លាភាព
             </h2>
             <p className="text-base sm:text-lg text-brand-muted">
@@ -75,64 +75,59 @@ export function Pricing() {
           {tiers.map((tier, index) => (
             <FadeIn key={index} delay={index * 0.15} className="h-full">
               <GlassCard
-                className={`relative h-full flex flex-col p-8 transition-all duration-500 hover:-translate-y-2 group overflow-hidden border border-white/60
-                  ${tier.highlighted 
-                    ? 'md:scale-105 shadow-2xl shadow-purple-500/20' 
-                    : 'hover:shadow-xl'
-                  }`}
-                style={{
-                  background: `linear-gradient(to bottom right, var(--tw-gradient-stops))`,
-                }}
+                className={`p-8 h-full flex flex-col relative ${
+                  tier.highlighted 
+                    ? 'border-brand-blue shadow-xl shadow-brand-blue/10 md:-translate-y-4 md:scale-105 bg-white/90' 
+                    : 'border-brand-gray/50'
+                }`}
               >
-                {/* Soft Gradient Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${tier.gradient} -z-10`} />
-
-                {/* Highlighted Tier Glow */}
+                {/* ផ្លាកពេញនិយមបំផុត */}
                 {tier.highlighted && (
-                  <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 rounded-3xl opacity-20 group-hover:opacity-40 transition-opacity -z-20" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-blue text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                    ពេញនិយមបំផុត
+                  </div>
                 )}
 
-              
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="mb-8">
-                    <h3 className="text-2xl font-bold text-brand-dark mb-2 transition-colors group-hover:text-brand-blue">
-                      {tier.name}
-                    </h3>
-                    <p className="text-sm text-brand-muted mb-6 min-h-[48px] leading-relaxed">
-                      {tier.description}
-                    </p>
-
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-extrabold tracking-tighter text-brand-dark">
-                        ${tier.price}
-                      </span>
-                      <span className="text-brand-muted text-sm font-medium">/ខែ</span>
-                    </div>
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-brand-dark mb-2 ">
+                    {tier.name}
+                  </h3>
+                  <p className="text-sm text-brand-muted mb-6 h-12 leading-relaxed">
+                    {tier.description}
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-brand-dark">
+                      ${tier.price}
+                    </span>
+                    <span className="text-brand-muted text-sm font-medium">/ខែ</span>
                   </div>
 
-                  {/* Features */}
-                  <ul className="flex-1 space-y-4 mb-10">
-                    {tier.features.map((feature, fIndex) => (
-                      <li key={fIndex} className="flex items-start gap-3">
-                        <div className="mt-1 w-5 h-5 rounded-full bg-white/80 flex items-center justify-center shrink-0 border border-white shadow-sm">
-                          <Check size={13} className="text-emerald-600" strokeWidth={3.5} />
-                        </div>
-                        <span className="text-brand-dark text-[15px] leading-normal">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                {/* Features List */}
+                <ul className="flex-1 space-y-4 mb-8">
+                  {tier.features.map((feature, fIndex) => (
+                    <li key={fIndex} className="flex items-start gap-3">
+                      <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-cyan flex items-center justify-center shrink-0">
+                        <Check
+                          size={12}
+                          className="text-brand-blue"
+                          strokeWidth={3}
+                        />
+                      </div>
+                      <span className="text-brand-dark text-sm leading-normal">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
 
-                  {/* CTA Button */}
-                  <button
-                    className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 mt-auto ${
-                      tier.highlighted 
-                        ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:brightness-110 hover:shadow-xl hover:shadow-purple-500/40' 
-                        : 'bg-white text-brand-dark border border-brand-dark/10 hover:bg-slate-100 hover:text-dark'
-                    }`}
-                  >
-                    {tier.cta}
-                  </button>
-                </div>
+                {/* CTA Button */}
+                <button
+                  className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
+                    tier.highlighted 
+                      ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-md hover:shadow-lg' 
+                      : 'bg-brand-gray/20 text-brand-dark hover:bg-brand-gray/40'
+                  }`}
+                >
+                  {tier.cta}
+                </button>
               </GlassCard>
             </FadeIn>
           ))}
