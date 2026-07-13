@@ -82,7 +82,7 @@ export function Navbar() {
             </div>
 
             <span className="font-display font-bold text-xl tracking-tight text-ink">
-              SellFlow
+              Sellflow
             </span>
           </a>
 

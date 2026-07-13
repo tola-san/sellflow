@@ -5,8 +5,7 @@ import { TrustedBy } from "../components/TrustedBy";
 import { Features } from "../components/Features";
 import { DashboardPreview } from "../components/DashboardPreview";
 import { HowItWorks } from "../components/HowItWorks";
-import { Benefits } from "../components/Benefits";
-import { Testimonials } from "../components/Testimonials";
+import { Benefits } from "../components/Benefits"; 
 import { FinalCTA } from "../components/FinalCTA";
 import { Footer } from "../components/Footer";
 import {Pricing} from "../components/Pricing";
@@ -20,16 +19,11 @@ export default function LandingPage() {
 
       <main>
         <Hero />
-        <TrustedBy />
         <Features />
         <DashboardPreview />
         <HowItWorks />
-        <Testimonials />
-        {/* <Pricing /> */}
         <Pricing />
-        {/* <OpenSource /> */}
         <FAQ />
-  
       </main>
 
       <Footer />

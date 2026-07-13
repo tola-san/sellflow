@@ -16,7 +16,8 @@ const tiers = [
       'គាំទ្រនិងជំនួយតាមអ៊ីមែល'
     ],
     cta: 'សាកល្បងឥតគិតថ្លៃ',
-    highlighted: false
+    highlighted: false,
+    gradient: 'from-blue-50/80 via-white to-white'
   },
   {
     name: 'Business (អាជីវកម្ម)',
@@ -30,7 +31,8 @@ const tiers = [
       'ទទួលបានការដោះស្រាយអាទិភាពមុនគេ'
     ],
     cta: 'សាកល្បងឥតគិតថ្លៃ',
-    highlighted: true
+    highlighted: true,
+    gradient: 'from-purple-50/80 via-violet-50/70 to-white'
   },
   {
     name: 'Pro (កម្រិតខ្ពស់)',
@@ -44,15 +46,16 @@ const tiers = [
       'ក្រុមការងារជំនួយផ្ទាល់ខ្លួន ២៤/៧'
     ],
     cta: 'ទាក់ទងផ្នែកលក់',
-    highlighted: false
+    highlighted: false,
+    gradient: 'from-emerald-50/80 via-teal-50/70 to-white'
   }
 ];
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-24 bg-brand-bg relative">
-      {/* Background Gradient */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] bg-brand-blue/5 blur-[120px] rounded-full pointer-events-none" />
+    <section id="pricing" className="py-24 bg-brand-bg relative overflow-hidden">
+      {/* Background Accent */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] bg-gradient-to-br from-brand-blue/5 to-purple-500/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
@@ -72,79 +75,59 @@ export function Pricing() {
           {tiers.map((tier, index) => (
             <FadeIn key={index} delay={index * 0.15} className="h-full">
               <GlassCard
-                className={`p-8 h-full flex flex-col relative transition-all duration-500 hover:-translate-y-1 group overflow-hidden ${
-                  tier.highlighted 
-                    ? 'border-2 border-transparent md:-translate-y-4 md:scale-105 bg-white/90' 
-                    : 'border-2 border-transparent'
-                }`}
+                className={`relative h-full flex flex-col p-8 transition-all duration-500 hover:-translate-y-2 group overflow-hidden border border-white/60
+                  ${tier.highlighted 
+                    ? 'md:scale-105 shadow-2xl shadow-purple-500/20' 
+                    : 'hover:shadow-xl'
+                  }`}
                 style={{
-                  // Glowing gradient border on hover
-                  boxShadow: tier.highlighted 
-                    ? '0 10px 30px -10px rgb(59 130 246 / 0.3)' 
-                    : 'none',
+                  background: `linear-gradient(to bottom right, var(--tw-gradient-stops))`,
                 }}
               >
-                {/* Popular Badge with Star */}
+                {/* Soft Gradient Background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${tier.gradient} -z-10`} />
+
+                {/* Highlighted Tier Glow */}
                 {tier.highlighted && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-gradient-to-r from-brand-blue to-purple-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg z-10">
-                    <Star size={14} className="fill-white" />
-                    ពេញនិយមបំផុត
-                  </div>
+                  <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 rounded-3xl opacity-20 group-hover:opacity-40 transition-opacity -z-20" />
                 )}
 
-                {/* Glowing Gradient Border Layer */}
-                <div className={`absolute inset-0 rounded-3xl transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-none
-                  ${tier.highlighted 
-                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400' 
-                    : 'bg-gradient-to-r from-blue-400 to-cyan-400'
-                  }`}
-                  style={{
-                    padding: '2px',
-                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    maskComposite: 'exclude',
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                  }}
-                />
-
+              
                 <div className="relative z-10 flex flex-col h-full">
                   <div className="mb-8">
-                    <h3 className="text-xl font-bold text-brand-dark mb-2 transition-colors group-hover:text-brand-blue">
+                    <h3 className="text-2xl font-bold text-brand-dark mb-2 transition-colors group-hover:text-brand-blue">
                       {tier.name}
                     </h3>
-                    <p className="text-sm text-brand-muted mb-6 h-12 leading-relaxed">
+                    <p className="text-sm text-brand-muted mb-6 min-h-[48px] leading-relaxed">
                       {tier.description}
                     </p>
+
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-extrabold text-brand-dark">
+                      <span className="text-5xl font-extrabold tracking-tighter text-brand-dark">
                         ${tier.price}
                       </span>
                       <span className="text-brand-muted text-sm font-medium">/ខែ</span>
                     </div>
                   </div>
 
-                  {/* Features List */}
-                  <ul className="flex-1 space-y-4 mb-8">
+                  {/* Features */}
+                  <ul className="flex-1 space-y-4 mb-10">
                     {tier.features.map((feature, fIndex) => (
                       <li key={fIndex} className="flex items-start gap-3">
-                        <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-cyan flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
-                          <Check
-                            size={12}
-                            className="text-brand-blue"
-                            strokeWidth={3}
-                          />
+                        <div className="mt-1 w-5 h-5 rounded-full bg-white/80 flex items-center justify-center shrink-0 border border-white shadow-sm">
+                          <Check size={13} className="text-emerald-600" strokeWidth={3.5} />
                         </div>
-                        <span className="text-brand-dark text-sm leading-normal">{feature}</span>
+                        <span className="text-brand-dark text-[15px] leading-normal">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
                   {/* CTA Button */}
                   <button
-                    className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 mt-auto ${
+                    className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 mt-auto ${
                       tier.highlighted 
-                        ? 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-500/30' 
-                        : 'bg-brand-gray/20 text-brand-dark hover:bg-brand-gray/40'
+                        ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:brightness-110 hover:shadow-xl hover:shadow-purple-500/40' 
+                        : 'bg-white text-brand-dark border border-brand-dark/10 hover:bg-slate-100 hover:text-dark'
                     }`}
                   >
                     {tier.cta}

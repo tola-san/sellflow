@@ -34,7 +34,7 @@ export function FAQ() {
   };
 
   return (
-    <section id="faq" className="py-24 bg-brand-bg">
+    <section id="faq" className="py-24 bg-zinc-50">
       <div className="container mx-auto px-6 max-w-3xl">
         <div className="text-center mb-16">
           <FadeIn>
