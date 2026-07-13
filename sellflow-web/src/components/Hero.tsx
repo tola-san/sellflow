@@ -1,12 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Play, TrendingUp, Users, Star } from "lucide-react";
+import { ArrowRight, Facebook, Instagram, Play, TrendingUp, Users, Star } from "lucide-react";
 
 import dashboardMockup from "../assets/images/dashboard-hero.jpg";
 import { useAuth } from "./Auth/AuthContext";
 
 // Lucide doesn't ship a Telegram glyph, so we render the brand mark inline
-function TelegramIcon({ className }) {
+function TelegramIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
       <path d="M21.05 3.94c-.28-.24-.71-.28-1.22-.1-.53.2-17.02 6.58-17.86 6.91-.5.2-.99.53-.99 1s.5.75.99.9c.66.2 3.4 1.06 4.63 1.44.4 1.35 1.62 5.34 1.9 6.16.17.5.44.72.7.72.19 0 .38-.1.55-.28.31-.31 2.11-2.06 3.1-3.02l4.13 3.05c.24.18.5.28.75.28.36 0 .68-.2.83-.66.13-.4 3.34-15.5 3.34-15.5.16-.83-.02-1.5-.85-1.5z" />
