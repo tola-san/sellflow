@@ -5,6 +5,15 @@ import { ArrowRight, Play, TrendingUp, Users, Star } from "lucide-react";
 import dashboardMockup from "../assets/images/dashboard-hero.jpg";
 import { useAuth } from "./Auth/AuthContext";
 
+// Lucide doesn't ship a Telegram glyph, so we render the brand mark inline
+function TelegramIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M21.05 3.94c-.28-.24-.71-.28-1.22-.1-.53.2-17.02 6.58-17.86 6.91-.5.2-.99.53-.99 1s.5.75.99.9c.66.2 3.4 1.06 4.63 1.44.4 1.35 1.62 5.34 1.9 6.16.17.5.44.72.7.72.19 0 .38-.1.55-.28.31-.31 2.11-2.06 3.1-3.02l4.13 3.05c.24.18.5.28.75.28.36 0 .68-.2.83-.66.13-.4 3.34-15.5 3.34-15.5.16-.83-.02-1.5-.85-1.5z" />
+    </svg>
+  );
+}
+
 // Customizable Connection Grid
 function ConnectionGrid() {
   const config = {
@@ -260,10 +269,10 @@ export function Hero() {
             transition={{ duration: 0.7 }}
             className="mb-8 text-4xl font-semibold leading-[1.05] tracking-tighter text-zinc-800 sm:text-5xl lg:text-4xl xl:text-6xl"
           >
-            ម៉ឺនុយឌីជីថលដ៏ស្រស់ស្អាត។
+            Beautiful Digital Menu.
             <br className="hidden sm:block" />
             <span className="mt-3 bg-gradient-to-r from-blue-600 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-              Catelog QR ភ្លាមៗ។
+              Instant Catalog QR.
             </span>
           </motion.h1>
 
@@ -292,17 +301,17 @@ export function Hero() {
               whileTap={{ scale: 0.97 }}
               className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-500/40 transition-all duration-300 hover:from-purple-700 hover:to-violet-700 sm:w-auto"
             >
-              សាកល្បងឥតគិតថ្លៃ — មិនទាមទារកាត
+              Try for Free — No Card Required
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </motion.button>
 
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-zinc-200 bg-white/80 px-7 py-3.5 text-base font-semibold text-zinc-800 backdrop-blur-2xl transition-all duration-300 hover:bg-white sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-zinc-200 bg-white/80 px-7 py-3 text-base font-semibold text-zinc-800 backdrop-blur-2xl transition-all duration-300 hover:bg-white sm:w-auto"
             >
               <Play className="h-5 w-5" />
-              មើលវីដេអូណែនាំ ៩០ វិនាទី
+              Watch Demo
             </motion.button>
           </motion.div>
 
@@ -340,7 +349,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.2 }}
-          className="relative mx-auto max-w-5xl"
+          className="relative mx-auto max-w-5xl -mt-8"
         >
           <div className="absolute inset-0 scale-[0.96] rounded-[2rem] bg-gradient-to-br from-purple-500/40 via-cyan-400/30 to-fuchsia-500/40 opacity-80 blur-[90px]" />
 
@@ -406,15 +415,26 @@ export function Hero() {
             </div>
           </motion.div>
 
+          {/* Sell From Your Socials */}
           <motion.div
             animate={{ y: [10, -10, 10] }}
             transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
             className="absolute -right-28 bottom-20 z-10 hidden w-64 rounded-3xl border border-white/60 bg-white/80 p-4 shadow-2xl backdrop-blur-2xl xl:block"
           >
-            <div className="text-sm italic text-zinc-600">
-              "QR code ងាយស្រួលណាស់! អតិថិជនចូលចិត្តខ្លាំង។"
+            <p className="text-sm font-medium text-zinc-700">Sell from your socials</p>
+            <p className="mt-0.5 text-xs text-zinc-500">One catalog, everywhere you sell</p>
+
+            <div className="mt-3 flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100">
+                <Facebook className="h-4.5 w-4.5 text-blue-600" />
+              </div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100">
+                <TelegramIcon className="h-4.5 w-4.5 text-cyan-600" />
+              </div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-100">
+                <Instagram className="h-4.5 w-4.5 text-pink-600" />
+              </div>
             </div>
-            <div className="mt-3 text-xs font-medium">— លោក សុខា, Owner @ Cafe 25</div>
           </motion.div>
         </motion.div>
       </div>

@@ -16,7 +16,8 @@ const tiers = [
       'គាំទ្រនិងជំនួយតាមអ៊ីមែល'
     ],
     cta: 'សាកល្បងឥតគិតថ្លៃ',
-    highlighted: false
+    highlighted: false,
+    gradient: 'from-blue-50/80 via-white to-white'
   },
   {
     name: 'Business (អាជីវកម្ម)',
@@ -30,7 +31,8 @@ const tiers = [
       'ទទួលបានការដោះស្រាយអាទិភាពមុនគេ'
     ],
     cta: 'សាកល្បងឥតគិតថ្លៃ',
-    highlighted: true
+    highlighted: true,
+    gradient: 'from-purple-50/80 via-violet-50/70 to-white'
   },
   {
     name: 'Pro (កម្រិតខ្ពស់)',
@@ -44,15 +46,16 @@ const tiers = [
       'ក្រុមការងារជំនួយផ្ទាល់ខ្លួន ២៤/៧'
     ],
     cta: 'ទាក់ទងផ្នែកលក់',
-    highlighted: false
+    highlighted: false,
+    gradient: 'from-emerald-50/80 via-teal-50/70 to-white'
   }
 ];
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-24 bg-brand-bg relative">
-      {/* Background Gradient */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] bg-brand-blue/5 blur-[120px] rounded-full pointer-events-none" />
+    <section id="pricing" className="py-24 bg-brand-bg relative overflow-hidden">
+      {/* Background Accent */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] bg-gradient-to-br from-brand-blue/5 to-purple-500/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
