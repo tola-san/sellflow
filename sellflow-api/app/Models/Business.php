@@ -49,4 +49,12 @@ class Business extends Model
         return $this->hasMany(Category::class);
     }
 
+
+    /**
+     * Business has many products.
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
