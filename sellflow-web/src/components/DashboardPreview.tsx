@@ -75,15 +75,14 @@ export function DashboardPreview() {
             transition={{ duration: 0.6 }}
           >
             <span className="inline-block px-4 py-1.5 text-sm font-medium tracking-wider bg-white border border-zinc-200 rounded-full text-zinc-600 mb-4">
-              ផ្ទាំងគ្រប់គ្រងពេលវេលាជាក់ស្តែង
+              Real-Time Analytics Dashboard
             </span>
             <h2 className="text-4xl lg:text-5xl font-semibold tracking-tight text-zinc-900">
-              មើលឃើញអ្វីៗគ្រប់យ៉ាងដោយគ្រាន់តែក្រឡេកមើល
+              See Everything at a Glance
             </h2>
             <p className="mt-4 text-xl text-zinc-600 max-w-2xl mx-auto">
-              ផ្ទាំងវិភាគទិន្នន័យដ៏ស្រស់ស្អាត និងមានភាពរហ័សទាន់ចិត្ត
-              (Responsive) ជាមួយការធ្វើបច្ចុប្បន្នភាពផ្ទាល់ ការជូនដំណឹង
-              និងការយល់ដឹងស៊ីជម្រៅភ្លាមៗ។
+              Beautiful and lightning-fast responsive analytics dashboard with 
+              live updates, smart notifications, and instant deep insights.
             </p>
           </motion.div>
         </div>
