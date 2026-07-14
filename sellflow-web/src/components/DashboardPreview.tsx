@@ -3,30 +3,14 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 import dashboardImage from "../assets/images/feature-analytics.jpg";
 import { Send, CheckCircle2 } from "lucide-react";
 
+
 export function DashboardPreview() {
-  const sectionRef = useRef(null);
+  
 
-  // Track mouse position within the section
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const handleMouseMove = (e) => {
-    const rect = sectionRef.current.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left);
-    mouseY.set(e.clientY - rect.top);
-  };
-
-  // Radial gradient mask that follows the cursor to reveal the dot grid
-  const maskImage = useTransform(
-    [mouseX, mouseY],
-    ([x, y]) =>
-      `radial-gradient(300px circle at ${x}px ${y}px, black 0%, transparent 100%)`
-  );
 
   return (
     <section
-      ref={sectionRef}
-      onMouseMove={handleMouseMove}
+      
       className="relative py-20 lg:py-28 overflow-hidden bg-zinc-50 group"
     >
       {/* Base Animated Background Grid (always subtly moving) */}
@@ -42,17 +26,6 @@ export function DashboardPreview() {
         }}
       />
 
-      {/* Cursor-following Spotlight Grid Layer */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          backgroundImage:
-            "radial-gradient(#c27aff 0.8px, transparent 5px)",
-          backgroundSize: "10px 10px",
-          WebkitMaskImage: maskImage,
-          maskImage: maskImage,
-        }}
-      />
 
       {/* Refined Gradient Shadow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-6">
