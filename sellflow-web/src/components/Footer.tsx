@@ -42,7 +42,7 @@ const footerGroups = [
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-slate-200 bg-[#07080b] text-white">
+    <footer className="relative overflow-hidden border-t border-slate-200 bg-slate-900 text-white">
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <motion.div
           className="absolute inset-0 opacity-[0.08]"
