@@ -1,323 +1,169 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Play,
-  TrendingUp,
-  Users,
-  Star,
+  BadgeCheck,
+  BarChart3,
+  Check,
+  Globe2,
+  Package,
+  Sparkles,
 } from "lucide-react";
 
 import dashboardMockup from "../assets/images/dashboard-hero.jpg";
-import { useAuth } from "./Auth/AuthContext";
+import { HeroBackground } from "./ui/HeroBackground";
 
-// Customizable Connection Grid
-function ConnectionGrid() {
-  const config = {
-    width: 1500,
-    height: 1500,
-    gridSize: 20,
-    lineOpacity: 0.10,
-    primaryColor: "#8b5cf6",
-    accentColor: "#22d3ee",
-    glowStd: 4,
-  };
-
-  const nodes = [
-    [100, 200], [400, 200], [400, 400], [800, 400],
-    [800, 600], [1100, 600], [900, 100], [600, 300],
-    [200, 500], [300, 650], [700, 150], [1050, 350],
-  ];
-
-  const paths = [
-    // Facebook -> Dashboard
-    { d: "M 120 220 L 350 220 L 520 380 L 700 380", duration: 6, delay: 0 },
-    // Telegram -> Dashboard
-    { d: "M 150 450 L 350 450 L 520 380 L 700 380", duration: 7, delay: 1 },
-    // AI -> Dashboard
-    { d: "M 700 120 L 700 220 L 700 380", duration: 5, delay: 2 },
-    // Cloud -> Dashboard
-    { d: "M 520 180 L 620 220 L 700 380", duration: 6, delay: 3 },
-    // Analytics -> Dashboard
-    { d: "M 900 180 L 800 240 L 700 380", duration: 6, delay: 4 },
-    // Dashboard -> QR
-    { d: "M 700 380 L 900 380 L 1100 300 L 1220 220", duration: 8, delay: 1 },
-    // Dashboard -> Catalog
-    { d: "M 700 380 L 900 380 L 1180 380", duration: 7, delay: 2 },
-    // Dashboard -> Payment
-    { d: "M 700 380 L 900 450 L 1100 520 L 1220 560", duration: 8, delay: 3 },
-    // Dashboard -> Customer
-    { d: "M 700 380 L 700 500 L 700 700", duration: 6, delay: 4 },
-    // API -> Dashboard
-    { d: "M 520 380 L 700 380", duration: 4, delay: 2 },
-    // Dashboard -> Orders
-    { d: "M 700 380 L 900 380", duration: 4, delay: 3 },
-  ];
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-90">
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox={`0 0 ${config.width} ${config.height}`}
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <defs>
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation={config.glowStd} result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={config.primaryColor} stopOpacity="0" />
-            <stop offset="90%" stopColor={config.accentColor} stopOpacity="1" />
-            <stop offset="100%" stopColor={config.primaryColor} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        {/* Grid Lines */}
-        {Array.from({ length: Math.floor(config.width / config.gridSize) + 1 }).map((_, i) => (
-          <line
-            key={`v${i}`}
-            x1={i * config.gridSize}
-            y1="0"
-            x2={i * config.gridSize}
-            y2={config.height}
-            stroke="#2b2b92"
-            strokeWidth="1"
-            opacity={config.lineOpacity}
-          />
-        ))}
-
-        {Array.from({ length: Math.floor(config.height / config.gridSize) + 1 }).map((_, i) => (
-          <line
-            key={`h${i}`}
-            x1="0"
-            y1={i * config.gridSize}
-            x2={config.width}
-            y2={i * config.gridSize}
-            stroke="#631c75"
-            strokeWidth="1"
-            opacity={config.lineOpacity}
-          />
-        ))}
-
-        {/* Flowing Paths + Moving Dots */}
-        {paths.map((path, i) => (
-          <React.Fragment key={i}>
-            <motion.path
-              d={path.d}
-              fill="none"
-              stroke="url(#flowGradient)"
-              strokeWidth="3"
-              filter="url(#glow)"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: [0, 1, 1], opacity: [0, 1, 0] }}
-              transition={{
-                duration: path.duration,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: path.delay,
-              }}
-            />
-
-            <polygon
-              points="-6,-3 6,0 -6,3 -2,0"
-              fill={config.primaryColor}
-              filter="url(#glow)"
-            >
-              <animateMotion
-                dur={`${path.duration}s`}
-                repeatCount="indefinite"
-                path={path.d}
-                begin={`${path.delay}s`}
-                rotate="auto"
-              />
-            </polygon>
-          </React.Fragment>
-        ))}
-      </svg>
-    </div>
-  );
-}
+const trustPoints = ["Free forever plan", "No credit card", "Launch in minutes"];
 
 export function Hero() {
-  const { openAuth } = useAuth();
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section className="relative overflow-hidden bg-zinc-50 pt-20 pb-16 lg:pt-32 lg:pb-24">
-      {/* Animated Connection Grid */}
-      <ConnectionGrid />
-
-      {/* Soft Overlay for Text Readability */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-zinc-50/70 via-zinc-50/50 to-zinc-50" />
+    <section id="home" className="relative isolate -mt-24 overflow-hidden bg-white pb-16 pt-40 sm:-mt-28 sm:pb-20 sm:pt-48 lg:-mt-32 lg:pb-28 lg:pt-56">
+      <HeroBackground intensity="strong" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Top Content */}
-        <div className="mx-auto mb-12 max-w-4xl text-center lg:mb-16">
-          {/* Badge */}
+        <div className="mx-auto max-w-4xl text-center">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-medium text-purple-500 shadow-sm backdrop-blur-xl"
+            className="inline-flex items-center gap-2 rounded-full border border-violet-200/70 bg-white/90 px-3.5 py-1.5 text-xs font-semibold text-violet-700 shadow-sm shadow-violet-100/70 backdrop-blur-xl sm:text-sm"
           >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
-            Now with Catalog Builder
+            Built for modern Cambodian sellers
+            <Sparkles className="h-3.5 w-3.5" />
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="mb-8 text-4xl font-semibold leading-[1.05] tracking-tighter text-zinc-800 sm:text-5xl lg:text-4xl xl:text-6xl"
+            transition={{ duration: 0.65, delay: 0.05 }}
+            className="mx-auto mt-6 max-w-4xl text-4xl font-semibold leading-[1.06] tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-6xl"
           >
-            Beautiful Digital Menu.
-            <br className="hidden sm:block" />
-            <span className="mt-3 bg-gradient-to-r from-blue-600 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-              Instant Catalog QR.
+            Turn your products into a
+            <span className="relative ml-2 inline-block bg-gradient-to-r from-violet-700 via-purple-500 to-blue-500 bg-clip-text text-transparent sm:ml-3">
+              beautiful store.
+              <motion.span
+                className="absolute -bottom-1 left-0 h-1 w-full origin-left rounded-full bg-gradient-to-r from-violet-500/60 to-blue-400/20"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.8, delay: 0.65 }}
+              />
             </span>
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-lg"
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8"
           >
-            The perfect assistant for Facebook online sellers and small businesses! 
-            Create beautiful product catalogs in minutes, then share a link with customers 
-            to view prices and place orders instantly. Easy order management.
+            Build a digital catalog, share one simple link, and let customers discover your products—while you manage everything from one dashboard.
           </motion.p>
 
-          {/* CTA Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="mx-auto flex w-full max-w-md flex-col items-center justify-center gap-4 px-4 sm:max-w-none sm:flex-row"
+            transition={{ duration: 0.6, delay: 0.23 }}
+            className="mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center"
           >
-            <motion.button
-              onClick={() => openAuth("login")}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-purple-600 to-violet-600 px-8 py-2.5 text-base font-semibold text-white shadow-lg shadow-purple-500/40 transition-all duration-300 hover:from-purple-700 hover:to-violet-700 sm:w-auto"
+            <Link
+              to="/register"
+              className="group inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-slate-300 transition hover:-translate-y-0.5 hover:bg-violet-700"
             >
-              Try for Free — No Card Required
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </motion.button>
+              Start building for free
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
 
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-zinc-200 bg-white/80 px-7 py-3.5 text-base font-semibold text-zinc-800 backdrop-blur-2xl transition-all duration-300 hover:bg-white sm:w-auto"
+            <a
+              href="#features"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white/80 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
             >
-              <Play className="h-5 w-5" />
-              Watch 90-Second Demo
-            </motion.button>
+              Explore features
+              <ArrowRight className="h-4 w-4 text-slate-400" />
+            </a>
           </motion.div>
 
-          {/* Trust Bar */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="mt-12 flex flex-col items-center justify-center gap-6 text-sm sm:flex-row"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
+            className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2"
           >
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <img
-                  key={i}
-                  src={`https://i.pravatar.cc/96?img=${i + 20}`}
-                  alt={`Customer ${i}`}
-                  className="h-9 w-9 rounded-full object-cover ring-2 ring-white"
-                />
-              ))}
-            </div>
-
-            <div className="text-center sm:text-left">
-              <p className="font-medium text-zinc-700">Trusted by 12,000+ businesses</p>
-              <p className="text-xs text-zinc-500">from online sellers to local cafés</p>
-            </div>
+            {trustPoints.map((point) => (
+              <span key={point} className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 sm:text-sm">
+                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                {point}
+              </span>
+            ))}
           </motion.div>
         </div>
 
-        {/* Dashboard Mockup */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.2 }}
-          className="relative mx-auto max-w-5xl -mt-8"
+          initial={{ opacity: 0, y: 40, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.85, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mx-auto mt-14 max-w-5xl sm:mt-16 lg:mt-20"
         >
-          <div className="absolute inset-0 scale-[0.96] rounded-[2rem] bg-gradient-to-br from-purple-500/70 via-cyan-400/50 to-fuchsia-500/40 opacity-80 blur-[50px]" />
+          <div className="absolute -inset-8 rounded-[3rem] bg-gradient-to-r from-violet-300/30 via-blue-200/30 to-fuchsia-200/30 blur-3xl" />
 
-          <div className="relative overflow-hidden rounded-3xl border border-white/50 bg-white/30 shadow-[0_30px_100px_rgba(124,58,237,.20)] backdrop-blur-xl">
-            <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-r from-violet-500/10 via-transparent to-cyan-400/10" />
-            <img
-              src={dashboardMockup}
-              alt="Sellflow Dashboard Preview"
-              className="relative z-10 h-auto w-full object-cover"
-            />
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-[0_32px_90px_-28px_rgba(76,29,149,0.35)] sm:rounded-[1.75rem] sm:p-2">
+            <div className="flex h-10 items-center border-b border-slate-100 px-3 sm:h-12 sm:px-4">
+              <div className="flex gap-1.5" aria-hidden="true">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              </div>
+              <div className="mx-auto flex max-w-[15rem] items-center gap-2 rounded-md bg-slate-50 px-3 py-1 text-[10px] text-slate-400 sm:w-72 sm:max-w-none sm:text-xs">
+                <Globe2 className="h-3 w-3" />
+                sellflow.com/dashboard
+              </div>
+              <div className="w-10 sm:w-12" />
+            </div>
+
+            <div className="relative overflow-hidden rounded-b-xl sm:rounded-b-[1.25rem]">
+              <img
+                src={dashboardMockup}
+                alt="SellFlow seller dashboard showing catalog analytics"
+                className="h-auto w-full"
+              />
+              <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/[0.035]" />
+            </div>
           </div>
 
-          {/* Floating Elements */}
           <motion.div
-            animate={{ y: [-8, 8, -8] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -right-24 -top-24 z-10 hidden w-64 rounded-3xl border border-white/60 bg-white/80 p-5 shadow-2xl backdrop-blur-2xl xl:block"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-emerald-600">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="text-xs font-medium">Today</span>
-                </div>
-                <div className="mt-1 text-3xl font-semibold text-zinc-800">$842</div>
-                <div className="text-sm text-emerald-600">+18% from yesterday</div>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
-                <Users className="h-6 w-6 text-emerald-600" />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            animate={{ rotate: [-3, 3, -3] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -left-40 bottom-24 z-10 hidden w-56 rounded-3xl border border-white/60 bg-white/80 p-4 shadow-2xl backdrop-blur-2xl lg:block"
-          >
-            <div className="flex gap-4">
-              <img
-                src="https://picsum.photos/seed/food1/80/80"
-                alt="Amok"
-                className="h-16 w-16 rounded-2xl object-cover"
-              />
-              <div className="flex-1">
-                <div className="text-sm font-medium">Fish Amok</div>
-                <div className="text-xs text-zinc-500">Traditional Khmer • $8.50</div>
-                <div className="mt-2 flex gap-1">
-                  {[1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            animate={{ y: [10, -10, 10] }}
+            animate={reduceMotion ? undefined : { y: [-6, 7, -6] }}
             transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -right-28 bottom-20 z-10 hidden w-64 rounded-3xl border border-white/60 bg-white/80 p-4 shadow-2xl backdrop-blur-2xl xl:block"
+            className="absolute -left-5 top-16 hidden items-center gap-3 rounded-2xl border border-white/80 bg-white/90 p-3.5 shadow-xl shadow-violet-200/30 backdrop-blur-xl md:flex lg:-left-12"
           >
-            <div className="text-sm italic text-zinc-600">
-              "The QR code is super easy! Customers love it so much."
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-violet-100 text-violet-700">
+              <Package className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-xs text-slate-500">Active products</p>
+              <p className="text-sm font-bold text-slate-900">126 products</p>
             </div>
-            <div className="mt-3 text-xs font-medium">— Sokha, Owner @ Cafe 25</div>
+          </motion.div>
+
+          <motion.div
+            animate={reduceMotion ? undefined : { y: [7, -6, 7] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -right-5 bottom-14 hidden items-center gap-3 rounded-2xl border border-white/80 bg-white/90 p-3.5 shadow-xl shadow-blue-200/30 backdrop-blur-xl md:flex lg:-right-12"
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-100 text-emerald-700">
+              <BarChart3 className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="flex items-center gap-1 text-xs text-emerald-600">
+                <BadgeCheck className="h-3.5 w-3.5" /> Store is live
+              </p>
+              <p className="text-sm font-bold text-slate-900">Ready to share</p>
+            </div>
           </motion.div>
         </motion.div>
       </div>

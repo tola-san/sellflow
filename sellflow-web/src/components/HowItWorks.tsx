@@ -116,7 +116,7 @@ export function HowItWorks() {
   const [step1, step2, step3, step4] = steps;
 
   return (
-    <section className="relative overflow-hidden bg-zinc-50 py-24">
+    <section id="how-it-works" className="relative overflow-hidden bg-zinc-50 py-24">
       {/* Background glows */}
       <div className="pointer-events-none absolute left-1/4 top-20 h-72 w-72 rounded-full bg-violet-400/10 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-cyan-400/10 blur-[120px]" />
