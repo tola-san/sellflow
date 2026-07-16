@@ -25,13 +25,36 @@ class Business extends Model
         'country',
         'primary_color',
         'secondary_color',
+        'theme_preset',
+        'theme_settings',
         'is_active'
     ];
 
 
     protected $casts = [
         'is_active' => 'boolean',
+        'theme_settings' => 'array',
     ];  
+
+    public function resolvedTheme(): array
+    {
+        $presets = config('storefront_themes.presets', []);
+        $preset = array_key_exists($this->theme_preset, $presets)
+            ? $this->theme_preset
+            : config('storefront_themes.default', 'modern');
+        $defaults = $presets[$preset] ?? [];
+        $settings = is_array($this->theme_settings) ? $this->theme_settings : [];
+
+        if (! array_key_exists('primary_color', $settings)) {
+            $settings['primary_color'] = $this->primary_color;
+        }
+
+        if (! array_key_exists('secondary_color', $settings)) {
+            $settings['secondary_color'] = $this->secondary_color;
+        }
+
+        return ['preset' => $preset, ...array_merge($defaults, $settings)];
+    }
 
     /**
      * Business belongs to one user.
@@ -56,5 +79,10 @@ class Business extends Model
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }

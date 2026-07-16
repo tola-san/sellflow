@@ -41,6 +41,8 @@ class BusinessResource extends JsonResource
 
             'secondary_color' => $this->secondary_color,
 
+            'theme' => $this->resolvedTheme(),
+
             'is_active' => $this->is_active,
 
             'created_at' => $this->created_at,

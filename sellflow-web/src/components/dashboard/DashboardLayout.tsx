@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, Boxes, FolderTree, LayoutDashboard, LogOut, Menu, Package, Store, X } from "lucide-react";
+import { BarChart3, Boxes, FolderTree, LayoutDashboard, LogOut, Menu, Package, Palette, Store, X } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { authService } from "../../Services/auth";
 import { useToast } from "../ui/ToastContext";
@@ -9,6 +9,7 @@ const links = [
   { label: "Business", path: "/dashboard/business", icon: Store },
   { label: "Categories", path: "/dashboard/categories", icon: FolderTree },
   { label: "Products", path: "/dashboard/products", icon: Package },
+  { label: "Theme", path: "/dashboard/theme", icon: Palette },
 ];
 
 export function DashboardLayout() {
