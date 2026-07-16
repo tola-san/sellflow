@@ -3,6 +3,11 @@ set -eu
 
 PORT="${PORT:-10000}"
 
+# Prevent local MySQL settings copied into Render from overriding PostgreSQL.
+if [ "${DB_CONNECTION:-}" = "pgsql" ] && { [ -z "${DB_PORT:-}" ] || [ "${DB_PORT}" = "3306" ]; }; then
+    export DB_PORT=5432
+fi
+
 printf 'Listen %s\n' "$PORT" > /etc/apache2/ports.conf
 sed "s/__PORT__/$PORT/g" /etc/apache2/sites-available/000-default.conf.template \
     > /etc/apache2/sites-available/000-default.conf
