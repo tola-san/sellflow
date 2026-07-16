@@ -1,4 +1,5 @@
 import api from "../lib/Axios";
+import type { ThemeSettings } from "../types/theme";
 
 export interface PublicCategory {
   name: string;
@@ -32,10 +33,7 @@ export interface PublicBusiness {
   address: string | null;
   city: string | null;
   country: string | null;
-  theme: {
-    primary_color: string;
-    secondary_color: string;
-  };
+  theme: ThemeSettings;
 }
 
 export interface Storefront {

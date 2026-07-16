@@ -21,10 +21,7 @@ class PublicBusinessResource extends JsonResource
             'address' => $this->address,
             'city' => $this->city,
             'country' => $this->country,
-            'theme' => [
-                'primary_color' => $this->primary_color,
-                'secondary_color' => $this->secondary_color,
-            ],
+            'theme' => $this->resolvedTheme(),
         ];
     }
 }

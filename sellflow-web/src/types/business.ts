@@ -1,3 +1,5 @@
+import type { ThemeSettings } from "./theme";
+
 export interface Business {
   id: number;
   name: string;
@@ -13,6 +15,7 @@ export interface Business {
   country: string | null;
   primary_color: string;
   secondary_color: string;
+  theme: ThemeSettings;
   is_active: boolean;
   created_at: string;
 }

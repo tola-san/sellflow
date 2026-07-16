@@ -2,15 +2,18 @@
 
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Business\BusinessController;
+use App\Http\Controllers\Api\Business\BusinessThemeController;
 use App\Http\Controllers\Api\Category\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Storefront\StorefrontController;
+use App\Http\Controllers\Api\Storefront\CheckoutController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     // Public customer storefront. Authentication is intentionally not required.
     Route::get('/store/{slug}', [StorefrontController::class, 'show']);
+    Route::post('/store/{slug}/checkout', [CheckoutController::class, 'store'])->middleware('throttle:20,1');
     /*
     |--------------------------------------------------------------------------
     | Public authentication routes
@@ -38,6 +41,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/business', [BusinessController::class, 'show']);
         Route::post('/business', [BusinessController::class, 'store']);
         Route::put('/business', [BusinessController::class, 'update']);
+        Route::get('/business/theme', [BusinessThemeController::class, 'show']);
+        Route::put('/business/theme', [BusinessThemeController::class, 'update']);
 
         // Categories
         Route::apiResource('categories', CategoryController::class);

@@ -51,11 +51,122 @@ class StorefrontApiTest extends TestCase
         $this->getJson('/api/v1/store/closed-store')->assertNotFound();
     }
 
+    public function test_public_checkout_calculates_prices_and_creates_tenant_scoped_order(): void
+    {
+        $store = $this->business('Checkout Store', 'checkout-store');
+        $category = $this->category($store, 'Drinks', true);
+        $product = $this->product($store, $category, 'Iced Latte', 'iced-latte', true);
+        $product->update(['price' => 5.25, 'discount_price' => 4.50, 'stock' => 5]);
+
+        $response = $this->postJson('/api/v1/store/checkout-store/checkout', [
+            'customer_name' => 'Test Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'items' => [[
+                'product_slug' => 'iced-latte',
+                'quantity' => 2,
+                'price' => 0.01,
+            ]],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.total', '9.00')
+            ->assertJsonPath('data.items.0.unit_price', '4.50')
+            ->assertJsonPath('data.items.0.quantity', 2);
+
+        $this->assertDatabaseHas('orders', [
+            'business_id' => $store->id,
+            'customer_phone' => '012345678',
+            'total' => 9.00,
+        ]);
+    }
+
+    public function test_checkout_rejects_products_from_another_business_and_excess_stock(): void
+    {
+        $store = $this->business('First Store', 'first-store');
+        $category = $this->category($store, 'First Category', true);
+        $product = $this->product($store, $category, 'Limited', 'limited', true);
+        $product->update(['stock' => 1]);
+
+        $other = $this->business('Second Store', 'second-store');
+        $otherCategory = $this->category($other, 'Second Category', true);
+        $this->product($other, $otherCategory, 'Foreign', 'foreign', true);
+
+        $base = [
+            'customer_name' => 'Test Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+        ];
+
+        $this->postJson('/api/v1/store/first-store/checkout', $base + [
+            'items' => [['product_slug' => 'foreign', 'quantity' => 1]],
+        ])->assertUnprocessable()->assertJsonValidationErrors('items');
+
+        $this->postJson('/api/v1/store/first-store/checkout', $base + [
+            'items' => [['product_slug' => 'limited', 'quantity' => 2]],
+        ])->assertUnprocessable()->assertJsonValidationErrors('items');
+    }
+
     public function test_dashboard_endpoints_still_require_authentication(): void
     {
         $this->getJson('/api/v1/products')->assertUnauthorized();
         $this->getJson('/api/v1/categories')->assertUnauthorized();
         $this->getJson('/api/v1/business')->assertUnauthorized();
+        $this->getJson('/api/v1/business/theme')->assertUnauthorized();
+        $this->putJson('/api/v1/business/theme', [])->assertUnauthorized();
+    }
+
+    public function test_seller_can_publish_a_valid_theme_to_the_public_storefront(): void
+    {
+        $user = User::factory()->create();
+        $business = $this->business('Theme Store', 'theme-store', true, $user);
+        Sanctum::actingAs($user);
+
+        $theme = [
+            'preset' => 'modern',
+            'primary_color' => '#7C3AED',
+            'secondary_color' => '#0891B2',
+            'background_color' => '#F8FAFC',
+            'surface_color' => '#FFFFFF',
+            'text_color' => '#0F172A',
+            'muted_color' => '#64748B',
+            'font_family' => 'modern',
+            'card_style' => 'elevated',
+            'button_style' => 'pill',
+            'hero_style' => 'gradient',
+            'grid_columns' => 4,
+        ];
+
+        $this->putJson('/api/v1/business/theme', $theme)
+            ->assertOk()
+            ->assertJsonPath('data.theme.preset', 'modern')
+            ->assertJsonPath('data.theme.button_style', 'pill');
+
+        $this->assertDatabaseHas('businesses', [
+            'id' => $business->id,
+            'theme_preset' => 'modern',
+            'primary_color' => '#7C3AED',
+        ]);
+
+        $this->getJson('/api/v1/store/theme-store')
+            ->assertOk()
+            ->assertJsonPath('data.business.theme.primary_color', '#7C3AED')
+            ->assertJsonPath('data.business.theme.grid_columns', 4);
+    }
+
+    public function test_theme_endpoint_rejects_unsafe_or_unknown_values(): void
+    {
+        $user = User::factory()->create();
+        $this->business('Safe Store', 'safe-store', true, $user);
+        Sanctum::actingAs($user);
+
+        $this->putJson('/api/v1/business/theme', [
+            'preset' => 'custom-script',
+            'primary_color' => 'javascript:alert(1)',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['preset', 'primary_color']);
     }
 
     public function test_seller_cannot_access_another_sellers_catalog_resources(): void
