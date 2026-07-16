@@ -226,14 +226,7 @@ export function Pricing() {
 
                 </div>
 
-                {/* <div className="mt-3 flex items-start gap-2.5 rounded-xl bg-blue-50 p-3 text-xs leading-5 text-blue-700">
-                  <Smartphone className="mt-0.5 h-4 w-4 shrink-0" />
-
-                  <p>
-                    Scan with Bakong or your banking app. Confirm TOLA SAN and send the exact amount shown above.
-                  </p>
-                </div> */}
-
+              
                 <button
                   type="button"
                   onClick={confirmPayment}
