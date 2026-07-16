@@ -1,4 +1,6 @@
 // pages/LandingPage.tsx
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { Hero } from "../components/Hero";
 import { TrustedBy } from "../components/TrustedBy";
@@ -11,8 +13,18 @@ import { Footer } from "../components/Footer";
 import {Pricing} from "../components/Pricing";
 import { FAQ } from "../components/FAQ";
 import { AuthModal } from "../components/Auth/AuthModal";
+import { useAuth } from "../components/Auth/AuthContext";
 
 export default function LandingPage() {
+  const { openAuth } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === "/register") {
+      openAuth("register");
+    }
+  }, [location.pathname, openAuth]);
+
   return (
     <>
       <Navbar />
