@@ -11,7 +11,12 @@ interface BusinessResponse {
 export const businessService = {
   async getBusiness(): Promise<Business | null> {
     const response = await api.get<BusinessResponse>("/business");
-    console.log(response);
     return response.data.data;
+  },
+  async saveBusiness(data: Partial<Business>, exists: boolean): Promise<Business> {
+    const response = exists
+      ? await api.put<BusinessResponse>("/business", data)
+      : await api.post<BusinessResponse>("/business", data);
+    return response.data.data as Business;
   },
 };

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
 import { AuthField } from "./AuthField";
 import { authService } from "../../Services/auth";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../ui/ToastContext";
 
 interface RegisterFormProps {
   onSwitch: () => void;
@@ -15,6 +17,8 @@ interface RegisterData {
 }
 
 export function RegisterForm({ onSwitch }: RegisterFormProps) {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
   const [form, setForm] = useState<RegisterData>({
     name: "",
     email: "",
@@ -41,24 +45,17 @@ export function RegisterForm({ onSwitch }: RegisterFormProps) {
 
       const response = await authService.register(form);
 
-      console.log(response.data);
-
-      alert("Registration successful!");
-
-      // Optional:
-      // localStorage.setItem(
-      //   "token",
-      //   response.data.data.token
-      // );
-
-      // redirect("/dashboard");
+      localStorage.setItem("token", response.data.data.token);
+      showToast("Your SellFlow account was created successfully.");
+      navigate("/dashboard");
 
     } catch (error: any) {
       console.error(error);
 
-      alert(
+      showToast(
         error.response?.data?.message ??
-          "Registration failed."
+          "Registration failed.",
+        "error"
       );
     } finally {
       setLoading(false);
