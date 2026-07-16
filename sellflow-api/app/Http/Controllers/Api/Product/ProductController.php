@@ -11,34 +11,32 @@ use App\Services\Product\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-
 class ProductController extends Controller
 {
-
-
     public function __construct(
         protected ProductService $productService
     ) {}
+
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): JsonResponse {
+    public function index(Request $request): JsonResponse
+    {
 
-         $products = $this->productService->index(
+        $products = $this->productService->index(
             $request->user()
         );
-         return response()->json([
+
+        return response()->json([
             'success' => true,
             'data' => ProductResource::collection($products),
         ]);
     }
- 
 
     /**
      * Store a newly created resource in storage.
      */
-     
-     public function store(StoreProductRequest $request): JsonResponse
+    public function store(StoreProductRequest $request): JsonResponse
     {
         $product = $this->productService->store(
             $request->user(),
@@ -55,9 +53,10 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    
-     public function show(Product $product): JsonResponse
+    public function show(Request $request, Product $product): JsonResponse
     {
+        $this->authorize('view', $product);
+
         return response()->json([
             'success' => true,
             'data' => new ProductResource(
@@ -69,11 +68,12 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-     
-     public function update(
+    public function update(
         UpdateProductRequest $request,
         Product $product
     ): JsonResponse {
+
+        $this->authorize('update', $product);
 
         $product = $this->productService->update(
             $product,
@@ -90,9 +90,9 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    
-     public function destroy(Product $product): JsonResponse
+    public function destroy(Request $request, Product $product): JsonResponse
     {
+        $this->authorize('delete', $product);
         $this->productService->destroy($product);
 
         return response()->json([

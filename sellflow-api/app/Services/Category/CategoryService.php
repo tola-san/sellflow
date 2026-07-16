@@ -11,6 +11,10 @@ class CategoryService
 {
     public function index(User $user): Collection
     {
+        if (! $user->business) {
+            return new Collection;
+        }
+
         return $user->business
             ->categories()
             ->latest()
@@ -19,6 +23,10 @@ class CategoryService
 
     public function store(User $user, array $data): Category
     {
+        if (! $user->business) {
+            abort(422, 'Please create a business first.');
+        }
+
         return $user->business
             ->categories()
             ->create([

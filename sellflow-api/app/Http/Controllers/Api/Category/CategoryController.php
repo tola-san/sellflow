@@ -43,8 +43,10 @@ class CategoryController extends Controller
         ], 201);
     }
 
-    public function show(Category $category): JsonResponse
+    public function show(Request $request, Category $category): JsonResponse
     {
+        $this->authorize('view', $category);
+
         return response()->json([
             'success' => true,
             'data' => new CategoryResource($category),
@@ -55,6 +57,8 @@ class CategoryController extends Controller
         UpdateCategoryRequest $request,
         Category $category
     ): JsonResponse {
+
+        $this->authorize('update', $category);
 
         $category = $this->categoryService->update(
             $category,
@@ -68,8 +72,9 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function destroy(Category $category): JsonResponse
+    public function destroy(Request $request, Category $category): JsonResponse
     {
+        $this->authorize('delete', $category);
         $this->categoryService->destroy($category);
 
         return response()->json([
