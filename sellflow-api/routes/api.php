@@ -4,9 +4,12 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Business\BusinessController;
 use App\Http\Controllers\Api\Category\CategoryController;
 use App\Http\Controllers\Api\Product\ProductController;
+use App\Http\Controllers\Api\Storefront\StorefrontController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    // Public customer storefront. Authentication is intentionally not required.
+    Route::get('/store/{slug}', [StorefrontController::class, 'show']);
     /*
     |--------------------------------------------------------------------------
     | Public authentication routes
