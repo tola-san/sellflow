@@ -19,6 +19,7 @@ export function App() {
             <Routes>
                 <Route element={<GuestRoute />}>
                     <Route path="/" element={<LandingPage />} />
+                    <Route path="/register" element={<LandingPage />} />
                 </Route>
 
                 <Route element={<ProtectedRoute />}>

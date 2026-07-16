@@ -1,169 +1,280 @@
-import React from 'react';
-import { Check } from 'lucide-react';
-import { FadeIn } from './ui/FadeIn';
-import { GlassCard } from './ui/GlassCard';
+import React, { useState } from "react";
+import {
+  Check,
+  QrCode,
+  X,
+  Smartphone,
+  ShieldCheck,
+  BadgeCheck,
+} from "lucide-react";
+import bakongQr from "../assets/images/qrcode-bakong/image.png";
+import { useNavigate } from "react-router-dom";
 
-const tiers = [
+interface PricingPlan {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+  highlighted?: boolean;
+}
+
+const plans: PricingPlan[] = [
   {
-    name: 'Starter (ដំបូង)',
-    price: '9',
-    description:
-      'ល្អឥតខ្ចោះសម្រាប់អ្នកលក់ថ្មីថ្មោងដែលទើបតែចាប់ផ្ដើម។',
+    id: "free",
+    name: "Free",
+    price: 0,
+    description: "For sellers starting their first digital catalog.",
     features: [
-      'ហាងអនឡាញ ១ (1 Store)',
-      '៥០០ ការបញ្ជាទិញ/ខែ',
-      'ប្រព័ន្ធបង្កើតកាតាឡុកផលិតផល',
-      'របាយការណ៍កម្រិតដំបូង',
-      'គាំទ្រនិងជំនួយតាមអ៊ីមែល',
+      "1 business store",
+      "Up to 20 products",
+      "Default SellFlow theme",
+      "Public store URL",
+      "QR catalog sharing",
     ],
-    cta: 'សាកល្បងឥតគិតថ្លៃ',
-    highlighted: false,
-    gradient: 'from-blue-50/80 via-white to-white',
   },
   {
-    name: 'Business (អាជីវកម្ម)',
-    price: '19',
-    description:
-      'គ្រប់យ៉ាងដែលអ្នកត្រូវការដើម្បីពង្រីកអាជីវកម្មឱ្យកាន់តែរីកចម្រើន។',
+    id: "starter",
+    name: "Starter",
+    price: 5,
+    description: "For small businesses that want more control.",
     features: [
-      'ហាងអនឡាញ ៣ (3 Stores)',
-      '២,០០០ ការបញ្ជាទិញ/ខែ',
-      'ប្រព័ន្ធជូនដំណឹងតាម Telegram',
-      'របាយការណ៍លម្អិតឆ្លាតវៃ',
-      'ទទួលបានការដោះស្រាយអាទិភាពមុនគេ',
+      "Up to 100 products",
+      "Custom brand colors",
+      "Remove some SellFlow branding",
+      "Basic catalog analytics",
+      "Telegram order notifications",
     ],
-    cta: 'សាកល្បងឥតគិតថ្លៃ',
     highlighted: true,
-    gradient: 'from-purple-50/80 via-violet-50/70 to-white',
   },
   {
-    name: 'Pro (កម្រិតខ្ពស់)',
-    price: '49',
-    description:
-      'សម្រាប់អ្នកលក់ដាច់ខ្លាំង (High-volume) ដែលត្រូវការមុខងារពេញលេញបំផុត។',
+    id: "business",
+    name: "Business",
+    price: 12,
+    description: "For growing businesses with more products and orders.",
     features: [
-      'ហាងអនឡាញមិនកំណត់',
-      'ការបញ្ជាទិញមិនកំណត់',
-      'ភ្ជាប់ Domain ផ្ទាល់ខ្លួនបាន',
-      'ប្រព័ន្ធដោតភ្ជាប់ API Access',
-      'ក្រុមការងារជំនួយផ្ទាល់ខ្លួន ២៤/៧',
+      "Unlimited products",
+      "Premium themes",
+      "Advanced analytics",
+      "Custom QR code",
+      "Priority support",
     ],
-    cta: 'ទាក់ទងផ្នែកលក់',
-    highlighted: false,
-    gradient: 'from-emerald-50/80 via-teal-50/70 to-white',
   },
 ];
 
 export function Pricing() {
-  return (
-    <section
-      id="pricing"
-      className="relative overflow-hidden bg-brand-bg py-24"
-    >
-      {/* Background accent */}
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-full max-w-5xl -translate-x-1/2 rounded-full bg-gradient-to-br from-brand-blue/5 to-purple-500/5 blur-[120px]" />
+  const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] =
+    useState<PricingPlan | null>(null);
 
-      <div className="container relative z-10 mx-auto px-6">
-        {/* Section header */}
-        <div className="mx-auto mb-16 max-w-2xl text-center">
-          <FadeIn>
-            <h2 className="mb-4 text-3xl font-bold leading-tight text-brand-dark md:text-4xl">
-              គម្រោងតម្លៃងាយស្រួល និងតម្លាភាព
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "success">("idle");
+
+  const openPayment = (plan: PricingPlan) => {
+    if (plan.price === 0) {
+      navigate("/register");
+      return;
+    }
+
+    setSelectedPlan(plan);
+    setPaymentStatus("idle");
+  };
+
+  const closePayment = () => {
+    setSelectedPlan(null);
+    setPaymentStatus("idle");
+  };
+
+  const confirmPayment = () => {
+    setPaymentStatus("success");
+  };
+
+  return (
+    <>
+      <section
+        id="pricing"
+        className="relative overflow-hidden bg-slate-50 py-20 sm:py-24"
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(circle_at_top,_rgba(124,58,237,0.12),_transparent_65%)]" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="relative mx-auto max-w-3xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+              Simple pricing
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 md:text-5xl">
+              Start free. Upgrade when your business grows.
             </h2>
 
-            <p className="text-base text-brand-muted sm:text-lg">
-              ចាប់ផ្ដើមសាកល្បងដោយឥតគិតថ្លៃ
-              ដំឡើងគម្រោងនៅពេលអាជីវកម្មរបស់អ្នករីកធំធាត់។
-              គ្មានការគិតថ្លៃលាក់កំបាំងឡើយ។
+            <p className="mt-5 text-lg text-slate-600">
+              Choose a plan and pay securely through Bakong KHQR.
             </p>
-          </FadeIn>
-        </div>
+          </div>
 
-        {/* Pricing grid */}
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 md:grid-cols-3">
-          {tiers.map((tier, index) => (
-            <FadeIn
-              key={tier.name}
-              delay={index * 0.15}
-              className="h-full"
-            >
-              <GlassCard
-                className={`group relative flex h-full flex-col overflow-hidden border border-white/60 p-8 transition-all duration-500 hover:-translate-y-2 ${
-                  tier.highlighted
-                    ? 'shadow-2xl shadow-purple-500/20 md:scale-105'
-                    : 'hover:shadow-xl'
-                }`}
+          <div className="relative mt-14 grid gap-5 md:grid-cols-2 lg:mt-16 lg:grid-cols-3 lg:gap-6">
+            {plans.map((plan) => (
+              <article
+                key={plan.id}
+                className={[
+                  "relative flex h-full flex-col rounded-3xl border bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7",
+                  plan.highlighted
+                    ? "border-violet-500 ring-4 ring-violet-100 md:col-span-2 lg:col-span-1 lg:-translate-y-3 lg:hover:-translate-y-4"
+                    : "border-slate-200",
+                ].join(" ")}
               >
-                {/* Soft gradient background */}
-                <div
-                  className={`absolute inset-0 -z-10 bg-gradient-to-br ${tier.gradient}`}
-                />
-
-                {/* Highlighted card glow */}
-                {tier.highlighted && (
-                  <div className="absolute -inset-[1px] -z-20 rounded-3xl bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 opacity-20 transition-opacity group-hover:opacity-40" />
+                {plan.highlighted && (
+                  <span className="absolute right-6 top-0 -translate-y-1/2 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white shadow-lg shadow-violet-200">
+                    Most popular
+                  </span>
                 )}
 
-                <div className="relative z-10 flex h-full flex-col">
-                  <div className="mb-8">
-                    <h3 className="mb-2 text-2xl font-bold text-brand-dark transition-colors group-hover:text-brand-blue">
-                      {tier.name}
-                    </h3>
+                <h3 className="text-xl font-bold text-slate-900">
+                  {plan.name}
+                </h3>
 
-                    <p className="mb-6 min-h-[48px] text-sm leading-relaxed text-brand-muted">
-                      {tier.description}
-                    </p>
+                <p className="mt-2 min-h-12 text-sm text-slate-500">
+                  {plan.description}
+                </p>
 
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-extrabold tracking-tighter text-brand-dark">
-                        ${tier.price}
-                      </span>
+                <div className="mt-6 flex items-end gap-1">
+                  <span className="text-4xl font-bold text-slate-900">
+                    ${plan.price}
+                  </span>
 
-                      <span className="text-sm font-medium text-brand-muted">
-                        /ខែ
-                      </span>
-                    </div>
+                  {plan.price > 0 && (
+                    <span className="pb-1 text-sm text-slate-500">
+                      /month
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => openPayment(plan)}
+                  className={[
+                    "mt-7 flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition",
+                    plan.highlighted
+                      ? "bg-purple-500 text-white shadow-lg shadow-violet-200 hover:bg-purple-600"
+                      : "border border-slate-200 text-slate-900 hover:bg-slate-50",
+                  ].join(" ")}
+                >
+                  {plan.price === 0 ? (
+                    "Get started free"
+                  ) : (
+                    <>
+                      <QrCode className="h-4 w-4" />
+                      Pay with QR Bakong
+                    </>
+                  )}
+                </button>
+
+                <ul className="mt-7 flex-1 space-y-3">
+                  {plan.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-3 text-sm text-slate-600"
+                    >
+                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600">
+                        <Check className="h-3.5 w-3.5" />
+                      </div>
+
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+
+          <div className="relative mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-slate-500">
+            {["No setup fee", "Cancel anytime", "Secure KHQR payment"].map((item) => <span key={item} className="flex items-center gap-2"><BadgeCheck className="h-4 w-4 text-emerald-600" />{item}</span>)}
+          </div>
+        </div>
+      </section>
+
+      {selectedPlan && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/65 p-3 backdrop-blur-sm sm:p-4">
+          <div className="relative w-full max-w-sm max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-3xl bg-white shadow-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:max-h-[calc(100dvh-2rem)]">
+            <button
+              type="button"
+              onClick={closePayment}
+              className="absolute right-3 top-3 z-10 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-900"
+              aria-label="Close payment modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="bg-gradient-to-b from-red-50 to-white px-5 pb-3 pt-4 text-center">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-white shadow-md shadow-red-200">
+                <QrCode className="h-5 w-5" />
+              </div>
+
+              <h3 className="mt-2 text-xl font-bold text-slate-900">
+                Pay with Bakong KHQR
+              </h3>
+
+              <p className="mt-1 text-xs text-slate-500">
+                Subscribe to the {selectedPlan.name} plan
+              </p>
+            </div>
+
+            {paymentStatus === "idle" && (
+              <div className="px-4 pb-4 sm:px-5">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="mx-auto w-full max-w-[180px] overflow-hidden rounded-xl bg-white shadow-sm ring-2 ring-white sm:max-w-[300px]">
+                    <img src={bakongQr} alt="Bakong KHQR for Tola San" className="h-auto w-full" />
                   </div>
 
-                  {/* Features */}
-                  <ul className="mb-10 flex-1 space-y-4">
-                    {tier.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-3"
-                      >
-                        <div className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white bg-white/80 shadow-sm">
-                          <Check
-                            size={13}
-                            className="text-emerald-600"
-                            strokeWidth={3.5}
-                          />
-                        </div>
-
-                        <span className="text-[15px] leading-normal text-brand-dark">
-                          {feature}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* CTA */}
-                  <button
-                    type="button"
-                    className={`mt-auto w-full rounded-2xl py-3.5 text-sm font-semibold transition-all duration-300 ${
-                      tier.highlighted
-                        ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:brightness-110 hover:shadow-xl hover:shadow-purple-500/40'
-                        : 'border border-brand-dark/10 bg-white text-brand-dark hover:bg-slate-100 hover:text-brand-dark'
-                    }`}
-                  >
-                    {tier.cta}
-                  </button>
                 </div>
-              </GlassCard>
-            </FadeIn>
-          ))}
+
+                {/* <div className="mt-3 flex items-start gap-2.5 rounded-xl bg-blue-50 p-3 text-xs leading-5 text-blue-700">
+                  <Smartphone className="mt-0.5 h-4 w-4 shrink-0" />
+
+                  <p>
+                    Scan with Bakong or your banking app. Confirm TOLA SAN and send the exact amount shown above.
+                  </p>
+                </div> */}
+
+                <button
+                  type="button"
+                  onClick={confirmPayment}
+                  className="mt-3 w-full rounded-full bg-purple-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600"
+                >
+                  I have sent the payment
+                </button>
+
+                <p className="mt-2 text-center text-[11px] leading-4 text-slate-400">
+                  Submission is not automatic verification. Activate plans only after confirming the transaction.
+                </p>
+              </div>
+            )}
+
+            {paymentStatus === "success" && (
+              <div className="px-6 py-10 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <ShieldCheck className="h-8 w-8" />
+                </div>
+
+                <h4 className="mt-5 text-2xl font-bold text-slate-900">
+                  Payment submitted
+                </h4>
+
+                <p className="mt-2 text-sm text-slate-500">
+                  Your payment is pending confirmation. Your plan will be
+                  activated after verification.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={closePayment}
+                  className="mt-6 w-full rounded-xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      )}
+    </>
   );
 }
