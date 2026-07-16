@@ -24,7 +24,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => {
           const success = toast.type === "success";
           const Icon = success ? CheckCircle2 : CircleAlert;
-          return <motion.div key={toast.id} initial={{ opacity: 0, y: -14, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 30, scale: .96 }} className={`pointer-events-auto flex items-start gap-3 rounded-2xl border bg-white p-4 shadow-xl ${success ? "border-emerald-200" : "border-rose-200"}`}>
+          return <motion.div key={toast.id} initial={{ opacity: 0, y: -14, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 30, scale: .96 }} className={`pointer-events-auto flex items-start gap-3 rounded-2xl border bg-zinc-100 p-4 shadow-xl ${success ? "border-emerald-200" : "border-rose-200"}`}>
             <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${success ? "text-emerald-600" : "text-rose-600"}`} />
             <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-slate-900">{success ? "Success" : "Something went wrong"}</p><p className="mt-0.5 text-sm text-slate-600">{toast.message}</p></div>
             <button onClick={() => remove(toast.id)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Dismiss notification"><X size={16} /></button>

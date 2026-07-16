@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink, Mail, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { storefrontService, type Storefront } from "../Services/storefront";
 
 export function StorefrontPage() {
@@ -114,9 +115,9 @@ export function StorefrontPage() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-900 text-white">
+      <section className="relative overflow-hidden  text-white">
         {business.banner && <img src={business.banner} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 to-slate-950/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-100 to-zinc-200" />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
           <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: primary }}>Welcome to</p>
           <h1 className="mt-3 max-w-3xl text-4xl font-bold sm:text-6xl">{business.name}</h1>
@@ -135,11 +136,11 @@ export function StorefrontPage() {
         ref={categoryNav} 
         className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-md mb-8"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-5">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
+        <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-5">
+          <div className="flex flex-col gap-3 sm:gap-5 lg:flex-row lg:items-center">
             {/* Prominent Category Chips */}
-            <nav aria-label="Product categories" className="flex-1 overflow-hidden">
-              <div className="flex touch-pan-x gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-1 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
+            <nav aria-label="Product categories " className="flex-1 overflow-hidden">
+              <div className="flex touch-pan-x snap-x snap-proximity gap-2 overflow-x-auto overscroll-x-contain scroll-smooth scroll-px-1 px-1 pb-0.5 sm:gap-3 sm:pb-1 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
                 <Filter
                   buttonRef={(node) => { categoryButtons.current.all = node; }}
                   active={activeCategory === "all"}
@@ -170,7 +171,7 @@ export function StorefrontPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search products..."
-                className="w-full rounded-full border border-slate-200 bg-white py-3 pl-11 pr-10 text-sm focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none transition-all"
+                className="w-full rounded-full border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm outline-none transition-all focus:border-violet-500 focus:ring-2 focus:ring-violet-200 sm:py-3 sm:pl-11"
               />
               {search && (
                 <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -233,12 +234,16 @@ function Filter({ active, color, onClick, children, buttonRef }: {
     <button
       ref={buttonRef}
       onClick={onClick}
-      className={`whitespace-nowrap rounded-2xl border px-6 py-3 text-sm font-semibold transition-all active:scale-95 shadow-sm hover:shadow ${
-        active ? "shadow-md" : ""
-      }`}
-      style={active ? { backgroundColor: color, borderColor: color, color: "white" } : { backgroundColor: "white", borderColor: "#e2e8f0" }}
+      aria-pressed={active}
+      className={`relative isolate min-h-10 shrink-0 snap-start overflow-hidden whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold shadow-sm transition-[color,border-color,transform] duration-200 active:scale-95 sm:min-h-12 sm:px-6 sm:py-3 sm:text-sm ${active ? "border-transparent text-white shadow-md" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:shadow"}`}
     >
-      {children}
+      {active && <motion.span
+        layoutId="storefront-active-category"
+        className="absolute inset-0 -z-10 rounded-full"
+        style={{ backgroundColor: color }}
+        transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.75 }}
+      />}
+      <span className="relative z-10">{children}</span>
     </button>
   );
 }
