@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { AuthField } from "./AuthField";
 import { authService } from "../../Services/auth";
+import { useToast } from "../ui/ToastContext";
 
 interface LoginFormProps {
   onSwitch: () => void;
@@ -16,6 +17,7 @@ interface LoginData {
 
 export function LoginForm({ onSwitch }: LoginFormProps) {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [form, setForm] = useState<LoginData>({
     email: "",
@@ -43,21 +45,21 @@ export function LoginForm({ onSwitch }: LoginFormProps) {
 
       const response = await authService.login(form);
 
-      console.log("Login Success", response.data);
-
       localStorage.setItem(
         "token",
         response.data.data.token
       );
 
+      showToast("Welcome back! You have signed in successfully.");
       navigate("/dashboard");
 
     } catch (error: any) {
       console.error(error);
 
-      alert(
+      showToast(
         error.response?.data?.message ??
-          "Login failed."
+          "Login failed.",
+        "error"
       );
     } finally {
       setLoading(false);
