@@ -45,6 +45,7 @@ export interface Storefront {
 }
 
 export const storefrontService = {
+  
   async getStore(slug: string): Promise<Storefront> {
     const response = await api.get<{ success: boolean; data: Storefront }>(`/store/${encodeURIComponent(slug)}`);
     return response.data.data;
