@@ -294,6 +294,31 @@ class StorefrontApiTest extends TestCase
             ->assertJsonValidationErrors('thumbnail');
     }
 
+    public function test_product_image_uses_the_configured_persistent_disk(): void
+    {
+        Storage::fake('public');
+        Storage::fake('s3');
+        config(['product_images.disk' => 's3']);
+
+        $user = User::factory()->create();
+        $business = $this->business('Cloud Image Store', 'cloud-image-store', true, $user);
+        $category = $this->category($business, 'Cloud Category', true);
+        Sanctum::actingAs($user);
+
+        $this->post('/api/v1/products', [
+            'category_id' => $category->id,
+            'name' => 'Persistent Product',
+            'slug' => 'persistent-product',
+            'price' => 9.50,
+            'stock' => 2,
+            'thumbnail' => UploadedFile::fake()->image('persistent.webp', 600, 600),
+        ], ['Accept' => 'application/json'])->assertCreated();
+
+        $product = Product::query()->where('slug', 'persistent-product')->firstOrFail();
+        Storage::disk('s3')->assertExists($product->thumbnail);
+        Storage::disk('public')->assertMissing($product->thumbnail);
+    }
+
     public function test_user_can_own_only_one_business(): void
     {
         $user = User::factory()->create();
