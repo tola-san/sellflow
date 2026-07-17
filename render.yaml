@@ -40,7 +40,9 @@ services:
       - key: RUN_MIGRATIONS
         value: "true"
       - key: PRODUCT_IMAGE_DISK
-        value: public
+        value: cloudinary
+      - key: CLOUDINARY_URL
+        sync: false
       - key: CORS_ALLOWED_ORIGINS
         sync: false
 
