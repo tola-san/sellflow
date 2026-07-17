@@ -54,6 +54,38 @@ class StorefrontApiTest extends TestCase
         $this->getJson('/api/v1/store/closed-store')->assertNotFound();
     }
 
+    public function test_public_product_detail_is_active_and_tenant_scoped(): void
+    {
+        $store = $this->business('Coffee House', 'coffee-house');
+        $category = $this->category($store, 'Coffee', true);
+        $product = $this->product($store, $category, 'Iced Latte', 'iced-latte', true);
+
+        $otherStore = $this->business('Other Store', 'other-store');
+        $otherCategory = $this->category($otherStore, 'Other', true);
+        $this->product($otherStore, $otherCategory, 'Foreign', 'foreign', true);
+
+        $this->getJson('/api/v1/store/coffee-house/products/iced-latte')
+            ->assertOk()
+            ->assertJsonPath('data.business.slug', 'coffee-house')
+            ->assertJsonPath('data.product.slug', $product->slug)
+            ->assertJsonPath('data.product.category.slug', $category->slug)
+            ->assertJsonMissing(['business_id' => $store->id]);
+
+        $this->getJson('/api/v1/store/coffee-house/products/foreign')->assertNotFound();
+    }
+
+    public function test_public_product_detail_hides_inactive_products_and_categories(): void
+    {
+        $store = $this->business('Hidden Store', 'hidden-store');
+        $activeCategory = $this->category($store, 'Active', true);
+        $inactiveCategory = $this->category($store, 'Inactive', false);
+        $this->product($store, $activeCategory, 'Hidden Product', 'hidden-product', false);
+        $this->product($store, $inactiveCategory, 'Archived Product', 'archived-product', true);
+
+        $this->getJson('/api/v1/store/hidden-store/products/hidden-product')->assertNotFound();
+        $this->getJson('/api/v1/store/hidden-store/products/archived-product')->assertNotFound();
+    }
+
     public function test_public_checkout_calculates_prices_and_creates_tenant_scoped_order(): void
     {
         $store = $this->business('Checkout Store', 'checkout-store');

@@ -3,6 +3,7 @@
 namespace App\Services\Storefront;
 
 use App\Models\Business;
+use App\Models\Product;
 
 class StorefrontService
 {
@@ -26,5 +27,25 @@ class StorefrontService
                     ->latest(),
             ])
             ->firstOrFail();
+    }
+
+    public function findProduct(string $businessSlug, string $productSlug): array
+    {
+        $business = Business::query()
+            ->where('slug', $businessSlug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $product = Product::query()
+            ->where('business_id', $business->id)
+            ->where('slug', $productSlug)
+            ->where('is_active', true)
+            ->whereHas('category', fn ($category) => $category
+                ->where('business_id', $business->id)
+                ->where('is_active', true))
+            ->with('category')
+            ->firstOrFail();
+
+        return compact('business', 'product');
     }
 }

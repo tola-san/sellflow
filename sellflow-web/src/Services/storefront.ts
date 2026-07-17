@@ -42,10 +42,22 @@ export interface Storefront {
   products: PublicProduct[];
 }
 
+export interface StorefrontProductDetail {
+  business: PublicBusiness;
+  product: PublicProduct;
+}
+
 export const storefrontService = {
   
   async getStore(slug: string): Promise<Storefront> {
     const response = await api.get<{ success: boolean; data: Storefront }>(`/store/${encodeURIComponent(slug)}`);
+    return response.data.data;
+  },
+
+  async getProduct(slug: string, productSlug: string): Promise<StorefrontProductDetail> {
+    const response = await api.get<{ success: boolean; data: StorefrontProductDetail }>(
+      `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(productSlug)}`,
+    );
     return response.data.data;
   },
 };
