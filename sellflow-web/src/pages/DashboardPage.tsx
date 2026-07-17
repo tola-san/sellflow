@@ -223,7 +223,7 @@ export function DashboardPage() {
         >
           {/* Icon with UNIQUE background color per step */}
           <span className={`grid h-11 w-11 place-items-center rounded-2xl transition-all ${iconClass}`}>
-            <Icon size={18} />
+            <Icon size={20} />
           </span>
 
           {/* Left accent border matching the icon color */}

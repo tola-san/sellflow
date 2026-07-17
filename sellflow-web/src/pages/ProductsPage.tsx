@@ -261,10 +261,157 @@ function FormSection({ title, description, children }: { title: string; descript
   return <section><div className="mb-4"><h3 className="font-semibold text-slate-900">{title}</h3><p className="mt-1 text-xs text-slate-500">{description}</p></div>{children}</section>;
 }
 
+
 function ProductTable({ products, edit, remove }: { products: Product[]; edit: (product: Product) => void; remove: (product: Product) => void }) {
-  return <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500"><tr><th className="px-5 py-3">Product</th><th className="px-5 py-3">Category</th><th className="px-5 py-3">Price</th><th className="px-5 py-3">Inventory</th><th className="px-5 py-3">Visibility</th><th className="px-5 py-3 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-100">{products.map((product) => <tr key={product.id} className="group transition hover:bg-slate-50/70"><td className="px-5 py-4"><div className="flex items-center gap-3"><div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">{product.thumbnail ? <img src={product.thumbnail} alt="" className="h-full w-full object-cover"/> : <span className="grid h-full place-items-center text-slate-300"><ImagePlus size={20}/></span>}</div><div className="min-w-0"><div className="flex items-center gap-2"><p className="max-w-[240px] truncate font-semibold text-slate-900">{product.name}</p>{product.is_featured && <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold uppercase text-purple-700">Featured</span>}</div><p className="mt-1 text-xs text-slate-400">{product.sku || product.slug}</p></div></div></td><td className="px-5 py-4 text-slate-500">{product.category?.name || "—"}</td><td className="px-5 py-4"><p className="font-semibold text-slate-900">${Number(product.discount_price || product.price).toFixed(2)}</p>{product.discount_price && <p className="mt-0.5 text-xs text-slate-400 line-through">${Number(product.price).toFixed(2)}</p>}</td><td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${product.stock <= 5 ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"}`}>{product.stock} in stock</span></td><td className="px-5 py-4"><span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${product.is_active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}><span className={`h-1.5 w-1.5 rounded-full ${product.is_active ? "bg-emerald-500" : "bg-slate-400"}`}/>{product.is_active ? "Active" : "Hidden"}</span></td><td className="px-5 py-4"><div className="flex justify-end gap-1 opacity-70 transition group-hover:opacity-100"><button onClick={() => edit(product)} className="rounded-lg p-2 text-slate-500 hover:bg-purple-50 hover:text-purple-700" aria-label={`Edit ${product.name}`}><Pencil size={16}/></button><button onClick={() => remove(product)} className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600" aria-label={`Delete ${product.name}`}><Trash2 size={16}/></button></div></td></tr>)}</tbody></table></div></div>;
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+              <th className="px-5 py-3">Product</th>
+              <th className="px-5 py-3">Category</th>
+              <th className="px-5 py-3">Price</th>
+              <th className="px-5 py-3">Inventory</th>
+              <th className="px-5 py-3">Visibility</th>
+              <th className="px-5 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {products.map((product) => (
+              <tr key={product.id} className="group transition hover:bg-slate-50/70">
+                <td className="px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
+                      {product.thumbnail ? (
+                        <img src={product.thumbnail} alt="" className="h-full w-full object-cover"/>
+                      ) : (
+                        <span className="grid h-full place-items-center text-slate-300">
+                          <ImagePlus size={20}/>
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="max-w-[240px] truncate font-semibold text-slate-900">{product.name}</p>
+                        {product.is_featured && (
+                          <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold uppercase text-purple-700">
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-400">{product.sku || product.slug}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-slate-500">
+                  {product.category?.name || "—"}
+                </td>
+                <td className="px-5 py-4">
+                  <p className="font-semibold text-slate-900">
+                    ${Number(product.discount_price || product.price).toFixed(2)}
+                  </p>
+                  {product.discount_price && (
+                    <p className="mt-0.5 text-xs text-slate-400 line-through">
+                      ${Number(product.price).toFixed(2)}
+                    </p>
+                  )}
+                </td>
+                <td className="px-5 py-4">
+                  <InventoryBadge stock={product.stock} />
+                </td>
+                <td className="px-5 py-4">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                    product.is_active 
+                      ? "bg-emerald-50 text-emerald-700" 
+                      : "bg-slate-100 text-slate-500"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${
+                      product.is_active ? "bg-emerald-500" : "bg-slate-400"
+                    }`}/>
+                    {product.is_active ? "Active" : "Hidden"}
+                  </span>
+                </td>
+                <td className="px-5 py-4">
+                  <div className="flex justify-end gap-1 opacity-70 transition group-hover:opacity-100">
+                    <button 
+                      onClick={() => edit(product)} 
+                      className="rounded-lg p-2 text-blue-500  bg-blue-100 hover:bg-blue-200 hover:text-blue-500" 
+                      aria-label={`Edit ${product.name}`}
+                    >
+                      <Pencil size={16}/>
+                    </button>
+                    <button 
+                      onClick={() => remove(product)} 
+                      className="rounded-lg p-2 text-red-600 bg-red-100 hover:bg-rose-50 hover:text-rose-600" 
+                      aria-label={`Delete ${product.name}`}
+                    >
+                      <Trash2 size={16}/>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
+function InventoryBadge({ stock }: { stock: number }) {
+  // Determine stock status
+  const getStockStatus = (stock: number) => {
+    if (stock === 0) return { 
+      label: "Out of stock", 
+      color: "bg-red-50 text-red-700 border-red-200",
+      dot: "bg-red-500",
+      progressColor: "bg-red-400"
+    };
+    if (stock <= 5) return { 
+      label: "Low stock", 
+      color: "bg-green-100 text-green-500 border-green-100",
+      dot: "bg-amber-500",
+      progressColor: "bg-amber-400"
+    };
+    return { 
+      label: "In stock", 
+      color: "bg-green-100 text-green-500 border-green-100",
+      dot: "bg-green-500",
+      progressColor: "bg-green-500"
+    };
+  };
+
+  const status = getStockStatus(stock);
+
+  // Progress bar width calculation (max 50 items for full bar, more realistic)
+  const progressWidth = Math.min((stock / 50) * 100, 100);
+
+  return (
+    <div className="min-w-[140px] max-w-[200px]">
+      <div className="flex items-center justify-between gap-2">
+        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${status.color}`}>
+          <span className={`h-1.4 w-1.2 rounded-full ${status.dot}`}/>
+          <span className="hidden sm:inline">{status.label}</span>
+          <span className="sm:hidden">{stock}</span>
+        </span>
+        <span className="hidden text-xs font-semibold text-slate-700 sm:inline">
+          {stock} <span className="font-normal text-slate-400">units</span>
+        </span>
+      </div>
+      
+      {/* Progress bar - hidden on mobile */}
+      <div className="mt-1.5 hidden sm:block">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div 
+            className={`h-full rounded-full transition-all duration-500 ${status.progressColor}`}
+            style={{ width: `${progressWidth}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 function Field({ label, value, onChange, type = "text", required = false, placeholder = "", prefix }: { label: string; value: string; onChange: (value: string) => void; type?: string; required?: boolean; placeholder?: string; prefix?: string }) {
   return <label className="text-sm font-medium text-slate-700">{label}<span className="relative block">{prefix && <span className="absolute left-3.5 top-1/2 mt-0.5 -translate-y-1/2 text-sm text-slate-400">{prefix}</span>}<input required={required} type={type} min={type === "number" ? 0 : undefined} step={type === "number" ? "0.01" : undefined} placeholder={placeholder} className={`${inputClass} ${prefix ? "pl-8" : ""}`} value={value} onChange={(event) => onChange(event.target.value)}/></span></label>;
 }
