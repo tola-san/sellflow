@@ -167,21 +167,7 @@ export function DashboardLayout() {
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { openAuth } = useAuth();
-
-  const getUserData = () => {
-    try {
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        return JSON.parse(userData);
-      }
-    } catch {
-      return null;
-    }
-    return null;
-  };
-
-  const user = getUserData();
+  const { openAuth, user, clearSession } = useAuth();
 
   const getInitials = (name: string) => {
     if (!name) return "U";
@@ -200,8 +186,7 @@ export function DashboardLayout() {
     } catch {
       // Clear stale tokens too.
     }
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearSession();
     showToast("You have signed out successfully.");
     navigate("/");
   };

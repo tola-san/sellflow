@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { authService } from "../../Services/auth";
+import { useAuth } from "./AuthContext";
 
 type SessionState = "checking" | "authenticated" | "guest";
 
 export function GuestRoute() {
+  const { setSession: setAuthSession, clearSession } = useAuth();
   const [session, setSession] = useState<SessionState>("checking");
 
   useEffect(() => {
@@ -17,18 +19,21 @@ export function GuestRoute() {
     }
 
     authService.me(token)
-      .then(() => {
-        if (active) setSession("authenticated");
+      .then((response) => {
+        if (active) {
+          setAuthSession(token, response.data.data);
+          setSession("authenticated");
+        }
       })
       .catch(() => {
-        localStorage.removeItem("token");
+        clearSession();
         if (active) setSession("guest");
       });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [clearSession, setAuthSession]);
 
   if (session === "checking") {
     return (

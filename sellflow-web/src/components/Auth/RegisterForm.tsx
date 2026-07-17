@@ -20,7 +20,7 @@ interface RegisterData {
 export function RegisterForm({ onSwitch }: RegisterFormProps) {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { closeAuth } = useAuth();
+  const { closeAuth, setSession } = useAuth();
 
   const [form, setForm] = useState<RegisterData>({
     name: "",
@@ -48,25 +48,10 @@ export function RegisterForm({ onSwitch }: RegisterFormProps) {
 
       const response = await authService.register(form);
 
-      // Store token
-      localStorage.setItem("token", response.data.data.token);
-
-      // Store user data for profile
-      if (response.data.data.user) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(response.data.data.user)
-        );
-      } else {
-        // If user data isn't in the registration response, create minimal user data
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            name: form.name,
-            email: form.email,
-          })
-        );
-      }
+      setSession(response.data.data.token, response.data.data.user ?? {
+        name: form.name,
+        email: form.email,
+      });
 
       closeAuth(); // Close the auth modal
       showToast("Your SellFlow account was created successfully.");
