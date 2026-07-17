@@ -77,7 +77,8 @@ class OrderService
 
     private function filteredQuery(Business $business, array $filters): Builder
     {
-        return $business->orders()
+        return Order::query()
+            ->where('business_id', $business->id)
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
             ->when($filters['payment_status'] ?? null, fn (Builder $query, string $status) => $query->where('payment_status', $status))
             ->when($filters['search'] ?? null, function (Builder $query, string $search) {
