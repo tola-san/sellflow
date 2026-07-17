@@ -22,6 +22,10 @@ mkdir -p \
 chown -R www-data:www-data storage bootstrap/cache
 chmod -R ug+rwX storage bootstrap/cache
 
+if [ "${PRODUCT_IMAGE_DISK:-public}" = "public" ] && [ ! -e public/storage ]; then
+    php artisan storage:link
+fi
+
 # Cache configuration only after Render has injected production environment values.
 php artisan config:clear
 php artisan config:cache

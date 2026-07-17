@@ -4,6 +4,7 @@ namespace App\Http\Requests\Product;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 class StoreProductRequest extends FormRequest
 {
@@ -76,8 +77,9 @@ class StoreProductRequest extends FormRequest
 
             'thumbnail' => [
                 'nullable',
-                'string',
-                'max:2048',
+                File::image()
+                    ->types(['jpg', 'jpeg', 'png', 'webp'])
+                    ->max(config('product_images.max_size_kb', 4096)),
             ],
 
             'is_featured' => [

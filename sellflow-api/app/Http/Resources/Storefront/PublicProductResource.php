@@ -16,7 +16,7 @@ class PublicProductResource extends JsonResource
             'price' => $this->price,
             'discount_price' => $this->discount_price,
             'stock' => $this->stock,
-            'thumbnail' => $this->thumbnail,
+            'thumbnail' => $this->thumbnailUrl(),
             'is_featured' => $this->is_featured,
             'category' => new PublicCategoryResource($this->whenLoaded('category')),
         ];

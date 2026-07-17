@@ -6,6 +6,9 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class ProductService
 {
@@ -30,20 +33,28 @@ class ProductService
             abort(422, 'Please create a business first.');
         }
 
-        return $business->products()->create([
+        $thumbnail = isset($data['thumbnail'])
+            ? $this->storeThumbnail($data['thumbnail'], $business->id)
+            : null;
 
-            'category_id' => $data['category_id'],
-            'name' => $data['name'],
-            'slug' => Str::slug($data['slug']),
-            'sku' => $data['sku'] ?? null,
-            'description' => $data['description'] ?? null,
-            'price' => $data['price'],
-            'discount_price' => $data['discount_price'] ?? null,
-            'stock' => $data['stock'] ?? 0,
-            'thumbnail' => $data['thumbnail'] ?? null,
-            'is_featured' => $data['is_featured'] ?? false,
-            'is_active' => $data['is_active'] ?? true,
-        ]);
+        try {
+            return $business->products()->create([
+                'category_id' => $data['category_id'],
+                'name' => $data['name'],
+                'slug' => Str::slug($data['slug']),
+                'sku' => $data['sku'] ?? null,
+                'description' => $data['description'] ?? null,
+                'price' => $data['price'],
+                'discount_price' => $data['discount_price'] ?? null,
+                'stock' => $data['stock'] ?? 0,
+                'thumbnail' => $thumbnail,
+                'is_featured' => $data['is_featured'] ?? false,
+                'is_active' => $data['is_active'] ?? true,
+            ]);
+        } catch (Throwable $exception) {
+            $this->deleteManagedThumbnail($thumbnail);
+            throw $exception;
+        }
     }
 
     public function show(Product $product): Product
@@ -53,25 +64,70 @@ class ProductService
 
     public function update(Product $product, array $data): Product
     {
-        $product->update([
-            'category_id' => $data['category_id'],
-            'name' => $data['name'],
-            'slug' => Str::slug($data['slug']),
-            'sku' => $data['sku'] ?? null,
-            'description' => $data['description'] ?? null,
-            'price' => $data['price'],
-            'discount_price' => $data['discount_price'] ?? null,
-            'stock' => $data['stock'] ?? 0,
-            'thumbnail' => $data['thumbnail'] ?? null,
-            'is_featured' => $data['is_featured'] ?? false,
-            'is_active' => $data['is_active'] ?? true,
-        ]);
+        $oldThumbnail = $product->thumbnail;
+        $thumbnail = $oldThumbnail;
+        $newThumbnail = null;
+
+        if (($data['remove_thumbnail'] ?? false) && ! isset($data['thumbnail'])) {
+            $thumbnail = null;
+        }
+
+        if (isset($data['thumbnail'])) {
+            $newThumbnail = $this->storeThumbnail($data['thumbnail'], $product->business_id);
+            $thumbnail = $newThumbnail;
+        }
+
+        try {
+            $product->update([
+                'category_id' => $data['category_id'],
+                'name' => $data['name'],
+                'slug' => Str::slug($data['slug']),
+                'sku' => $data['sku'] ?? null,
+                'description' => $data['description'] ?? null,
+                'price' => $data['price'],
+                'discount_price' => $data['discount_price'] ?? null,
+                'stock' => $data['stock'] ?? 0,
+                'thumbnail' => $thumbnail,
+                'is_featured' => $data['is_featured'] ?? false,
+                'is_active' => $data['is_active'] ?? true,
+            ]);
+        } catch (Throwable $exception) {
+            $this->deleteManagedThumbnail($newThumbnail);
+            throw $exception;
+        }
+
+        if ($thumbnail !== $oldThumbnail) {
+            $this->deleteManagedThumbnail($oldThumbnail);
+        }
 
         return $product->fresh()->load('category');
     }
 
     public function destroy(Product $product): void
     {
+        $this->deleteManagedThumbnail($product->thumbnail);
         $product->delete();
+    }
+
+    private function storeThumbnail(UploadedFile $file, int $businessId): string
+    {
+        $disk = config('product_images.disk', 'public');
+        $directory = trim(config('product_images.directory', 'products'), '/').'/'.$businessId;
+        $path = $file->storePublicly($directory, $disk);
+
+        if (! $path) {
+            abort(422, 'The product image could not be stored.');
+        }
+
+        return $path;
+    }
+
+    private function deleteManagedThumbnail(?string $thumbnail): void
+    {
+        $directory = trim(config('product_images.directory', 'products'), '/').'/';
+
+        if ($thumbnail && Str::startsWith($thumbnail, $directory)) {
+            Storage::disk(config('product_images.disk', 'public'))->delete($thumbnail);
+        }
     }
 }
