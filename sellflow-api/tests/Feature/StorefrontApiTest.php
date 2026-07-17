@@ -331,6 +331,33 @@ class StorefrontApiTest extends TestCase
         $this->assertSame($cloudinaryUrl, $product->thumbnailUrl());
     }
 
+    public function test_cloudinary_upload_rejects_placeholder_configuration_clearly(): void
+    {
+        config([
+            'product_images.disk' => 'cloudinary',
+            'services.cloudinary.url' => 'CLOUDINARY_URL=cloudinary://<api_key>:********@cloud_name',
+        ]);
+
+        $user = User::factory()->create();
+        $business = $this->business('Cloud Config Store', 'cloud-config-store', true, $user);
+        $category = $this->category($business, 'Cloud Config Category', true);
+        Sanctum::actingAs($user);
+
+        $this->post('/api/v1/products', [
+            'category_id' => $category->id,
+            'name' => 'Cloud Config Product',
+            'slug' => 'cloud-config-product',
+            'price' => 10,
+            'stock' => 1,
+            'thumbnail' => UploadedFile::fake()->image('cloud-config.jpg'),
+        ], ['Accept' => 'application/json'])
+            ->assertStatus(503)
+            ->assertJsonPath(
+                'message',
+                'CLOUDINARY_URL is invalid. Use cloudinary://API_KEY:API_SECRET@CLOUD_NAME with real credentials.'
+            );
+    }
+
     public function test_user_can_own_only_one_business(): void
     {
         $user = User::factory()->create();

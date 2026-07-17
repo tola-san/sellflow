@@ -132,8 +132,10 @@ class ProductService
 
     private function storeCloudinaryThumbnail(UploadedFile $file, string $directory): string
     {
+        $cloudinary = $this->cloudinary();
+
         try {
-            $result = $this->cloudinary()->uploadApi()->upload($file->getRealPath(), [
+            $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
                 'folder' => 'sellflow/'.$directory,
                 'resource_type' => 'image',
                 'unique_filename' => true,
@@ -141,9 +143,10 @@ class ProductService
             ]);
         } catch (Throwable $exception) {
             Log::error('Cloudinary product image upload failed.', [
-                'exception' => $exception,
+                'exception_class' => $exception::class,
+                'exception_message' => $exception->getMessage(),
             ]);
-            abort(502, 'The product image could not be uploaded. Please try again.');
+            abort(502, 'Cloudinary rejected the image upload. Check the Render logs and CLOUDINARY_URL credentials.');
         }
 
         $secureUrl = $result['secure_url'] ?? null;
@@ -195,6 +198,26 @@ class ProductService
 
         if (! is_string($url) || $url === '') {
             abort(503, 'Cloudinary image storage is not configured.');
+        }
+
+        $url = trim($url, " \t\n\r\0\x0B\"'");
+
+        // Render already supplies the environment key separately. Tolerate a
+        // pasted `CLOUDINARY_URL=` prefix so a common dashboard mistake does
+        // not turn into an opaque authentication failure.
+        if (Str::startsWith($url, 'CLOUDINARY_URL=')) {
+            $url = trim(Str::after($url, 'CLOUDINARY_URL='));
+        }
+
+        $parts = parse_url($url);
+
+        if (! is_array($parts)
+            || ($parts['scheme'] ?? null) !== 'cloudinary'
+            || empty($parts['user'])
+            || empty($parts['pass'])
+            || empty($parts['host'])
+            || Str::contains($url, ['<', '>', '*'])) {
+            abort(503, 'CLOUDINARY_URL is invalid. Use cloudinary://API_KEY:API_SECRET@CLOUD_NAME with real credentials.');
         }
 
         return new Cloudinary($url);
