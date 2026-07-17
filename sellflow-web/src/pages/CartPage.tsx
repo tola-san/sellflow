@@ -15,20 +15,11 @@ const drawerVariants = {
   hidden: { x: "100%" },
   visible: { 
     x: 0,
-    transition: { 
-      type: "spring", 
-      stiffness: 280, 
-      damping: 28,
-      mass: 1.2
-    }
+    transition: { type: "spring", stiffness: 280, damping: 28 }
   },
   exit: { 
     x: "100%",
-    transition: { 
-      type: "spring", 
-      stiffness: 300, 
-      damping: 32 
-    }
+    transition: { type: "spring", stiffness: 300, damping: 32 }
   }
 };
 
@@ -36,8 +27,13 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     const { slug = "" } = useParams();
     const [store, setStore] = useState<Storefront | null>(null);
     const [missing, setMissing] = useState(false);
+    const [loading, setLoading] = useState(true);
+
     const cart = useCart();
     const items = cart.items(slug);
+
+    // Get primary color safely
+    const primary = store?.business?.theme?.primary_color || "#3b82f6";
 
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
@@ -48,11 +44,49 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     }, [isOpen, onClose]);
 
     useEffect(() => {
-        if (!isOpen || !slug) return;
-        storefrontService.getStore(slug).then(setStore).catch(() => setMissing(true));
+        if (!isOpen || !slug) {
+            setLoading(true);
+            return;
+        }
+
+        setLoading(true);
+        storefrontService.getStore(slug)
+            .then((data) => {
+                setStore(data);
+                setMissing(false);
+            })
+            .catch(() => {
+                setMissing(true);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, [slug, isOpen]);
 
-    const primary = store?.business.theme.primary_color || "#3b82f6";
+    if (!isOpen) return null;
+
+    if (missing) {
+        return (
+            <div className="fixed inset-0 z-50 bg-black/70" onClick={onClose}>
+                <motion.div
+                    className="fixed right-0 top-0 h-full w-full max-w-[420px] bg-white shadow-2xl"
+                    variants={drawerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                >
+                    <div className="p-8 text-center">
+                        <h2 className="text-2xl font-semibold">Store unavailable</h2>
+                        <p className="mt-2 text-slate-500">This store does not exist or is currently inactive.</p>
+                        <button onClick={onClose} className="mt-6 px-6 py-3 bg-slate-900 text-white rounded-2xl">
+                            Go Back
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
+
     const subtotal = items.reduce((sum, item) => 
         sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0
     );
@@ -61,9 +95,8 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
         <AnimatePresence mode="wait">
             {isOpen && (
                 <>
-                    {/* Backdrop */}
                     <motion.div
-                        className="fixed inset-0 z-50 bg-black/60"
+                        className="fixed inset-0 z-50 bg-black/70"
                         variants={backdropVariants}
                         initial="hidden"
                         animate="visible"
@@ -71,9 +104,8 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                         onClick={onClose}
                     />
 
-                    {/* Drawer */}
                     <motion.div
-                        className="fixed right-0 top-0 z-[60] h-full w-full max-w-md bg-white shadow-2xl overflow-hidden"
+                        className="fixed right-0 top-0 z-[60] h-full w-full max-w-[420px] bg-white shadow-2xl overflow-hidden md:max-w-md"
                         variants={drawerVariants}
                         initial="hidden"
                         animate="visible"
@@ -81,107 +113,104 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-6">
+                        <div className="flex items-center justify-between border-b px-4 py-4">
                             <div className="flex items-center gap-3">
-                                <div className="rounded-2xl bg-slate-100 p-3">
-                                    <ShoppingBag className="text-slate-700" size={28} />
-                                </div>
-                                <div>
-                                    <h2 className="text-3xl font-semibold tracking-tight">Your Cart</h2>
-                                    {items.length > 0 && <p className="text-slate-500">{items.length} items</p>}
-                                </div>
+                                <ShoppingBag className="text-slate-700" size={26} />
+                                <h2 className="text-2xl font-semibold">Cart</h2>
                             </div>
-                            <motion.button 
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
                                 onClick={onClose}
-                                className="rounded-full p-3 hover:bg-slate-100"
+                                className="p-2 rounded-full hover:bg-slate-100"
                             >
                                 <X size={28} />
                             </motion.button>
                         </div>
 
-                        <div className="flex h-[calc(100%-150px)] flex-col overflow-hidden">
-                            {!items.length ? (
-                                <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-                                    <ShoppingBag size={90} className="text-slate-200" />
-                                    <h3 className="mt-8 text-2xl font-semibold">Your cart is empty</h3>
-                                    <p className="mt-3 text-slate-500">Start adding some products from the store.</p>
-                                    <button
-                                        onClick={onClose}
-                                        className="mt-10 rounded-2xl px-10 py-4 font-semibold text-white transition hover:brightness-105"
-                                        style={{ backgroundColor: primary }}
-                                    >
-                                        Continue Shopping
-                                    </button>
+                        {loading ? (
+                            <div className="flex h-96 items-center justify-center">
+                                <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+                            </div>
+                        ) : !items.length ? (
+                            // Empty State...
+                            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+                                <div className="rounded-full bg-slate-100 p-10">
+                                    <ShoppingBag size={70} className="text-slate-300" />
                                 </div>
-                            ) : (
-                                <>
-                                    <div className="flex-1 overflow-auto p-6 space-y-6">
-                                        {items.map(({ product, quantity }) => (
-                                            <div key={product.slug} className="flex gap-5 rounded-3xl border border-slate-100 p-5">
-                                                <div className="h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
-                                                    {product.thumbnail ? (
-                                                        <img src={product.thumbnail} alt={product.name} className="h-full w-full object-cover" />
-                                                    ) : (
-                                                        <div className="grid h-full place-items-center text-slate-300">
-                                                            <ShoppingBag size={48} />
-                                                        </div>
-                                                    )}
-                                                </div>
+                                <h3 className="mt-6 text-xl font-semibold">Your cart is empty</h3>
+                                <p className="mt-2 text-slate-500 text-[15px]">Browse products and add items to start shopping</p>
+                                
+                                <button
+                                    onClick={onClose}
+                                    className="mt-10 w-full rounded-2xl py-4 font-semibold text-white"
+                                    style={{ backgroundColor: primary }}
+                                >
+                                    Start Shopping
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Items List */}
+                                <div className="flex-1 overflow-auto px-4 py-5 space-y-4">
+                                    {items.map(({ product, quantity }) => (
+                                        <div key={product.slug} className="flex gap-4 rounded-2xl border border-slate-100 p-4">
+                                            {/* ... your product card ... */}
+                                            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                                                {product.thumbnail ? (
+                                                    <img src={product.thumbnail} alt={product.name} className="h-full w-full object-cover" />
+                                                ) : (
+                                                    <div className="grid h-full place-items-center text-slate-300">
+                                                        <ShoppingBag size={36} />
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                                <div className="flex-1">
-                                                    <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: primary }}>
-                                                        {product.category.name}
-                                                    </p>
-                                                    <h4 className="mt-1.5 font-semibold">{product.name}</h4>
-                                                    <p className="mt-2 font-bold text-xl">
-                                                        ${Number(product.discount_price || product.price).toFixed(2)}
-                                                    </p>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[13px] font-medium" style={{ color: primary }}>
+                                                    {product.category.name}
+                                                </p>
+                                                <p className="mt-1 text-[15px] font-medium leading-tight line-clamp-2">{product.name}</p>
+                                                <p className="mt-1.5 font-semibold">
+                                                    ${Number(product.discount_price || product.price).toFixed(2)}
+                                                </p>
 
-                                                    <div className="mt-5 flex justify-between items-center">
-                                                        <div className="flex items-center rounded-2xl border border-slate-200">
-                                                            <button onClick={() => quantity === 1 ? cart.remove(slug, product.slug) : cart.update(slug, product.slug, quantity - 1)} className="p-3 hover:bg-slate-100">
-                                                                <Minus size={18} />
-                                                            </button>
-                                                            <span className="w-12 text-center font-semibold text-lg">{quantity}</span>
-                                                            <button onClick={() => cart.update(slug, product.slug, quantity + 1)} className="p-3 hover:bg-slate-100">
-                                                                <Plus size={18} />
-                                                            </button>
-                                                        </div>
-                                                        <button onClick={() => cart.remove(slug, product.slug)} className="p-3 text-slate-400 hover:text-rose-600">
-                                                            <Trash2 size={22} />
+                                                <div className="mt-4 flex items-center justify-between">
+                                                    <div className="flex items-center border border-slate-200 rounded-xl">
+                                                        <button onClick={() => quantity === 1 ? cart.remove(slug, product.slug) : cart.update(slug, product.slug, quantity - 1)} className="px-3 py-2 active:bg-slate-100">
+                                                            <Minus size={18} />
+                                                        </button>
+                                                        <span className="px-5 font-semibold">{quantity}</span>
+                                                        <button onClick={() => cart.update(slug, product.slug, quantity + 1)} className="px-3 py-2 active:bg-slate-100">
+                                                            <Plus size={18} />
                                                         </button>
                                                     </div>
+                                                    <button onClick={() => cart.remove(slug, product.slug)} className="p-2 text-slate-400 hover:text-rose-500">
+                                                        <Trash2 size={20} />
+                                                    </button>
                                                 </div>
                                             </div>
-                                        ))}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Checkout Bar */}
+                                <div className="border-t bg-white p-6 space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-slate-600 text-[17px]">Total</span>
+                                        <span className="text-2xl font-bold">${subtotal.toFixed(2)}</span>
                                     </div>
 
-                                    {/* Summary */}
-                                    <div className="border-t p-6">
-                                        <div className="flex justify-between text-lg">
-                                            <span>Subtotal</span>
-                                            <span className="font-semibold">${subtotal.toFixed(2)}</span>
-                                        </div>
-                                        <div className="my-6 border-t" />
-                                        <div className="flex justify-between text-2xl font-bold mb-6">
-                                            <span>Total</span>
-                                            <span>${subtotal.toFixed(2)}</span>
-                                        </div>
-
-                                        <Link
-                                            to={`/${slug}/checkout`}
-                                            onClick={onClose}
-                                            className="block w-full rounded-2xl py-4 text-center text-lg font-semibold text-white hover:brightness-105 active:scale-95 transition-all"
-                                            style={{ backgroundColor: primary }}
-                                        >
-                                            Continue to Checkout
-                                        </Link>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                                    <Link
+                                        to={`/${slug}/checkout`}
+                                        onClick={onClose}
+                                        className="block w-full py-3 text-center rounded-xl font-semibold text-white text-[17px] active:scale-[0.985] transition-all"
+                                        style={{ backgroundColor: primary }}
+                                    >
+                                        Continue to Checkout
+                                    </Link>
+                                </div>
+                            </>
+                        )}
                     </motion.div>
                 </>
             )}
