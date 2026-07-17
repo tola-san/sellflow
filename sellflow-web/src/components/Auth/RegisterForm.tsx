@@ -4,6 +4,7 @@ import { AuthField } from "./AuthField";
 import { authService } from "../../Services/auth";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../ui/ToastContext";
+import { useAuth } from "../../components/Auth/AuthContext";
 
 interface RegisterFormProps {
   onSwitch: () => void;
@@ -19,6 +20,8 @@ interface RegisterData {
 export function RegisterForm({ onSwitch }: RegisterFormProps) {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { closeAuth } = useAuth();
+
   const [form, setForm] = useState<RegisterData>({
     name: "",
     email: "",
@@ -45,7 +48,27 @@ export function RegisterForm({ onSwitch }: RegisterFormProps) {
 
       const response = await authService.register(form);
 
+      // Store token
       localStorage.setItem("token", response.data.data.token);
+
+      // Store user data for profile
+      if (response.data.data.user) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(response.data.data.user)
+        );
+      } else {
+        // If user data isn't in the registration response, create minimal user data
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            name: form.name,
+            email: form.email,
+          })
+        );
+      }
+
+      closeAuth(); // Close the auth modal
       showToast("Your SellFlow account was created successfully.");
       navigate("/dashboard");
 
@@ -97,6 +120,7 @@ export function RegisterForm({ onSwitch }: RegisterFormProps) {
           autoComplete="name"
           value={form.name}
           onChange={handleChange}
+          required
         />
 
         <AuthField
@@ -108,6 +132,7 @@ export function RegisterForm({ onSwitch }: RegisterFormProps) {
           autoComplete="email"
           value={form.email}
           onChange={handleChange}
+          required
         />
 
         <AuthField
@@ -119,6 +144,7 @@ export function RegisterForm({ onSwitch }: RegisterFormProps) {
           autoComplete="new-password"
           value={form.password}
           onChange={handleChange}
+          required
         />
 
         <AuthField
@@ -130,6 +156,7 @@ export function RegisterForm({ onSwitch }: RegisterFormProps) {
           autoComplete="new-password"
           value={form.password_confirmation}
           onChange={handleChange}
+          required
         />
 
         <label className="flex items-start gap-2 text-xs text-muted cursor-pointer">
