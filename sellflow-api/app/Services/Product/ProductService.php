@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Throwable;
 
 class ProductService
 {
@@ -37,24 +36,20 @@ class ProductService
             ? $this->storeThumbnail($data['thumbnail'], $business->id)
             : null;
 
-        try {
-            return $business->products()->create([
-                'category_id' => $data['category_id'],
-                'name' => $data['name'],
-                'slug' => Str::slug($data['slug']),
-                'sku' => $data['sku'] ?? null,
-                'description' => $data['description'] ?? null,
-                'price' => $data['price'],
-                'discount_price' => $data['discount_price'] ?? null,
-                'stock' => $data['stock'] ?? 0,
-                'thumbnail' => $thumbnail,
-                'is_featured' => $data['is_featured'] ?? false,
-                'is_active' => $data['is_active'] ?? true,
-            ]);
-        } catch (Throwable $exception) {
-            $this->deleteManagedThumbnail($thumbnail);
-            throw $exception;
-        }
+        return $business->products()->create([
+
+            'category_id' => $data['category_id'],
+            'name' => $data['name'],
+            'slug' => Str::slug($data['slug']),
+            'sku' => $data['sku'] ?? null,
+            'description' => $data['description'] ?? null,
+            'price' => $data['price'],
+            'discount_price' => $data['discount_price'] ?? null,
+            'stock' => $data['stock'] ?? 0,
+            'thumbnail' => $thumbnail,
+            'is_featured' => $data['is_featured'] ?? false,
+            'is_active' => $data['is_active'] ?? true,
+        ]);
     }
 
     public function show(Product $product): Product
@@ -64,41 +59,32 @@ class ProductService
 
     public function update(Product $product, array $data): Product
     {
-        $oldThumbnail = $product->thumbnail;
-        $thumbnail = $oldThumbnail;
-        $newThumbnail = null;
+        $thumbnail = $product->thumbnail;
 
         if (($data['remove_thumbnail'] ?? false) && ! isset($data['thumbnail'])) {
+            $this->deleteManagedThumbnail($thumbnail);
             $thumbnail = null;
         }
 
         if (isset($data['thumbnail'])) {
             $newThumbnail = $this->storeThumbnail($data['thumbnail'], $product->business_id);
+            $this->deleteManagedThumbnail($thumbnail);
             $thumbnail = $newThumbnail;
         }
 
-        try {
-            $product->update([
-                'category_id' => $data['category_id'],
-                'name' => $data['name'],
-                'slug' => Str::slug($data['slug']),
-                'sku' => $data['sku'] ?? null,
-                'description' => $data['description'] ?? null,
-                'price' => $data['price'],
-                'discount_price' => $data['discount_price'] ?? null,
-                'stock' => $data['stock'] ?? 0,
-                'thumbnail' => $thumbnail,
-                'is_featured' => $data['is_featured'] ?? false,
-                'is_active' => $data['is_active'] ?? true,
-            ]);
-        } catch (Throwable $exception) {
-            $this->deleteManagedThumbnail($newThumbnail);
-            throw $exception;
-        }
-
-        if ($thumbnail !== $oldThumbnail) {
-            $this->deleteManagedThumbnail($oldThumbnail);
-        }
+        $product->update([
+            'category_id' => $data['category_id'],
+            'name' => $data['name'],
+            'slug' => Str::slug($data['slug']),
+            'sku' => $data['sku'] ?? null,
+            'description' => $data['description'] ?? null,
+            'price' => $data['price'],
+            'discount_price' => $data['discount_price'] ?? null,
+            'stock' => $data['stock'] ?? 0,
+            'thumbnail' => $thumbnail,
+            'is_featured' => $data['is_featured'] ?? false,
+            'is_active' => $data['is_active'] ?? true,
+        ]);
 
         return $product->fresh()->load('category');
     }
