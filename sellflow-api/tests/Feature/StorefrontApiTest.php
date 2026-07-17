@@ -319,6 +319,18 @@ class StorefrontApiTest extends TestCase
         Storage::disk('public')->assertMissing($product->thumbnail);
     }
 
+    public function test_cloudinary_mode_handles_legacy_paths_and_secure_urls(): void
+    {
+        config(['product_images.disk' => 'cloudinary']);
+
+        $product = new Product(['thumbnail' => 'products/1/old-local-image.jpg']);
+        $this->assertNull($product->thumbnailUrl());
+
+        $cloudinaryUrl = 'https://res.cloudinary.com/demo/image/upload/v1/sellflow/products/1/item.jpg';
+        $product->thumbnail = $cloudinaryUrl;
+        $this->assertSame($cloudinaryUrl, $product->thumbnailUrl());
+    }
+
     public function test_user_can_own_only_one_business(): void
     {
         $user = User::factory()->create();
