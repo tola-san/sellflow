@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { ThemeSettings } from "../../types/theme";
-import { useCart } from "./CartContext";
+import { useCart } from "../cart/CartContext";
 
 interface CartDrawerProps {
   slug: string;

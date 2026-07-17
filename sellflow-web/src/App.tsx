@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate, useParams } from "react-router-dom";
 
 import LandingPage from "./pages/LandingPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -7,7 +7,7 @@ import { CategoriesPage } from "./pages/CategoriesPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { ThemePage } from "./pages/ThemePage";
 import { StorefrontPage } from "./pages/StorefrontPage";
-import { CartPage } from "./pages/CartPage";
+import { CartDrawer } from "./pages/CartPage";        // ← Make sure this exports CartDrawer
 import { CheckoutPage } from "./pages/CheckoutPage";
 import { DashboardLayout } from "./components/dashboard/DashboardLayout";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute";
@@ -16,34 +16,46 @@ import { AuthProvider } from "./components/Auth/AuthContext";
 import { ToastProvider } from "./components/ui/ToastContext";
 import { CartProvider } from "./components/cart/CartContext";
 
+function CartRoute() {
+    const navigate = useNavigate();
+    const { slug } = useParams<{ slug: string }>();
+
+    return (
+        <CartDrawer
+            isOpen={true}
+            onClose={() => navigate(slug ? `/${slug}` : "/")}
+        />
+    );
+}
+
 export function App() {
     return (
         <ToastProvider>
-        <CartProvider>
-        <AuthProvider>
-            <Routes>
-                <Route element={<GuestRoute />}>
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/register" element={<LandingPage />} />
-                </Route>
+            <CartProvider>
+                <AuthProvider>
+                    <Routes>
+                        <Route element={<GuestRoute />}>
+                            <Route path="/" element={<LandingPage />} />
+                            <Route path="/register" element={<LandingPage />} />
+                        </Route>
 
-                <Route element={<ProtectedRoute />}>
-                    <Route path="/dashboard" element={<DashboardLayout />}>
-                        <Route index element={<DashboardPage />} />
-                        <Route path="business" element={<BusinessPage />} />
-                        <Route path="categories" element={<CategoriesPage />} />
-                        <Route path="products" element={<ProductsPage />} />
-                        <Route path="theme" element={<ThemePage />} />
-                    </Route>
-                </Route>
+                        <Route element={<ProtectedRoute />}>
+                            <Route path="/dashboard" element={<DashboardLayout />}>
+                                <Route index element={<DashboardPage />} />
+                                <Route path="business" element={<BusinessPage />} />
+                                <Route path="categories" element={<CategoriesPage />} />
+                                <Route path="products" element={<ProductsPage />} />
+                                <Route path="theme" element={<ThemePage />} />
+                            </Route>
+                        </Route>
 
-                {/* Keep this dynamic customer route after all system routes. */}
-                <Route path="/:slug/cart" element={<CartPage />} />
-                <Route path="/:slug/checkout" element={<CheckoutPage />} />
-                <Route path="/:slug" element={<StorefrontPage />} />
-            </Routes>
-        </AuthProvider>
-        </CartProvider>
+                        {/* Customer Store Routes */}
+                        <Route path="/:slug/cart" element={<CartRoute />} />
+                        <Route path="/:slug/checkout" element={<CheckoutPage />} />
+                        <Route path="/:slug" element={<StorefrontPage />} />
+                    </Routes>
+                </AuthProvider>
+            </CartProvider>
         </ToastProvider>
     );
 }

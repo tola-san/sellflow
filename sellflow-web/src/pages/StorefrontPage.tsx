@@ -132,7 +132,7 @@ export function StorefrontPage() {
       {/* Header */}
       <header className="relative z-10 border-b" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
-          {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 rounded-xl object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-xl text-white" style={{ backgroundColor: primary }}><Store size={20} /></span>}
+          {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 rounded-lg object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}><Store size={20} /></span>}
           <div><p className="font-bold leading-tight">{business.name}</p><p className="text-xs" style={{ color: theme.muted_color }}>Powered by SellFlow</p></div>
           <Link to={`/${slug}/cart`} className="ml-auto flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-full px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
         </div>
@@ -301,5 +301,5 @@ function ProductCard({ product, theme, onAdd }: { product: Storefront["products"
 }
 
 function NotFound() {
-  return <div className="grid min-h-screen place-items-center bg-slate-50 p-6 text-center"><div><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-slate-200 text-slate-500"><Store size={30} /></span><h1 className="mt-5 text-2xl font-bold">Store not found</h1><p className="mt-2 text-slate-500">This store does not exist or is currently unavailable.</p><Link to="/" className="mt-6 inline-block rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white">Go to SellFlow</Link></div></div>;
+  return <div className="grid min-h-screen place-items-center bg-slate-50 p-6 text-center"><div><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-slate-200 text-slate-500"><Store size={30} /></span><h1 className="mt-5 text-2xl font-bold">Store not found</h1><p className="mt-2 text-slate-500">This store does not exist or is currently unavailable.</p><Link to="/" className="mt-6 inline-block rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white">Go to SellFlow</Link></div></div>;
 }
