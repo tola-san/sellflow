@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Business;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -116,6 +117,7 @@ class StorefrontApiTest extends TestCase
         $this->getJson('/api/v1/business')->assertUnauthorized();
         $this->getJson('/api/v1/business/theme')->assertUnauthorized();
         $this->putJson('/api/v1/business/theme', [])->assertUnauthorized();
+        $this->getJson('/api/v1/orders')->assertUnauthorized();
     }
 
     public function test_seller_can_publish_a_valid_theme_to_the_public_storefront(): void
@@ -184,6 +186,48 @@ class StorefrontApiTest extends TestCase
         $this->deleteJson("/api/v1/categories/{$category->id}")->assertForbidden();
         $this->getJson("/api/v1/products/{$product->id}")->assertForbidden();
         $this->deleteJson("/api/v1/products/{$product->id}")->assertForbidden();
+    }
+
+    public function test_seller_order_management_is_tenant_scoped_and_enforces_transitions(): void
+    {
+        $owner = User::factory()->create();
+        $business = $this->business('Order Owner', 'order-owner', true, $owner);
+        $order = Order::create([
+            'business_id' => $business->id,
+            'order_number' => 'SF-TEST-OWNER',
+            'customer_name' => 'Customer One',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'subtotal' => 10,
+            'total' => 10,
+            'payment_method' => 'cash',
+            'payment_status' => 'pending',
+            'status' => 'pending',
+        ]);
+
+        $attacker = User::factory()->create();
+        $this->business('Order Attacker', 'order-attacker', true, $attacker);
+        Sanctum::actingAs($attacker);
+        $this->getJson("/api/v1/orders/{$order->id}")->assertForbidden();
+        $this->patchJson("/api/v1/orders/{$order->id}/status", ['status' => 'confirmed'])->assertForbidden();
+
+        Sanctum::actingAs($owner);
+        $this->getJson('/api/v1/orders?search=Customer')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('summary.pending', 1);
+
+        $this->patchJson("/api/v1/orders/{$order->id}/status", ['status' => 'completed'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('status');
+
+        $this->patchJson("/api/v1/orders/{$order->id}/status", ['status' => 'confirmed'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'confirmed');
+
+        $this->patchJson("/api/v1/orders/{$order->id}/payment-status", ['payment_status' => 'paid'])
+            ->assertOk()
+            ->assertJsonPath('data.payment_status', 'paid');
     }
 
     public function test_user_can_own_only_one_business(): void

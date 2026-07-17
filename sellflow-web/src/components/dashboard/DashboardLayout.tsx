@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, Boxes, FolderTree, LayoutDashboard, LogOut, Menu, Package, Palette, Store, X } from "lucide-react";
+import { BarChart3, Boxes, FolderTree, LayoutDashboard, LogOut, Menu, Package, Palette, ShoppingCart, Store, X } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { authService } from "../../Services/auth";
 import { useToast } from "../ui/ToastContext";
@@ -10,6 +10,7 @@ const links = [
   { label: "Categories", path: "/dashboard/categories", icon: FolderTree },
   { label: "Products", path: "/dashboard/products", icon: Package },
   { label: "Theme", path: "/dashboard/theme", icon: Palette },
+  { label: "Orders", path: "/dashboard/orders", icon: ShoppingCart },
 ];
 
 export function DashboardLayout() {
@@ -32,7 +33,7 @@ export function DashboardLayout() {
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {links.map(({ label, path, icon: Icon, end }) => <NavLink key={path} to={path} end={end} onClick={() => setOpen(false)} className={({isActive}) => `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${isActive ? "bg-purple-50 text-purple-700" : "text-slate-600 hover:bg-slate-100"}`}><Icon size={19}/>{label}</NavLink>)}
-        <div className="pt-4"><p className="px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Coming next</p><div className="mt-2 flex items-center gap-3 px-4 py-3 text-sm text-slate-400"><BarChart3 size={19}/>Orders & analytics</div></div>
+        <div className="pt-4"><p className="px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Coming next</p><div className="mt-2 flex items-center gap-3 px-4 py-3 text-sm text-slate-400"><BarChart3 size={19}/>Advanced analytics</div></div>
       </nav>
       <button onClick={logout} className="m-4 flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-rose-50 hover:text-rose-600"><LogOut size={18}/>Sign out</button>
     </>

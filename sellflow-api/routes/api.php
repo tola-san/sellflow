@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Business\BusinessThemeController;
 use App\Http\Controllers\Api\Category\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Product\ProductController;
+use App\Http\Controllers\Api\Order\OrderController;
 use App\Http\Controllers\Api\Storefront\StorefrontController;
 use App\Http\Controllers\Api\Storefront\CheckoutController;
 use Illuminate\Support\Facades\Route;
@@ -49,5 +50,11 @@ Route::prefix('v1')->group(function () {
 
         // Products
         Route::apiResource('products', ProductController::class);
+
+        // Orders
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/orders/{order}', [OrderController::class, 'show']);
+        Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+        Route::patch('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus']);
     });
 });
