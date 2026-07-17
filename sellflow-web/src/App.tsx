@@ -8,6 +8,7 @@ import { CategoriesPage } from "./pages/CategoriesPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { ThemePage } from "./pages/ThemePage";
 import { StorefrontPage } from "./pages/StorefrontPage";
+import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { CartDrawer } from "./pages/CartPage";        // ← Make sure this exports CartDrawer
 import { CheckoutPage } from "./pages/CheckoutPage";
 import { DashboardLayout } from "./components/dashboard/DashboardLayout";
@@ -56,6 +57,7 @@ export function App() {
                         {/* Customer Store Routes */}
                         <Route path="/:slug/cart" element={<CartRoute />} />
                         <Route path="/:slug/checkout" element={<CheckoutPage />} />
+                        <Route path="/:slug/products/:productSlug" element={<ProductDetailPage />} />
                         <Route path="/:slug" element={<StorefrontPage />} />
                     </Routes>
                 </AuthProvider>

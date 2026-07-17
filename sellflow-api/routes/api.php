@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // Public customer storefront. Authentication is intentionally not required.
     Route::get('/store/{slug}', [StorefrontController::class, 'show']);
+    Route::get('/store/{slug}/products/{productSlug}', [StorefrontController::class, 'product']);
     Route::post('/store/{slug}/checkout', [CheckoutController::class, 'store'])->middleware('throttle:20,1');
     /*
     |--------------------------------------------------------------------------

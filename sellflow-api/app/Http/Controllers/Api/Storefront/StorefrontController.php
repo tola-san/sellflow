@@ -28,4 +28,18 @@ class StorefrontController extends Controller
             ],
         ]);
     }
+
+    public function product(string $slug, string $productSlug): JsonResponse
+    {
+        ['business' => $business, 'product' => $product] = $this->storefrontService
+            ->findProduct($slug, $productSlug);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'business' => new PublicBusinessResource($business),
+                'product' => new PublicProductResource($product),
+            ],
+        ]);
+    }
 }

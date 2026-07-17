@@ -284,12 +284,12 @@ function ProductCard({ product, theme, onAdd }: { product: Storefront["products"
       : { borderColor: `${theme.muted_color}40`, boxShadow: "none" };
   return (
     <article className="min-w-0 overflow-hidden border transition hover:-translate-y-1" style={{ ...cardStyle, borderRadius: theme.button_style === "square" ? "7px" : "16px", backgroundColor: theme.surface_color }}>
-      <div className="aspect-square" style={{ backgroundColor: `${theme.muted_color}12` }}>
+      <Link to={`products/${product.slug}`} aria-label={`View ${product.name}`} className="block aspect-square overflow-hidden" style={{ backgroundColor: `${theme.muted_color}12` }}>
         {product.thumbnail ? <img src={product.thumbnail} alt={product.name} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-slate-300"><ShoppingBag className="h-12 w-12" /></div>}
-      </div>
+      </Link>
       <div className="p-4">
         <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: theme.primary_color }}>{product.category.name}</p>
-        <h3 className="mt-1 line-clamp-2 font-semibold leading-tight">{product.name}</h3>
+        <h3 className="mt-1 line-clamp-2 font-semibold leading-tight"><Link to={`products/${product.slug}`} className="transition hover:opacity-70">{product.name}</Link></h3>
         <div className="mt-3 flex items-baseline justify-between">
           <strong className="text-xl">${Number(product.discount_price || product.price).toFixed(2)}</strong>
           {product.discount_price && <span className="text-xs text-slate-400 line-through">${Number(product.price).toFixed(2)}</span>}
