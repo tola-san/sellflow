@@ -35,7 +35,7 @@ class ProductResource extends JsonResource
 
             'stock' => $this->stock,
 
-            'thumbnail' => $this->thumbnail,
+            'thumbnail' => $this->thumbnailUrl(),
 
             'is_featured' => $this->is_featured,
 

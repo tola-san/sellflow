@@ -9,6 +9,8 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -228,6 +230,68 @@ class StorefrontApiTest extends TestCase
         $this->patchJson("/api/v1/orders/{$order->id}/payment-status", ['payment_status' => 'paid'])
             ->assertOk()
             ->assertJsonPath('data.payment_status', 'paid');
+    }
+
+    public function test_seller_can_upload_replace_and_delete_a_product_image(): void
+    {
+        Storage::fake('public');
+        config(['product_images.disk' => 'public']);
+
+        $user = User::factory()->create();
+        $business = $this->business('Image Store', 'image-store', true, $user);
+        $category = $this->category($business, 'Image Category', true);
+        Sanctum::actingAs($user);
+
+        $payload = [
+            'category_id' => $category->id,
+            'name' => 'Photo Product',
+            'slug' => 'photo-product',
+            'price' => 12.50,
+            'stock' => 4,
+            'is_active' => 1,
+            'is_featured' => 0,
+            'thumbnail' => UploadedFile::fake()->image('first.jpg', 800, 800),
+        ];
+
+        $create = $this->post('/api/v1/products', $payload, ['Accept' => 'application/json']);
+        $create->assertCreated()->assertJsonPath('data.name', 'Photo Product');
+        $product = Product::query()->where('slug', 'photo-product')->firstOrFail();
+        $firstPath = $product->thumbnail;
+        Storage::disk('public')->assertExists($firstPath);
+
+        $replace = $this->post("/api/v1/products/{$product->id}", [
+            ...$payload,
+            '_method' => 'PUT',
+            'thumbnail' => UploadedFile::fake()->image('replacement.webp', 900, 900),
+        ], ['Accept' => 'application/json']);
+        $replace->assertOk();
+        $product->refresh();
+        Storage::disk('public')->assertMissing($firstPath);
+        Storage::disk('public')->assertExists($product->thumbnail);
+
+        $currentPath = $product->thumbnail;
+        $this->deleteJson("/api/v1/products/{$product->id}")->assertOk();
+        Storage::disk('public')->assertMissing($currentPath);
+    }
+
+    public function test_product_upload_rejects_non_image_files(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+        $business = $this->business('Safe Upload Store', 'safe-upload-store', true, $user);
+        $category = $this->category($business, 'Safe Category', true);
+        Sanctum::actingAs($user);
+
+        $this->post('/api/v1/products', [
+            'category_id' => $category->id,
+            'name' => 'Unsafe Product',
+            'slug' => 'unsafe-product',
+            'price' => 5,
+            'stock' => 1,
+            'thumbnail' => UploadedFile::fake()->create('payload.txt', 10, 'text/plain'),
+        ], ['Accept' => 'application/json'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('thumbnail');
     }
 
     public function test_user_can_own_only_one_business(): void

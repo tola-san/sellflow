@@ -4,6 +4,7 @@ namespace App\Http\Requests\Product;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -76,6 +77,7 @@ class UpdateProductRequest extends FormRequest
                 'nullable',
                 'numeric',
                 'min:0',
+                'lte:price',
             ],
 
             'stock' => [
@@ -88,8 +90,14 @@ class UpdateProductRequest extends FormRequest
             'thumbnail' => [
                 'sometimes',
                 'nullable',
-                'string',
-                'max:2048',
+                File::image()
+                    ->types(['jpg', 'jpeg', 'png', 'webp'])
+                    ->max(config('product_images.max_size_kb', 4096)),
+            ],
+
+            'remove_thumbnail' => [
+                'sometimes',
+                'boolean',
             ],
 
             'is_featured' => [
@@ -115,6 +123,9 @@ class UpdateProductRequest extends FormRequest
 
             'sku.unique' =>
             'This SKU is already used by your business.',
+
+            'discount_price.lte' =>
+            'The discount price must not be greater than the regular price.',
         ];
     }
 }

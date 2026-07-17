@@ -56,7 +56,7 @@ class CheckoutService
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'product_slug' => $product->slug,
-                    'thumbnail' => $product->thumbnail,
+                    'thumbnail' => $product->thumbnailUrl(),
                     'unit_price' => $this->money($unitCents),
                     'quantity' => $quantity,
                     'line_total' => $this->money($lineCents),
