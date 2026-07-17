@@ -99,7 +99,9 @@ class ProductService
     {
         $disk = config('product_images.disk', 'public');
         $directory = trim(config('product_images.directory', 'products'), '/').'/'.$businessId;
-        $path = $file->storePublicly($directory, $disk);
+        // Bucket/CDN policy controls public delivery. Avoid per-object ACLs so
+        // this works with S3-compatible providers such as Cloudflare R2.
+        $path = $file->store($directory, $disk);
 
         if (! $path) {
             abort(422, 'The product image could not be stored.');
