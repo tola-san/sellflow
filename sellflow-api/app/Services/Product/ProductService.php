@@ -4,10 +4,13 @@ namespace App\Services\Product;
 
 use App\Models\Product;
 use App\Models\User;
+use Cloudinary\Cloudinary;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Throwable;
 
 class ProductService
 {
@@ -36,20 +39,24 @@ class ProductService
             ? $this->storeThumbnail($data['thumbnail'], $business->id)
             : null;
 
-        return $business->products()->create([
-
-            'category_id' => $data['category_id'],
-            'name' => $data['name'],
-            'slug' => Str::slug($data['slug']),
-            'sku' => $data['sku'] ?? null,
-            'description' => $data['description'] ?? null,
-            'price' => $data['price'],
-            'discount_price' => $data['discount_price'] ?? null,
-            'stock' => $data['stock'] ?? 0,
-            'thumbnail' => $thumbnail,
-            'is_featured' => $data['is_featured'] ?? false,
-            'is_active' => $data['is_active'] ?? true,
-        ]);
+        try {
+            return $business->products()->create([
+                'category_id' => $data['category_id'],
+                'name' => $data['name'],
+                'slug' => Str::slug($data['slug']),
+                'sku' => $data['sku'] ?? null,
+                'description' => $data['description'] ?? null,
+                'price' => $data['price'],
+                'discount_price' => $data['discount_price'] ?? null,
+                'stock' => $data['stock'] ?? 0,
+                'thumbnail' => $thumbnail,
+                'is_featured' => $data['is_featured'] ?? false,
+                'is_active' => $data['is_active'] ?? true,
+            ]);
+        } catch (Throwable $exception) {
+            $this->deleteManagedThumbnail($thumbnail);
+            throw $exception;
+        }
     }
 
     public function show(Product $product): Product
@@ -59,48 +66,61 @@ class ProductService
 
     public function update(Product $product, array $data): Product
     {
-        $thumbnail = $product->thumbnail;
+        $oldThumbnail = $product->thumbnail;
+        $thumbnail = $oldThumbnail;
+        $newThumbnail = null;
 
         if (($data['remove_thumbnail'] ?? false) && ! isset($data['thumbnail'])) {
-            $this->deleteManagedThumbnail($thumbnail);
             $thumbnail = null;
         }
 
         if (isset($data['thumbnail'])) {
             $newThumbnail = $this->storeThumbnail($data['thumbnail'], $product->business_id);
-            $this->deleteManagedThumbnail($thumbnail);
             $thumbnail = $newThumbnail;
         }
 
-        $product->update([
-            'category_id' => $data['category_id'],
-            'name' => $data['name'],
-            'slug' => Str::slug($data['slug']),
-            'sku' => $data['sku'] ?? null,
-            'description' => $data['description'] ?? null,
-            'price' => $data['price'],
-            'discount_price' => $data['discount_price'] ?? null,
-            'stock' => $data['stock'] ?? 0,
-            'thumbnail' => $thumbnail,
-            'is_featured' => $data['is_featured'] ?? false,
-            'is_active' => $data['is_active'] ?? true,
-        ]);
+        try {
+            $product->update([
+                'category_id' => $data['category_id'],
+                'name' => $data['name'],
+                'slug' => Str::slug($data['slug']),
+                'sku' => $data['sku'] ?? null,
+                'description' => $data['description'] ?? null,
+                'price' => $data['price'],
+                'discount_price' => $data['discount_price'] ?? null,
+                'stock' => $data['stock'] ?? 0,
+                'thumbnail' => $thumbnail,
+                'is_featured' => $data['is_featured'] ?? false,
+                'is_active' => $data['is_active'] ?? true,
+            ]);
+        } catch (Throwable $exception) {
+            $this->deleteManagedThumbnail($newThumbnail);
+            throw $exception;
+        }
+
+        if ($thumbnail !== $oldThumbnail) {
+            $this->deleteManagedThumbnail($oldThumbnail);
+        }
 
         return $product->fresh()->load('category');
     }
 
     public function destroy(Product $product): void
     {
-        $this->deleteManagedThumbnail($product->thumbnail);
+        $thumbnail = $product->thumbnail;
         $product->delete();
+        $this->deleteManagedThumbnail($thumbnail);
     }
 
     private function storeThumbnail(UploadedFile $file, int $businessId): string
     {
         $disk = config('product_images.disk', 'public');
         $directory = trim(config('product_images.directory', 'products'), '/').'/'.$businessId;
-        // Bucket/CDN policy controls public delivery. Avoid per-object ACLs so
-        // this works with S3-compatible providers such as Cloudflare R2.
+
+        if ($disk === 'cloudinary') {
+            return $this->storeCloudinaryThumbnail($file, $directory);
+        }
+
         $path = $file->store($directory, $disk);
 
         if (! $path) {
@@ -110,12 +130,90 @@ class ProductService
         return $path;
     }
 
+    private function storeCloudinaryThumbnail(UploadedFile $file, string $directory): string
+    {
+        try {
+            $result = $this->cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                'folder' => 'sellflow/'.$directory,
+                'resource_type' => 'image',
+                'unique_filename' => true,
+                'overwrite' => false,
+            ]);
+        } catch (Throwable $exception) {
+            Log::error('Cloudinary product image upload failed.', [
+                'exception' => $exception,
+            ]);
+            abort(502, 'The product image could not be uploaded. Please try again.');
+        }
+
+        $secureUrl = $result['secure_url'] ?? null;
+
+        if (! is_string($secureUrl) || $secureUrl === '') {
+            abort(502, 'Cloudinary did not return a product image URL.');
+        }
+
+        return $secureUrl;
+    }
+
     private function deleteManagedThumbnail(?string $thumbnail): void
     {
+        if (! $thumbnail) {
+            return;
+        }
+
+        if ($this->isCloudinaryUrl($thumbnail)) {
+            $publicId = $this->cloudinaryPublicId($thumbnail);
+
+            if ($publicId) {
+                try {
+                    $this->cloudinary()->uploadApi()->destroy($publicId, [
+                        'resource_type' => 'image',
+                        'invalidate' => true,
+                    ]);
+                } catch (Throwable $exception) {
+                    Log::warning('Cloudinary product image cleanup failed.', [
+                        'public_id' => $publicId,
+                        'exception' => $exception,
+                    ]);
+                }
+            }
+
+            return;
+        }
+
         $directory = trim(config('product_images.directory', 'products'), '/').'/';
 
-        if ($thumbnail && Str::startsWith($thumbnail, $directory)) {
-            Storage::disk(config('product_images.disk', 'public'))->delete($thumbnail);
+        if (Str::startsWith($thumbnail, $directory)) {
+            $disk = config('product_images.disk', 'public');
+            Storage::disk($disk === 'cloudinary' ? 'public' : $disk)->delete($thumbnail);
         }
+    }
+
+    private function cloudinary(): Cloudinary
+    {
+        $url = config('services.cloudinary.url');
+
+        if (! is_string($url) || $url === '') {
+            abort(503, 'Cloudinary image storage is not configured.');
+        }
+
+        return new Cloudinary($url);
+    }
+
+    private function isCloudinaryUrl(string $url): bool
+    {
+        return parse_url($url, PHP_URL_HOST) === 'res.cloudinary.com';
+    }
+
+    private function cloudinaryPublicId(string $url): ?string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+
+        if (! is_string($path)
+            || ! preg_match('#/image/upload/(?:v\d+/)?(.+)\.[^./]+$#', $path, $matches)) {
+            return null;
+        }
+
+        return rawurldecode($matches[1]);
     }
 }
