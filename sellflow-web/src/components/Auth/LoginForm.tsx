@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthField } from "./AuthField";
 import { authService } from "../../Services/auth";
 import { useToast } from "../ui/ToastContext";
+import { useAuth } from "../../components/Auth/AuthContext";
 
 interface LoginFormProps {
   onSwitch: () => void;
@@ -18,6 +19,7 @@ interface LoginData {
 export function LoginForm({ onSwitch }: LoginFormProps) {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { closeAuth } = useAuth();
 
   const [form, setForm] = useState<LoginData>({
     email: "",
@@ -45,11 +47,40 @@ export function LoginForm({ onSwitch }: LoginFormProps) {
 
       const response = await authService.login(form);
 
+      // Store token
       localStorage.setItem(
         "token",
         response.data.data.token
       );
 
+      // Store user data for profile
+      if (response.data.data.user) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(response.data.data.user)
+        );
+      } else {
+        // If user data isn't in the login response, fetch it
+        try {
+          const userData = await authService.getCurrentUser();
+          localStorage.setItem(
+            "user",
+            JSON.stringify(userData.data)
+          );
+        } catch (error) {
+          console.warn("Could not fetch user data:", error);
+          // Create minimal user data from email
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              email: form.email,
+              name: form.email.split('@')[0],
+            })
+          );
+        }
+      }
+
+      closeAuth(); // Close the auth modal
       showToast("Welcome back! You have signed in successfully.");
       navigate("/dashboard");
 
@@ -134,12 +165,12 @@ export function LoginForm({ onSwitch }: LoginFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-brand text-white py-3 rounded-xl font-semibold disabled:opacity-60"
+          className="w-full bg-brand text-white py-3 rounded-xl font-semibold disabled:opacity-60 flex items-center justify-center gap-2"
         >
           {loading ? "Signing In..." : "Sign In"}
 
           {!loading && (
-            <ArrowRight className="w-4 h-4 inline ml-2" />
+            <ArrowRight className="w-4 h-4" />
           )}
         </button>
       </form>
