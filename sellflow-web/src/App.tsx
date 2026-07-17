@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, useNavigate, useParams } from "react-router-dom";
 
 import LandingPage from "./pages/LandingPage";
@@ -15,6 +16,8 @@ import { GuestRoute } from "./components/Auth/GuestRoute";
 import { AuthProvider } from "./components/Auth/AuthContext";
 import { ToastProvider } from "./components/ui/ToastContext";
 import { CartProvider } from "./components/cart/CartContext";
+
+const OrdersPage = lazy(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
 
 function CartRoute() {
     const navigate = useNavigate();
@@ -46,6 +49,7 @@ export function App() {
                                 <Route path="categories" element={<CategoriesPage />} />
                                 <Route path="products" element={<ProductsPage />} />
                                 <Route path="theme" element={<ThemePage />} />
+                                <Route path="orders" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading orders...</div>}><OrdersPage /></Suspense>} />
                             </Route>
                         </Route>
 
