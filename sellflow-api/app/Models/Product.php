@@ -54,6 +54,15 @@ class Product extends Model
             return $this->thumbnail;
         }
 
-        return Storage::disk(config('product_images.disk', 'public'))->url($this->thumbnail);
+        $disk = config('product_images.disk', 'public');
+
+        // Cloudinary assets are stored as complete secure URLs. A relative
+        // value here belongs to the old ephemeral public disk and can no
+        // longer be resolved after switching providers.
+        if ($disk === 'cloudinary') {
+            return null;
+        }
+
+        return Storage::disk($disk)->url($this->thumbnail);
     }
 }
