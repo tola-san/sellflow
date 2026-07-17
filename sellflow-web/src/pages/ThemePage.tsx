@@ -55,7 +55,7 @@ export function ThemePage() {
   if (loading) return <p className="text-sm text-slate-500">Loading theme editor...</p>;
 
   if (!business) {
-    return <><PageHeader title="Storefront theme" description="Create your business profile before designing its storefront."/><div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">A business profile is required before a theme can be published.</div></>;
+    return <><PageHeader title="Storefront theme" description="Create your business profile before designing its storefront."/><div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">A business profile is required before a theme can be published.</div></>;
   }
 
   return (
@@ -74,7 +74,7 @@ export function ThemePage() {
               {(Object.keys(THEME_PRESETS) as ThemePreset[]).map((preset) => {
                 const item = THEME_PRESETS[preset];
                 const active = theme.preset === preset;
-                return <button key={preset} type="button" onClick={() => selectPreset(preset)} className={`relative rounded-2xl border p-3 text-left transition ${active ? "border-purple-500 ring-2 ring-purple-100" : "border-slate-200 hover:border-slate-300"}`}>
+                return <button key={preset} type="button" onClick={() => selectPreset(preset)} className={`relative rounded-lg border p-3 text-left transition ${active ? "border-purple-500 ring-2 ring-purple-100" : "border-slate-200 hover:border-slate-300"}`}>
                   {active && <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-purple-600 text-white"><Check size={12}/></span>}
                   <span className="flex h-20 overflow-hidden rounded-xl border border-black/5" style={{ background: `linear-gradient(135deg, ${item.background_color}, ${item.primary_color}35)` }}>
                     <span className="m-auto h-10 w-16 rounded-lg" style={{ backgroundColor: item.surface_color, boxShadow: item.card_style === "elevated" ? "0 8px 20px #0002" : "none", border: item.card_style === "bordered" ? `1px solid ${item.muted_color}55` : "none" }}/>
@@ -126,7 +126,7 @@ export function ThemePage() {
 }
 
 function Panel({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
-  return <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="mb-5"><h2 className="font-semibold">{title}</h2><p className="mt-1 text-xs leading-5 text-slate-500">{description}</p></div>{children}</section>;
+  return <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="mb-5"><h2 className="font-semibold">{title}</h2><p className="mt-1 text-xs leading-5 text-slate-500">{description}</p></div>{children}</section>;
 }
 
 function ColorControl({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
@@ -146,7 +146,7 @@ function StorePreview({ business, theme, mobile }: { business: Business; theme: 
   const cardShadow = theme.card_style === "elevated" ? "0 12px 28px rgba(15,23,42,.12)" : "none";
   const cardBorder = theme.card_style === "bordered" ? `1px solid ${theme.muted_color}45` : "1px solid transparent";
   const font = theme.font_family === "classic" ? "Georgia, serif" : theme.font_family === "modern" ? "Inter, ui-sans-serif, system-ui" : "ui-sans-serif, system-ui";
-  return <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 p-2 shadow-sm"><div className={`mx-auto overflow-hidden bg-white transition-all duration-300 ${mobile ? "max-w-[320px] rounded-[1.5rem]" : "w-full rounded-xl"}`} style={{ fontFamily: font, color: theme.text_color }}>
+  return <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-200 p-2 shadow-sm"><div className={`mx-auto overflow-hidden bg-white transition-all duration-300 ${mobile ? "max-w-[320px] rounded-[1.5rem]" : "w-full rounded-xl"}`} style={{ fontFamily: font, color: theme.text_color }}>
     <div className="flex h-12 items-center gap-2 border-b px-4" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}><span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ backgroundColor: theme.primary_color }}><Store size={14}/></span><strong className="text-xs">{business.name}</strong><span className="ml-auto h-7 w-16" style={{ borderRadius: radius, backgroundColor: `${theme.primary_color}18` }}/></div>
     <div className="px-5 py-9" style={{ background: theme.hero_style === "gradient" ? `linear-gradient(135deg, ${theme.primary_color}, ${theme.secondary_color})` : theme.hero_style === "banner" ? `linear-gradient(135deg, ${theme.secondary_color}, ${theme.primary_color}99)` : theme.background_color, color: theme.hero_style === "minimal" ? theme.text_color : "white" }}><p className="text-[9px] font-bold uppercase tracking-widest opacity-75">Welcome to</p><h3 className="mt-1 text-xl font-bold">{business.name}</h3><p className="mt-2 max-w-xs text-[10px] opacity-75">Discover our latest products and collections.</p></div>
     <div className="flex gap-2 overflow-hidden border-b p-3" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}><span className="px-3 py-1.5 text-[9px] font-semibold text-white" style={{ borderRadius: radius, backgroundColor: theme.primary_color }}>All products</span>{["Featured","New"].map((item)=><span key={item} className="border px-3 py-1.5 text-[9px]" style={{ borderRadius: radius, borderColor: `${theme.muted_color}45` }}>{item}</span>)}</div>

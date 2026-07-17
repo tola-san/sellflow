@@ -6,7 +6,7 @@ export function DashboardMockup() {
   return (
     <div className="relative w-full max-w-5xl mx-auto">
       {/* Main Dashboard Frame */}
-      <div className="bg-white rounded-3xl border border-zinc-200 shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-2xl overflow-hidden">
         {/* Browser Header */}
         <div className="h-11 bg-zinc-50 border-b border-zinc-100 flex items-center px-4">
           <div className="flex gap-1.5">

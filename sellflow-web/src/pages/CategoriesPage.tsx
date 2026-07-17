@@ -2,17 +2,343 @@ import { useEffect, useState } from "react";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { categoryService } from "../Services/category";
 import type { Category } from "../types/category";
-import { EmptyState, ErrorMessage, PageHeader, buttonPrimary, buttonSecondary, inputClass } from "../components/dashboard/DashboardUI";
+import {
+  EmptyState,
+  ErrorMessage,
+  PageHeader,
+  buttonPrimary,
+  buttonSecondary,
+  inputClass,
+} from "../components/dashboard/DashboardUI";
 
-type Form = {name:string;slug:string;description:string;image:string;sort_order:number;is_active:boolean};
-const blank:Form={name:"",slug:"",description:"",image:"",sort_order:0,is_active:true};
-export function CategoriesPage(){
- const [items,setItems]=useState<Category[]>([]),[form,setForm]=useState<Form>(blank),[editing,setEditing]=useState<number|null>(null),[open,setOpen]=useState(false),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState<unknown>(null);
- const load=()=>categoryService.getCategories().then(setItems).catch(setError).finally(()=>setLoading(false)); useEffect(load,[]);
- const show=(item?:Category)=>{setError(null);setEditing(item?.id||null);setForm(item?{name:item.name,slug:item.slug,description:item.description||"",image:item.image||"",sort_order:item.sort_order,is_active:item.is_active}:blank);setOpen(true)};
- const submit=async(e:React.FormEvent)=>{e.preventDefault();setSaving(true);setError(null);try{editing?await categoryService.updateCategory(editing,form):await categoryService.createCategory(form);setOpen(false);await load()}catch(err){setError(err)}finally{setSaving(false)}};
- const remove=async(item:Category)=>{if(!confirm(`Delete “${item.name}”?`))return;setError(null);try{await categoryService.deleteCategory(item.id);setItems(v=>v.filter(x=>x.id!==item.id))}catch(err){setError(err)}};
- return <><PageHeader title="Categories" description="Organize products into clear sections for your customers." action={<button className={buttonPrimary} onClick={()=>show()}><Plus size={17}/>Add category</button>}/><ErrorMessage error={error}/>{loading?<p className="text-sm text-slate-500">Loading categories…</p>:items.length?<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{items.map(item=><article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2"><h2 className="font-semibold">{item.name}</h2><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${item.is_active?"bg-emerald-50 text-emerald-700":"bg-slate-100 text-slate-500"}`}>{item.is_active?"Active":"Hidden"}</span></div><p className="mt-1 text-xs text-slate-400">/{item.slug} · Order {item.sort_order}</p></div><div className="flex"><button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" onClick={()=>show(item)} aria-label="Edit"><Pencil size={16}/></button><button className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600" onClick={()=>remove(item)} aria-label="Delete"><Trash2 size={16}/></button></div></div><p className="mt-4 line-clamp-2 text-sm text-slate-500">{item.description||"No description added."}</p></article>)}</div>:<EmptyState title="No categories yet" description="Create your first category before adding products." action={<button className={buttonPrimary} onClick={()=>show()}><Plus size={17}/>Create category</button>}/>} {open&&<Modal title={editing?"Edit category":"New category"} close={()=>setOpen(false)}><form onSubmit={submit} className="space-y-4"><label className="block text-sm font-medium">Name<input autoFocus required className={inputClass} value={form.name} onChange={e=>{const name=e.target.value;setForm(v=>({...v,name,slug:editing?v.slug:name.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-")}))}}/></label><label className="block text-sm font-medium">Slug<input required className={inputClass} value={form.slug} onChange={e=>setForm(v=>({...v,slug:e.target.value}))}/></label><label className="block text-sm font-medium">Description<textarea rows={3} className={inputClass} value={form.description} onChange={e=>setForm(v=>({...v,description:e.target.value}))}/></label><label className="block text-sm font-medium">Image URL<input className={inputClass} value={form.image} onChange={e=>setForm(v=>({...v,image:e.target.value}))}/></label><div className="grid grid-cols-2 gap-4"><label className="text-sm font-medium">Sort order<input type="number" min="0" className={inputClass} value={form.sort_order} onChange={e=>setForm(v=>({...v,sort_order:Number(e.target.value)}))}/></label><label className="flex items-end gap-2 pb-3 text-sm font-medium"><input type="checkbox" checked={form.is_active} onChange={e=>setForm(v=>({...v,is_active:e.target.checked}))}/>Active</label></div><ErrorMessage error={error}/><div className="flex justify-end gap-3 pt-2"><button type="button" className={buttonSecondary} onClick={()=>setOpen(false)}>Cancel</button><button disabled={saving} className={buttonPrimary}>{saving?"Saving…":"Save category"}</button></div></form></Modal>}</>;
+type Form = {
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
+  sort_order: number;
+  is_active: boolean;
+};
+
+const blankForm: Form = {
+  name: "",
+  slug: "",
+  description: "",
+  image: "",
+  sort_order: 0,
+  is_active: true,
+};
+
+export function CategoriesPage() {
+  const [items, setItems] = useState<Category[]>([]);
+  const [form, setForm] = useState<Form>(blankForm);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+
+  /**
+   * Load all categories from the backend
+   */
+  const load = () => {
+    categoryService
+      .getCategories()
+      .then(setItems)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  /**
+   * Open modal for creating a new category or editing an existing one
+   */
+  const show = (item?: Category) => {
+    setError(null);
+    setEditing(item?.id || null);
+
+    if (item) {
+      setForm({
+        name: item.name,
+        slug: item.slug,
+        description: item.description || "",
+        image: item.image || "",
+        sort_order: item.sort_order,
+        is_active: item.is_active,
+      });
+    } else {
+      setForm(blankForm);
+    }
+
+    setOpen(true);
+  };
+
+  /**
+   * Handle form submission (create or update)
+   */
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    try {
+      if (editing) {
+        await categoryService.updateCategory(editing, form);
+      } else {
+        await categoryService.createCategory(form);
+      }
+
+      setOpen(false);
+      await load(); // Refresh the list
+    } catch (err) {
+      setError(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /**
+   * Delete a category with confirmation
+   */
+  const remove = async (item: Category) => {
+    if (!confirm(`Delete “${item.name}”?`)) return;
+
+    setError(null);
+
+    try {
+      await categoryService.deleteCategory(item.id);
+      setItems((prev) => prev.filter((x) => x.id !== item.id));
+    } catch (err) {
+      setError(err);
+    }
+  };
+
+  return (
+    <>
+      <PageHeader
+        title="Categories"
+        description="Organize products into clear sections for your customers."
+        action={
+          <button className={buttonPrimary} onClick={() => show()}>
+            <Plus size={17} />
+            Add category
+          </button>
+        }
+      />
+
+      <ErrorMessage error={error} />
+
+      {loading ? (
+        <p className="text-sm text-slate-500">Loading categories…</p>
+      ) : items.length ? (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {items.map((item) => (
+            <article
+              key={item.id}
+              className="rounded-lg  border-purple-400 bg-white p-5 shadow-sm border-l-8"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-semibold">{item.name}</h2>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        item.is_active
+                          ? "bg-green-50 text-green-500 border border-green-200"
+                          : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      {item.is_active ? "Active" : "Hidden"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">
+                    /{item.slug} · Order {item.sort_order}
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    className="rounded-lg p-2 text-slate-500 hover:bg-blue-100 bg-blue-50 text-blue-500"
+                    onClick={() => show(item)}
+                    aria-label="Edit"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    className="rounded-lg p-2  hover:bg-red-100 hover:text-red-600 bg-red-50 text-red-500"
+                    onClick={() => remove(item)}
+                    aria-label="Delete"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <p className="mt-4 line-clamp-2 text-sm text-slate-500">
+                {item.description || "No description added."}
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No categories yet"
+          description="Create your first category before adding products."
+          action={
+            <button className={buttonPrimary} onClick={() => show()}>
+              <Plus size={17} />
+              Create category
+            </button>
+          }
+        />
+      )}
+
+      {/* Create/Edit Modal */}
+      {open && (
+        <Modal
+          title={editing ? "Edit category" : "New category"}
+          close={() => setOpen(false)}
+        >
+          <form onSubmit={submit} className="space-y-4">
+            <label className="block text-sm font-medium">
+              Name
+              <input
+                autoFocus
+                required
+                className={inputClass}
+                value={form.name}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setForm((v) => ({
+                    ...v,
+                    name,
+                    slug: editing
+                      ? v.slug
+                      : name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-"),
+                  }));
+                }}
+              />
+            </label>
+
+            <label className="block text-sm font-medium">
+              Slug
+              <input
+                required
+                className={inputClass}
+                value={form.slug}
+                onChange={(e) =>
+                  setForm((v) => ({ ...v, slug: e.target.value }))
+                }
+              />
+            </label>
+
+            <label className="block text-sm font-medium">
+              Description
+              <textarea
+                rows={3}
+                className={inputClass}
+                value={form.description}
+                onChange={(e) =>
+                  setForm((v) => ({ ...v, description: e.target.value }))
+                }
+              />
+            </label>
+
+            <label className="block text-sm font-medium">
+              Image URL
+              <input
+                className={inputClass}
+                value={form.image}
+                onChange={(e) =>
+                  setForm((v) => ({ ...v, image: e.target.value }))
+                }
+              />
+            </label>
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="text-sm font-medium">
+                Sort order
+                <input
+                  type="number"
+                  min="0"
+                  className={inputClass}
+                  value={form.sort_order}
+                  onChange={(e) =>
+                    setForm((v) => ({
+                      ...v,
+                      sort_order: Number(e.target.value),
+                    }))
+                  }
+                />
+              </label>
+
+              <label className="flex items-end gap-2 pb-3 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  checked={form.is_active}
+                  onChange={(e) =>
+                    setForm((v) => ({ ...v, is_active: e.target.checked }))
+                  }
+                />
+                Active
+              </label>
+            </div>
+
+            <ErrorMessage error={error} />
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                className={buttonSecondary}
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </button>
+              <button disabled={saving} className={buttonPrimary}>
+                {saving ? "Saving…" : "Save category"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+    </>
+  );
 }
-function Modal({title,close,children}:{title:string;close:()=>void;children:React.ReactNode}){return <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate-950/40 p-4"><div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl"><div className="flex items-center justify-between border-b border-slate-200 px-6 py-4"><h2 className="font-semibold">{title}</h2><button onClick={close} className="rounded-lg p-2 hover:bg-slate-100"><X size={18}/></button></div><div className="p-6">{children}</div></div></div>}
+
+/**
+ * Reusable modal component for create/edit forms
+ */
+function Modal({
+  title,
+  close,
+  children,
+}: {
+  title: string;
+  close: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate-950/40 p-4">
+      <div className="w-full max-w-lg rounded-lg bg-white shadow-2xl">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+          <h2 className="font-semibold">{title}</h2>
+          <button
+            onClick={close}
+            className="rounded-lg p-2 hover:bg-slate-100"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <div className="p-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 export { Modal };
