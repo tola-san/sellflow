@@ -145,7 +145,7 @@ export function ProductDetailPage() {
         <div className="mt-6 grid gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Image Section */}
           <div className="relative">
-            <div className="group relative overflow-hidden rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl" style={{ 
+            <div className="group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl" style={{ 
               borderRadius: "var(--store-radius)", 
               backgroundColor: `${theme.muted_color}08`,
               border: `1px solid ${theme.muted_color}15` 
