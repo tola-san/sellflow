@@ -46,14 +46,17 @@ export function ProductDetailPage() {
   const discountPercent = product.discount_price 
     ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100)
     : 0;
+  
+  // Enhanced font family support with Khmer (Kantumruy Pro)
   const fontFamily = theme.font_family === "classic"
-    ? "Georgia, Cambria, serif"
+    ? "'Kantumruy Pro', Georgia, Cambria, serif"
     : theme.font_family === "modern"
-      ? "Inter, ui-sans-serif, system-ui, sans-serif"
-      : "ui-sans-serif, system-ui, sans-serif";
+      ? "'Kantumruy Pro', Inter, ui-sans-serif, system-ui, sans-serif"
+      : "'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif";
 
   const variables = {
     "--store-radius": theme.button_style === "pill" ? "9999px" : theme.button_style === "square" ? "6px" : "16px",
+    "--store-radius-sm": theme.button_style === "pill" ? "9999px" : theme.button_style === "square" ? "4px" : "12px",
     backgroundColor: theme.background_color,
     color: theme.text_color,
     fontFamily,
@@ -94,7 +97,6 @@ export function ProductDetailPage() {
 
           <button 
             onClick={() => {
-              // Share functionality
               if (navigator.share) {
                 navigator.share({
                   title: product.name,
@@ -143,13 +145,16 @@ export function ProductDetailPage() {
         </nav>
 
         <div className="mt-6 grid gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Image Section */}
+          {/* Image Section - FIXED ROUNDED CORNERS */}
           <div className="relative">
-            <div className="group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl" style={{ 
-              borderRadius: "var(--store-radius)", 
-              backgroundColor: `${theme.muted_color}08`,
-              border: `1px solid ${theme.muted_color}15` 
-            }}>
+            <div 
+              className="group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl" 
+              style={{ 
+                borderRadius: "var(--store-radius)", 
+                backgroundColor: `${theme.muted_color}08`,
+                border: `1px solid ${theme.muted_color}15` 
+              }}
+            >
               <div className="aspect-[4/3] lg:aspect-square">
                 {product.thumbnail ? (
                   <>
@@ -176,26 +181,20 @@ export function ProductDetailPage() {
                   -{discountPercent}%
                 </div>
               )}
-
-              {/* <button
-                onClick={() => setLiked(!liked)}
-                className={`absolute right-4 top-4 rounded-full bg-white/90 p-3 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 ${
-                  liked ? 'scale-110' : ''
-                }`}
-              >
-                <Heart size={20} className={`transition-all duration-300 ${liked ? "fill-red-500 text-red-500" : "text-slate-600"}`} />
-              </button> */}
             </div>
 
-            {/* Thumbnail Navigation */}
+            {/* Thumbnail Navigation - FIXED ROUNDED CORNERS */}
             <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
               {[product.thumbnail, product.thumbnail, product.thumbnail].slice(0, 3).map((img, idx) => (
                 <button
                   key={idx}
-                  className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all hover:scale-105 ${
+                  className={`h-20 w-20 flex-shrink-0 overflow-hidden border-2 transition-all hover:scale-105 ${
                     idx === 0 ? 'border-2' : 'border-transparent'
                   }`}
-                  style={{ borderColor: idx === 0 ? theme.primary_color : `${theme.muted_color}30` }}
+                  style={{ 
+                    borderRadius: "var(--store-radius-sm)",
+                    borderColor: idx === 0 ? theme.primary_color : `${theme.muted_color}30`
+                  }}
                 >
                   <img src={img || product.thumbnail} alt={`${product.name} ${idx + 1}`} className="h-full w-full object-cover" />
                 </button>
