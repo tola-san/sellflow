@@ -212,6 +212,7 @@ export function ProductDetailPage() {
             </div>
           </div>
 
+
           {/* Product Info */}
           <section className="flex flex-col pb-32 md:pb-0">
             <div className="flex flex-wrap items-center gap-3">
