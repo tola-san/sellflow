@@ -110,12 +110,11 @@ export function StorefrontPage() {
   const primary = theme.primary_color;
   const isMinimalHero = theme.hero_style === "minimal";
   
-  // Enhanced font family support with Khmer (Kantumruy Pro)
   const fontFamily = theme.font_family === "classic"
-    ? "'Kantumruy Pro', Georgia, Cambria, serif"
+    ? "Georgia, 'Kantumruy Pro', Cambria, serif"
     : theme.font_family === "modern"
-      ? "'Kantumruy Pro', Inter, ui-sans-serif, system-ui, sans-serif"
-      : "'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif";
+      ? "'Plus Jakarta Sans', 'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif"
+      : "'Plus Jakarta Sans', 'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif";
   
   const themeVariables = {
     "--store-primary": theme.primary_color,

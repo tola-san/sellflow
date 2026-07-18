@@ -145,7 +145,9 @@ function StorePreview({ business, theme, mobile }: { business: Business; theme: 
   const radius = theme.button_style === "pill" ? "999px" : theme.button_style === "square" ? "4px" : "12px";
   const cardShadow = theme.card_style === "elevated" ? "0 12px 28px rgba(15,23,42,.12)" : "none";
   const cardBorder = theme.card_style === "bordered" ? `1px solid ${theme.muted_color}45` : "1px solid transparent";
-  const font = theme.font_family === "classic" ? "Georgia, serif" : theme.font_family === "modern" ? "Inter, ui-sans-serif, system-ui" : "ui-sans-serif, system-ui";
+  const font = theme.font_family === "classic"
+    ? "Georgia, 'Kantumruy Pro', serif"
+    : "'Plus Jakarta Sans', 'Kantumruy Pro', ui-sans-serif, system-ui";
   return <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-200 p-2 shadow-sm"><div className={`mx-auto overflow-hidden bg-white transition-all duration-300 ${mobile ? "max-w-[320px] rounded-[1.5rem]" : "w-full rounded-xl"}`} style={{ fontFamily: font, color: theme.text_color }}>
     <div className="flex h-12 items-center gap-2 border-b px-4" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}><span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ backgroundColor: theme.primary_color }}><Store size={14}/></span><strong className="text-xs">{business.name}</strong><span className="ml-auto h-7 w-16" style={{ borderRadius: radius, backgroundColor: `${theme.primary_color}18` }}/></div>
     <div className="px-5 py-9" style={{ background: theme.hero_style === "gradient" ? `linear-gradient(135deg, ${theme.primary_color}, ${theme.secondary_color})` : theme.hero_style === "banner" ? `linear-gradient(135deg, ${theme.secondary_color}, ${theme.primary_color}99)` : theme.background_color, color: theme.hero_style === "minimal" ? theme.text_color : "white" }}><p className="text-[9px] font-bold uppercase tracking-widest opacity-75">Welcome to</p><h3 className="mt-1 text-xl font-bold">{business.name}</h3><p className="mt-2 max-w-xs text-[10px] opacity-75">Discover our latest products and collections.</p></div>

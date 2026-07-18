@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Business extends Model
 {
@@ -84,5 +86,15 @@ class Business extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function notificationSetting(): HasOne
+    {
+        return $this->hasOne(BusinessNotificationSetting::class);
+    }
+
+    public function telegramConnectionCodes(): HasMany
+    {
+        return $this->hasMany(TelegramConnectionCode::class);
     }
 }
