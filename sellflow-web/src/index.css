@@ -1,6 +1,4 @@
 
-@import url("https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap");
-
 /* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
 @import "tailwindcss/base";
 @import "tailwindcss/components";
@@ -12,11 +10,12 @@ html {
   scroll-behavior: smooth;
 }
 body {
-  font-family:  "Kantumruy Pro", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans", "Kantumruy Pro", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 .font-display {
-  font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", "Kantumruy Pro", system-ui, sans-serif;
 }
 /* Animated gradient mesh background */
 .gradient-mesh {

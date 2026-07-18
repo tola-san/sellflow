@@ -11,6 +11,7 @@ import { StorefrontPage } from "./pages/StorefrontPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { CartDrawer } from "./pages/CartPage";        // ← Make sure this exports CartDrawer
 import { CheckoutPage } from "./pages/CheckoutPage";
+import { TelegramNotificationsPage } from "./pages/TelegramNotificationsPage";
 import { DashboardLayout } from "./components/dashboard/DashboardLayout";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute";
 import { GuestRoute } from "./components/Auth/GuestRoute";
@@ -51,6 +52,7 @@ export function App() {
                                 <Route path="products" element={<ProductsPage />} />
                                 <Route path="theme" element={<ThemePage />} />
                                 <Route path="orders" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading orders...</div>}><OrdersPage /></Suspense>} />
+                                <Route path="notifications" element={<TelegramNotificationsPage />} />
                             </Route>
                         </Route>
 

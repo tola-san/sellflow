@@ -1,9 +1,11 @@
 /// <reference types="vite/client" />
 import axios from "axios";
 
+const configuredBaseUrl = import.meta.env.VITE_API_URL
+    || (import.meta.env.PROD ? "/api/v1" : "http://127.0.0.1:8000/api/v1");
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL
-        || (import.meta.env.PROD ? "/api/v1" : "http://127.0.0.1:8000/api/v1"),
+    baseURL: configuredBaseUrl.replace(/\/+$/, ""),
     headers: {
         Accept: "application/json",
         "Content-Type": "application/json",

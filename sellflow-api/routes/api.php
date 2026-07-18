@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Order\OrderController;
 use App\Http\Controllers\Api\Storefront\StorefrontController;
 use App\Http\Controllers\Api\Storefront\CheckoutController;
+use App\Http\Controllers\Api\Business\TelegramNotificationController;
+use App\Http\Controllers\Api\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -24,6 +26,7 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/integrations/telegram/webhook', TelegramWebhookController::class)->middleware('throttle:60,1');
 
     /*
     |--------------------------------------------------------------------------
@@ -45,6 +48,11 @@ Route::prefix('v1')->group(function () {
         Route::put('/business', [BusinessController::class, 'update']);
         Route::get('/business/theme', [BusinessThemeController::class, 'show']);
         Route::put('/business/theme', [BusinessThemeController::class, 'update']);
+        Route::get('/business/notifications/telegram', [TelegramNotificationController::class, 'show']);
+        Route::post('/business/notifications/telegram/connect-code', [TelegramNotificationController::class, 'createCode']);
+        Route::patch('/business/notifications/telegram', [TelegramNotificationController::class, 'update']);
+        Route::post('/business/notifications/telegram/test', [TelegramNotificationController::class, 'test']);
+        Route::delete('/business/notifications/telegram', [TelegramNotificationController::class, 'destroy']);
 
         // Categories
         Route::apiResource('categories', CategoryController::class);

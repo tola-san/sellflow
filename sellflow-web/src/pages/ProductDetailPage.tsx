@@ -1,5 +1,6 @@
-import { useEffect, useState, type CSSProperties } from "react";
-import { ArrowLeft, Check, Minus, Plus, ShoppingBag, Store, Heart, Share2, Truck, Shield, RefreshCw } from "lucide-react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { ArrowLeft, Check, Copy, Globe2, Minus, Plus, RefreshCw, Send, Share2, Shield, ShoppingCart, Store, Truck, X } from "lucide-react";
+import { FaFacebook } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
 import { storefrontService, type StorefrontProductDetail } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
@@ -10,8 +11,8 @@ export function ProductDetailPage() {
   const [detail, setDetail] = useState<StorefrontProductDetail | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [missing, setMissing] = useState(false);
-  const [liked, setLiked] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const cart = useCart();
   const { showToast } = useToast();
 
@@ -28,6 +29,23 @@ export function ProductDetailPage() {
 
     return () => { document.title = "SellFlow"; };
   }, [slug, productSlug]);
+
+  useEffect(() => {
+    if (!shareOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShareOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [shareOpen]);
 
   if (missing) return <ProductNotFound slug={slug} />;
   if (!detail) return (
@@ -67,6 +85,52 @@ export function ProductDetailPage() {
     showToast(`${quantity} × ${product.name} added to cart.`, "success");
   };
 
+  const shareProduct = async () => {
+    const shareData = {
+      title: product.name,
+      text: `Check out ${product.name} on ${business.name}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setShareOpen(false);
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareData.url);
+      showToast("Product link copied.", "success");
+      setShareOpen(false);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      showToast("The product link could not be shared.", "error");
+    }
+  };
+
+  const copyProductLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      showToast("Product link copied.", "success");
+      setShareOpen(false);
+    } catch {
+      showToast("The product link could not be copied.", "error");
+    }
+  };
+
+  const openSocialShare = (network: "facebook" | "telegram" | "whatsapp") => {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`Check out ${product.name} on ${business.name}`);
+    const destinations = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      telegram: `https://t.me/share/url?url=${url}&text=${text}`,
+      whatsapp: `https://wa.me/?text=${text}%20${url}`,
+    };
+
+    window.open(destinations[network], "_blank", "noopener,noreferrer,width=680,height=620");
+    setShareOpen(false);
+  };
+
   const isOutOfStock = product.stock < 1;
   const isLowStock = product.stock > 0 && product.stock <= 5;
 
@@ -77,7 +141,7 @@ export function ProductDetailPage() {
         backgroundColor: `${theme.surface_color}F2`, 
         borderColor: `${theme.muted_color}30` 
       }}>
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
           <Link 
             to={`/${slug}`} 
             className="group flex min-w-0 flex-1 items-center gap-3 transition-all hover:opacity-80"
@@ -95,38 +159,17 @@ export function ProductDetailPage() {
             </div>
           </Link>
 
-          <button 
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: product.name,
-                  text: `Check out ${product.name} on ${business.name}`,
-                  url: window.location.href,
-                });
-              }
-            }}
-            className="hidden sm:flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all hover:scale-105 active:scale-95"
-            style={{ 
-              borderRadius: "var(--store-radius)", 
-              backgroundColor: `${theme.muted_color}10`, 
-              color: theme.muted_color 
-            }}
-          >
-            <Share2 size={18} />
-            <span>Share</span>
-          </button>
-
           <Link 
             to={`/${slug}/cart`} 
-            className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+            className="relative flex shrink-0 items-center gap-2 px-3 py-2 text-sm font-semibold transition-all hover:scale-105 active:scale-95 sm:px-4"
             style={{ 
               borderRadius: "var(--store-radius)", 
               backgroundColor: `${theme.primary_color}12`, 
               color: theme.primary_color 
             }}
           >
-            <ShoppingBag size={18} />
-            <span className="hidden sm:inline">Cart</span>
+            <ShoppingCart className="shrink-0" size={18} />
+            <span>Cart</span>
             <div className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-xs font-bold shadow-md transition-all" style={{ color: theme.primary_color }}>
               {cart.count(slug)}
             </div>
@@ -136,82 +179,56 @@ export function ProductDetailPage() {
 
       <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm" style={{ color: theme.muted_color }}>
-          <Link to={`/${slug}`} className="transition hover:opacity-70">Home</Link>
-          <span>/</span>
-          <Link to={`/${slug}`} className="transition hover:opacity-70">{business.name}</Link>
-          <span>/</span>
-          <span className="font-medium" style={{ color: theme.text_color }}>{product.name}</span>
+        <nav className="flex min-w-0 items-center gap-2 overflow-hidden text-sm" aria-label="Breadcrumb" style={{ color: theme.muted_color }}>
+          <Link to={`/${slug}`} className="shrink-0 transition hover:opacity-70">Home</Link>
+          <span className="shrink-0 opacity-40">/</span>
+          <Link to={`/${slug}`} className="max-w-[42%] truncate transition hover:opacity-70 sm:max-w-none">{business.name}</Link>
+          <span className="shrink-0 opacity-40">/</span>
+          <span className="min-w-0 truncate font-medium" style={{ color: theme.text_color }}>{product.name}</span>
         </nav>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:gap-16">
-          {/* ====================== IMAGE SECTION (FIXED) ====================== */}
-          <div className="relative">
-            {/* Main Image Container - Fixed border radius for all screen sizes especially mobile */}
-            <div 
-              className="group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl" 
-              style={{ 
-                borderRadius: "var(--store-radius)", 
-                backgroundColor: `${theme.muted_color}08`,
-                border: `1px solid ${theme.muted_color}15`,
-                maxWidth: "100%",
-                margin: "0 auto"
+        <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 xl:gap-20">
+          <section className="lg:sticky lg:top-24" aria-label="Product image">
+            <div
+              className="group relative mx-auto w-full max-w-[540px] overflow-hidden border p-2 shadow-[0_14px_40px_rgba(15,23,42,0.07)] sm:p-3 lg:max-w-none"
+              style={{
+                borderRadius: theme.button_style === "square" ? "8px" : "20px",
+                borderColor: `${theme.muted_color}24`,
+                backgroundColor: theme.surface_color,
               }}
             >
-              <div 
-                className="aspect-[4/3] lg:aspect-square overflow-hidden"
-                style={{ borderRadius: "var(--store-radius)" }}
+              <div
+                className="relative grid h-[min(78vw,380px)] place-items-center overflow-hidden sm:h-[460px] lg:h-[min(44vw,540px)]"
+                style={{
+                  borderRadius: theme.button_style === "square" ? "5px" : "14px",
+                  backgroundColor: `${theme.muted_color}08`,
+                }}
               >
                 {product.thumbnail ? (
                   <>
-                    {!imageLoaded && (
-                      <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-slate-200/50 to-slate-300/50" />
-                    )}
-                    <img 
-                      src={product.thumbnail} 
-                      alt={product.name} 
-                      className={`h-full w-full object-cover transition-all duration-700 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    {!imageLoaded && <div className="absolute inset-0 animate-pulse" style={{ backgroundColor: `${theme.muted_color}12` }} />}
+                    <img
+                      src={product.thumbnail}
+                      alt={product.name}
+                      className={`h-full w-full object-contain transition duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                       onLoad={() => setImageLoaded(true)}
-                      style={{ borderRadius: "var(--store-radius)" }}
                     />
                   </>
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center" style={{ color: `${theme.muted_color}40` }}>
-                    <ShoppingBag size={80} strokeWidth={1.2} />
+                  <div className="flex flex-col items-center gap-3" style={{ color: `${theme.muted_color}70` }}>
+                    <ShoppingCart size={72} strokeWidth={1.25} />
+                    <span className="text-sm font-medium">No product image</span>
                   </div>
                 )}
               </div>
 
-              {/* Discount Badge */}
               {product.discount_price && (
-                <div className="absolute left-4 top-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg animate-bounce-in">
-                  -{discountPercent}%
-                </div>
+                <span className="absolute left-4 top-4 rounded-full bg-red-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg sm:left-5 sm:top-5">
+                  Save {discountPercent}%
+                </span>
               )}
             </div>
-
-            {/* Thumbnail Navigation */}
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-              {[product.thumbnail, product.thumbnail, product.thumbnail].slice(0, 3).map((img, idx) => (
-                <button
-                  key={idx}
-                  className="h-20 w-20 flex-shrink-0 overflow-hidden border-2 transition-all hover:scale-105"
-                  style={{ 
-                    borderRadius: "var(--store-radius-sm)",
-                    borderColor: idx === 0 ? theme.primary_color : `${theme.muted_color}30`
-                  }}
-                >
-                  <img 
-                    src={img || product.thumbnail} 
-                    alt={`${product.name} ${idx + 1}`} 
-                    className="h-full w-full object-cover"
-                    style={{ borderRadius: "var(--store-radius-sm)" }}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
+          </section>
 
           {/* Product Info */}
           <section className="flex flex-col pb-32 md:pb-0">
@@ -224,6 +241,16 @@ export function ProductDetailPage() {
                   ✨ Featured
                 </span>
               )}
+              <button
+                type="button"
+                onClick={() => setShareOpen(true)}
+                className="ml-auto flex items-center gap-2 border px-3.5 py-1.5 bg-zinc-100 text-xs font-semibold transition hover:-translate-y-0.5 hover:shadow-sm active:scale-95"
+                style={{ borderRadius: "var(--store-radius)", borderColor: `${theme.muted_color}30`, color: theme.muted_color }}
+                aria-haspopup="dialog"
+                aria-expanded={shareOpen}
+              >
+                <Share2 size={15} /> Share
+              </button>
             </div>
 
             <h1 className="mt-4 text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl lg:text-5xl">
@@ -274,9 +301,9 @@ export function ProductDetailPage() {
 
             {/* Desktop Add to Cart */}
             <div className="hidden md:block mt-auto pt-8">
-              <div className="flex items-center gap-4 rounded-xl p-4 shadow-sm" style={{ 
-                border: `1px solid ${theme.muted_color}20`,
-                backgroundColor: `${theme.surface_color}F5`
+              <div className="flex items-center gap-4 rounded-2xl" style={{
+                // border: `1px solid ${theme.muted_color}20`,
+                // backgroundColor: `${theme.surface_color}F5`
               }}>
                 <QuantityControl
                   quantity={quantity}
@@ -297,13 +324,13 @@ export function ProductDetailPage() {
                 <button
                   disabled={isOutOfStock}
                   onClick={addToCart}
-                  className="group relative flex h-14 flex-1 items-center justify-center gap-3 rounded-xl px-6 font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-2xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group relative flex h-14 flex-1 items-center justify-center gap-3 rounded-3xl px-6 font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-2xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   style={{
                     backgroundColor: theme.primary_color,
                     boxShadow: `0 8px 25px -5px ${theme.primary_color}50`,
                   }}
                 >
-                  <ShoppingBag size={20} className="transition-transform group-hover:scale-110" />
+                  <ShoppingCart size={20} className="transition-transform group-hover:scale-110" />
                   <span>{isOutOfStock ? "Out of stock" : "Add to cart"}</span>
                 </button>
               </div>
@@ -359,24 +386,90 @@ export function ProductDetailPage() {
               compact
             />
 
-            <button
-              disabled={isOutOfStock}
-              onClick={addToCart}
-              className="group relative h-14 min-w-[120px] flex-1 rounded-xl font-semibold text-white shadow-xl transition-all active:scale-95 disabled:opacity-50"
-              style={{
-                backgroundColor: theme.primary_color,
-                boxShadow: `0 10px 20px -5px ${theme.primary_color}40`,
-              }}
-            >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                <ShoppingBag size={18} className="transition-transform group-hover:scale-110" />
-                {isOutOfStock ? "Out of stock" : "Add"}
-              </span>
-            </button>
+           <button
+            disabled={isOutOfStock}
+            onClick={addToCart}
+            className="
+              group
+              relative
+              flex-1
+              min-h-12
+              sm:min-h-11
+              rounded-full
+              px-6
+              py-3
+              sm:px-5
+              font-semibold
+              text-white
+              shadow-lg
+              transition-all
+              duration-200
+              active:scale-95
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+              overflow-hidden
+            "
+            style={{
+              backgroundColor: theme.primary_color,
+              boxShadow: `0 10px 24px -8px ${theme.primary_color}40`,
+            }}
+          >
+          <span className="flex items-center justify-center gap-2 whitespace-nowrap">
+            <ShoppingCart
+              size={16}
+              strokeWidth={2.2}
+              className="shrink-0"
+            />
+            <span className="text-sm sm:text-base">
+              {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+            </span>
+          </span>
+        </button>
           </div>
         </div>
       </div>
+
+      {shareOpen && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center p-0 sm:items-center sm:p-6" role="presentation">
+          <button type="button" className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm" onClick={() => setShareOpen(false)} aria-label="Close share options" />
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="share-product-title"
+            className="relative z-10 w-full max-w-md rounded-t-3xl border p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl sm:p-6"
+            style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}25` }}
+          >
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full sm:hidden" style={{ backgroundColor: `${theme.muted_color}35` }} />
+            <div className="flex items-start gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 id="share-product-title" className="text-lg font-bold">Share this product</h2>
+                <p className="mt-1 truncate text-sm" style={{ color: theme.muted_color }}>{product.name}</p>
+              </div>
+              <button type="button" onClick={() => setShareOpen(false)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full transition hover:bg-black/5" aria-label="Close"><X size={18} /></button>
+            </div>
+
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <ShareOption label="Facebook" color="#1877F2" icon={<FaFacebook size={20} />} onClick={() => openSocialShare("facebook")} />
+              <ShareOption label="Telegram" color="#229ED9" icon={<Send size={20} />} onClick={() => openSocialShare("telegram")} />
+              {typeof navigator !== "undefined" && navigator.share && <ShareOption label="More apps" color={theme.primary_color} icon={<Share2 size={20} />} onClick={shareProduct} />}
+            </div>
+
+            <button type="button" onClick={copyProductLink} className="mt-4 flex w-full items-center justify-center gap-2 border px-4 py-3 text-sm font-semibold transition hover:bg-black/[0.03]" style={{ borderRadius: "var(--store-radius-sm)", borderColor: `${theme.muted_color}30` }}>
+              <Copy size={17} /> Copy product link
+            </button>
+          </section>
+        </div>
+      )}
     </div>
+  );
+}
+
+function ShareOption({ label, color, icon, onClick }: { label: string; color: string; icon: ReactNode; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="flex min-h-14 items-center gap-3 rounded-2xl border px-3 text-left text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]" style={{ borderColor: `${color}25`, backgroundColor: `${color}0D` }}>
+      <span className="grid h-9 w-9 shrink-0 place-items-center  rounded-full text-white" style={{ backgroundColor: color }}>{icon}</span>
+      <span className="truncate">{label}</span>
+    </button>
   );
 }
 
@@ -440,7 +533,7 @@ function ProductNotFound({ slug }: { slug: string }) {
     <div className="grid min-h-screen place-items-center bg-gradient-to-br from-slate-50 to-slate-100 px-6 py-12 text-center">
       <div className="animate-fade-in-up">
         <div className="mx-auto grid h-24 w-24 place-items-center rounded-3xl bg-slate-200/50 shadow-lg">
-          <ShoppingBag size={48} className="text-slate-400" strokeWidth={1.5} />
+          <ShoppingCart size={48} className="text-slate-400" strokeWidth={1.5} />
         </div>
         <h1 className="mt-8 text-4xl font-bold tracking-tight">Product not found</h1>
         <p className="mx-auto mt-3 max-w-sm text-slate-600">

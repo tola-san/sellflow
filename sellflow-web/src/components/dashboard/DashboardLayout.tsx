@@ -18,6 +18,7 @@ import {
   Calendar,
   Clock,
   Bell,
+  Send,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { authService } from "../../Services/auth";
@@ -36,6 +37,7 @@ const links = [
     icon: ShoppingCart,
     isNew: true,
   },
+  { label: "Notifications", path: "/dashboard/notifications", icon: Send, isNew: true },
 ];
 
 // Date/Time Component with Click Handler and Date Picker
