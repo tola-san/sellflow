@@ -134,7 +134,7 @@ export function ProductDetailPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 pb-32 pt-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm" style={{ color: theme.muted_color }}>
           <Link to={`/${slug}`} className="transition hover:opacity-70">Home</Link>
@@ -144,7 +144,7 @@ export function ProductDetailPage() {
           <span className="font-medium" style={{ color: theme.text_color }}>{product.name}</span>
         </nav>
 
-        <div className="mt-6 grid gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:gap-16">
           {/* Image Section - FIXED ROUNDED CORNERS */}
           <div className="relative">
             <div 
@@ -203,7 +203,7 @@ export function ProductDetailPage() {
           </div>
 
           {/* Product Info */}
-          <section className="flex flex-col">
+          <section className="flex flex-col pb-32 md:pb-0">
             <div className="flex flex-wrap items-center gap-3">
               <span className="rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-[0.5px] transition-all" style={{ backgroundColor: `${theme.primary_color}12`, color: theme.primary_color }}>
                 {product.category.name}
@@ -261,8 +261,8 @@ export function ProductDetailPage() {
               </div>
             )}
 
-            {/* Desktop Add to Cart */}
-            <div className="mt-auto hidden pt-8 md:block">
+            {/* Desktop Add to Cart - Hidden on mobile */}
+            <div className="hidden md:block mt-auto pt-8">
               <div className="flex items-center gap-4 rounded-xl p-4 shadow-sm" style={{ 
                 border: `1px solid ${theme.muted_color}20`,
                 backgroundColor: `${theme.surface_color}F5`
@@ -286,7 +286,7 @@ export function ProductDetailPage() {
                 <button
                   disabled={isOutOfStock}
                   onClick={addToCart}
-                  className="group relative flex h-14 flex-1 items-center justify-center gap-3 rounded-xl px-6 font-semibold text-white shadow-md  transition-all hover:-translate-y-0.5 hover:shadow-2xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group relative flex h-14 flex-1 items-center justify-center gap-3 rounded-xl px-6 font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-2xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   style={{
                     backgroundColor: theme.primary_color,
                     boxShadow: `0 8px 25px -5px ${theme.primary_color}50`,
@@ -317,10 +317,12 @@ export function ProductDetailPage() {
         </div>
       </main>
 
-      {/* Mobile Floating Bar */}
-      <div className="fixed inset-x-0 bottom-0 z-50 md:hidden animate-slide-up" style={{
+      {/* Mobile Floating Bar - Only visible on mobile */}
+      <div className="fixed inset-x-0 bottom-0 z-50 block md:hidden animate-slide-up" style={{
         background: `linear-gradient(to top, ${theme.surface_color}FF, ${theme.surface_color}F2 60%)`,
         paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+        boxShadow: `0 -4px 20px ${theme.muted_color}15`,
+        borderTop: `1px solid ${theme.muted_color}15`,
       }}>
         <div className="mx-auto max-w-2xl px-4 py-3">
           <div className="flex items-center gap-3">
