@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Business;
 use App\Models\BusinessNotificationSetting;
+use App\Models\Order;
 use App\Models\TelegramConnectionCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -118,6 +119,43 @@ class TelegramNotificationService
         $this->sendMessage($settings->telegram_chat_id, "SellFlow notifications are working for {$business->name}. New order alerts will appear in this chat.");
     }
 
+    public function sendNewOrder(Order $order): void
+    {
+        $order->loadMissing(['business.notificationSetting', 'items']);
+        $settings = $order->business?->notificationSetting;
+
+        if (! $settings?->telegram_enabled || ! $settings->new_order_enabled || ! $settings->telegram_chat_id) {
+            return;
+        }
+
+        $items = $order->items
+            ->take(10)
+            ->map(fn ($item) => '• <b>'.$item->quantity.'×</b> '.$this->escapeHtml($item->product_name).' — $'.$this->money($item->line_total))
+            ->all();
+
+        if ($order->items->count() > 10) {
+            $items[] = '• +'.($order->items->count() - 10).' more item(s)';
+        }
+
+        $message = implode("\n", [
+            '🛍 <b>New order received</b>',
+            '<code>#'.$this->escapeHtml($order->order_number).'</code> · '.$this->escapeHtml($order->business->name),
+            '',
+            '<blockquote><b>Customer</b>',
+            $this->escapeHtml($order->customer_name),
+            '📞 '.$this->escapeHtml($order->customer_phone),
+            '📍 '.$this->escapeHtml($order->delivery_address).'</blockquote>',
+            '',
+            '<b>Order items</b>',
+            ...$items,
+            '',
+            '<b>Total</b>  <code>$'.$this->money($order->total).'</code>',
+            '💳 '.$this->escapeHtml(Str::headline($order->payment_method)).' · '.$this->escapeHtml(Str::headline($order->status)),
+        ]);
+
+        $this->sendMessage($settings->telegram_chat_id, $message, 'HTML');
+    }
+
     public function disconnect(Business $business): BusinessNotificationSetting
     {
         $settings = $this->settings($business);
@@ -127,7 +165,7 @@ class TelegramNotificationService
         return $settings->fresh();
     }
 
-    public function sendMessage(string $chatId, string $text): void
+    public function sendMessage(string $chatId, string $text, ?string $parseMode = null): void
     {
         $token = trim((string) config('services.telegram.bot_token'));
 
@@ -135,8 +173,14 @@ class TelegramNotificationService
             throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN to the API environment.');
         }
 
+        $payload = array_filter([
+            'chat_id' => $chatId,
+            'text' => $text,
+            'parse_mode' => $parseMode,
+        ], fn ($value) => $value !== null);
+
         Http::asJson()->timeout(10)->retry(2, 300)
-            ->post("https://api.telegram.org/bot{$token}/sendMessage", ['chat_id' => $chatId, 'text' => $text])
+            ->post("https://api.telegram.org/bot{$token}/sendMessage", $payload)
             ->throw();
     }
 
@@ -161,6 +205,16 @@ class TelegramNotificationService
     private function hashCode(string $code): string
     {
         return hash('sha256', Str::upper(trim($code)));
+    }
+
+    private function money(string|float|int $amount): string
+    {
+        return number_format((float) $amount, 2, '.', '');
+    }
+
+    private function escapeHtml(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     private function chatName(array $chat): string

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Storefront;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Storefront\CheckoutRequest;
 use App\Http\Resources\Storefront\PublicOrderResource;
+use App\Jobs\SendNewOrderTelegramNotification;
 use App\Services\Storefront\CheckoutService;
 use Illuminate\Http\JsonResponse;
 
@@ -15,6 +16,7 @@ class CheckoutController extends Controller
     public function store(CheckoutRequest $request, string $slug): JsonResponse
     {
         $order = $this->checkoutService->create($slug, $request->validated());
+        SendNewOrderTelegramNotification::dispatchAfterResponse($order->id);
 
         return response()->json([
             'success' => true,
