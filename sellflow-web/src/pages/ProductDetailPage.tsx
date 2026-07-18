@@ -145,17 +145,23 @@ export function ProductDetailPage() {
         </nav>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:gap-16">
-          {/* Image Section - FIXED ROUNDED CORNERS */}
+          {/* ====================== IMAGE SECTION (FIXED) ====================== */}
           <div className="relative">
+            {/* Main Image Container - Fixed border radius for all screen sizes especially mobile */}
             <div 
               className="group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl" 
               style={{ 
                 borderRadius: "var(--store-radius)", 
                 backgroundColor: `${theme.muted_color}08`,
-                border: `1px solid ${theme.muted_color}15` 
+                border: `1px solid ${theme.muted_color}15`,
+                maxWidth: "100%",
+                margin: "0 auto"
               }}
             >
-              <div className="aspect-[4/3] lg:aspect-square">
+              <div 
+                className="aspect-[4/3] lg:aspect-square overflow-hidden"
+                style={{ borderRadius: "var(--store-radius)" }}
+              >
                 {product.thumbnail ? (
                   <>
                     {!imageLoaded && (
@@ -166,6 +172,7 @@ export function ProductDetailPage() {
                       alt={product.name} 
                       className={`h-full w-full object-cover transition-all duration-700 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                       onLoad={() => setImageLoaded(true)}
+                      style={{ borderRadius: "var(--store-radius)" }}
                     />
                   </>
                 ) : (
@@ -183,20 +190,23 @@ export function ProductDetailPage() {
               )}
             </div>
 
-            {/* Thumbnail Navigation - FIXED ROUNDED CORNERS */}
+            {/* Thumbnail Navigation */}
             <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
               {[product.thumbnail, product.thumbnail, product.thumbnail].slice(0, 3).map((img, idx) => (
                 <button
                   key={idx}
-                  className={`h-20 w-20 flex-shrink-0 overflow-hidden border-2 transition-all hover:scale-105 ${
-                    idx === 0 ? 'border-2' : 'border-transparent'
-                  }`}
+                  className="h-20 w-20 flex-shrink-0 overflow-hidden border-2 transition-all hover:scale-105"
                   style={{ 
                     borderRadius: "var(--store-radius-sm)",
                     borderColor: idx === 0 ? theme.primary_color : `${theme.muted_color}30`
                   }}
                 >
-                  <img src={img || product.thumbnail} alt={`${product.name} ${idx + 1}`} className="h-full w-full object-cover" />
+                  <img 
+                    src={img || product.thumbnail} 
+                    alt={`${product.name} ${idx + 1}`} 
+                    className="h-full w-full object-cover"
+                    style={{ borderRadius: "var(--store-radius-sm)" }}
+                  />
                 </button>
               ))}
             </div>
@@ -261,7 +271,7 @@ export function ProductDetailPage() {
               </div>
             )}
 
-            {/* Desktop Add to Cart - Hidden on mobile */}
+            {/* Desktop Add to Cart */}
             <div className="hidden md:block mt-auto pt-8">
               <div className="flex items-center gap-4 rounded-xl p-4 shadow-sm" style={{ 
                 border: `1px solid ${theme.muted_color}20`,
@@ -317,7 +327,7 @@ export function ProductDetailPage() {
         </div>
       </main>
 
-      {/* Mobile Floating Bar - Only visible on mobile */}
+      {/* Mobile Floating Bar */}
       <div className="fixed inset-x-0 bottom-0 z-50 block md:hidden animate-slide-up" style={{
         background: `linear-gradient(to top, ${theme.surface_color}FF, ${theme.surface_color}F2 60%)`,
         paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
@@ -369,6 +379,7 @@ export function ProductDetailPage() {
   );
 }
 
+// Quantity Control Component
 function QuantityControl({
   quantity,
   stock,
@@ -422,6 +433,7 @@ function QuantityControl({
   );
 }
 
+// Product Not Found Component
 function ProductNotFound({ slug }: { slug: string }) {
   return (
     <div className="grid min-h-screen place-items-center bg-gradient-to-br from-slate-50 to-slate-100 px-6 py-12 text-center">
