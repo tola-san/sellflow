@@ -21,14 +21,17 @@ class TelegramNotificationService
         ]);
     }
 
-    public function createConnectionCode(Business $business): array
+    public function createConnectionCode(Business $business, string $webhookUrl): array
     {
-        $botUsername = config('services.telegram.bot_username');
+        $botToken = trim((string) config('services.telegram.bot_token'));
+        $botUsername = ltrim(trim((string) config('services.telegram.bot_username')), '@');
+        $webhookSecret = trim((string) config('services.telegram.webhook_secret'));
 
-        if (! is_string(config('services.telegram.bot_token')) || config('services.telegram.bot_token') === ''
-            || ! is_string($botUsername) || $botUsername === '') {
-            throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN and TELEGRAM_BOT_USERNAME to the API environment.');
+        if ($botToken === '' || $botUsername === '' || $webhookSecret === '') {
+            throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, and TELEGRAM_WEBHOOK_SECRET to the API environment.');
         }
+
+        $this->registerWebhook($botToken, $webhookSecret, $webhookUrl);
 
         TelegramConnectionCode::query()->where('business_id', $business->id)->whereNull('used_at')->delete();
 
@@ -125,6 +128,24 @@ class TelegramNotificationService
         Http::asJson()->timeout(10)->retry(2, 300)
             ->post("https://api.telegram.org/bot{$token}/sendMessage", ['chat_id' => $chatId, 'text' => $text])
             ->throw();
+    }
+
+    private function registerWebhook(string $token, string $secret, string $webhookUrl): void
+    {
+        try {
+            $response = Http::asJson()->timeout(10)->retry(2, 300)
+                ->post("https://api.telegram.org/bot{$token}/setWebhook", [
+                    'url' => $webhookUrl,
+                    'secret_token' => $secret,
+                ])
+                ->throw();
+        } catch (\Throwable $exception) {
+            throw new RuntimeException('SellFlow could not register the Telegram webhook. Verify the bot token and deployed API URL, then try again.', previous: $exception);
+        }
+
+        if ($response->json('ok') !== true || $response->json('result') !== true) {
+            throw new RuntimeException('Telegram rejected the webhook configuration. Verify the bot token, webhook secret, and HTTPS API URL.');
+        }
     }
 
     private function hashCode(string $code): string
