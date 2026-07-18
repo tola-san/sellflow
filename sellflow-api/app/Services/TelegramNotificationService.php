@@ -27,8 +27,18 @@ class TelegramNotificationService
         $botUsername = ltrim(trim((string) config('services.telegram.bot_username')), '@');
         $webhookSecret = trim((string) config('services.telegram.webhook_secret'));
 
-        if ($botToken === '' || $botUsername === '' || $webhookSecret === '') {
-            throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, and TELEGRAM_WEBHOOK_SECRET to the API environment.');
+        $missingVariables = array_keys(array_filter([
+            'TELEGRAM_BOT_TOKEN' => $botToken,
+            'TELEGRAM_BOT_USERNAME' => $botUsername,
+            'TELEGRAM_WEBHOOK_SECRET' => $webhookSecret,
+        ], fn (string $value): bool => $value === ''));
+
+        if ($missingVariables !== []) {
+            throw new RuntimeException('Telegram bot is not configured. Missing Render API variables: '.implode(', ', $missingVariables).'. Save them and redeploy the API service.');
+        }
+
+        if (filter_var($webhookUrl, FILTER_VALIDATE_URL) === false || parse_url($webhookUrl, PHP_URL_SCHEME) !== 'https') {
+            throw new RuntimeException('TELEGRAM_WEBHOOK_URL must be a valid HTTPS URL for the deployed API service.');
         }
 
         $this->registerWebhook($botToken, $webhookSecret, $webhookUrl);
@@ -119,9 +129,9 @@ class TelegramNotificationService
 
     public function sendMessage(string $chatId, string $text): void
     {
-        $token = config('services.telegram.bot_token');
+        $token = trim((string) config('services.telegram.bot_token'));
 
-        if (! is_string($token) || $token === '') {
+        if ($token === '') {
             throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN to the API environment.');
         }
 

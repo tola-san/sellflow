@@ -95,18 +95,36 @@ class TelegramNotificationApiTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_connection_code_returns_clear_error_when_bot_is_not_configured(): void
+    public function test_connection_code_reports_the_exact_missing_bot_configuration(): void
     {
         config([
-            'services.telegram.bot_token' => null,
-            'services.telegram.bot_username' => null,
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
             'services.telegram.webhook_secret' => null,
         ]);
         $this->actingAsBusinessOwner('Coffee House');
 
         $this->postJson('/api/v1/business/notifications/telegram/connect-code')
             ->assertStatus(503)
-            ->assertJsonPath('message', 'Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, and TELEGRAM_WEBHOOK_SECRET to the API environment.');
+            ->assertJsonPath('message', 'Telegram bot is not configured. Missing Render API variables: TELEGRAM_WEBHOOK_SECRET. Save them and redeploy the API service.');
+    }
+
+    public function test_connection_code_rejects_a_non_https_webhook_url(): void
+    {
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+            'services.telegram.webhook_secret' => 'test-webhook-secret',
+            'services.telegram.webhook_url' => 'http://sellflow.test/api/v1/integrations/telegram/webhook',
+        ]);
+        Http::preventStrayRequests();
+        $this->actingAsBusinessOwner('Coffee House');
+
+        $this->postJson('/api/v1/business/notifications/telegram/connect-code')
+            ->assertStatus(503)
+            ->assertJsonPath('message', 'TELEGRAM_WEBHOOK_URL must be a valid HTTPS URL for the deployed API service.');
+
+        Http::assertNothingSent();
     }
 
     public function test_connected_seller_can_update_preferences_test_and_disconnect(): void
