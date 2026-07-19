@@ -7,11 +7,16 @@ use App\Http\Requests\Storefront\CheckoutRequest;
 use App\Http\Resources\Storefront\PublicOrderResource;
 use App\Jobs\SendNewOrderTelegramNotification;
 use App\Services\Storefront\CheckoutService;
+use App\Services\TelegramMiniAppAuthService;
 use Illuminate\Http\JsonResponse;
 
 class CheckoutController extends Controller
 {
-    public function __construct(protected CheckoutService $checkoutService) {}
+    public function __construct(
+        protected CheckoutService $checkoutService,
+        protected TelegramMiniAppAuthService $telegramAuth,
+        protected OrderTelegramNotificationService $notifications,
+    ) {}
 
     public function store(CheckoutRequest $request, string $slug): JsonResponse
     {

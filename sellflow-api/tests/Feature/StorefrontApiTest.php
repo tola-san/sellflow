@@ -191,6 +191,76 @@ class StorefrontApiTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_verified_telegram_checkout_notifies_customer_and_connected_seller(): void
+    {
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+        ]);
+        Http::fake(['https://api.telegram.org/*' => Http::response(['ok' => true])]);
+
+        $store = $this->business('Telegram Store', 'telegram-store');
+        $store->notificationSetting()->create([
+            'telegram_chat_id' => 'SELLER_CHAT',
+            'telegram_chat_name' => 'Store Team',
+            'telegram_enabled' => true,
+            'new_order_enabled' => true,
+            'payment_enabled' => true,
+            'connected_at' => now(),
+        ]);
+        $category = $this->category($store, 'Drinks', true);
+        $this->product($store, $category, 'Iced Latte', 'iced-latte', true);
+
+        $response = $this->postJson('/api/v1/store/telegram-store/checkout', [
+            'customer_name' => 'Telegram Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'telegram_init_data' => $this->signedTelegramInitData('778899', 'coffee_customer'),
+            'items' => [['product_slug' => 'iced-latte', 'quantity' => 1]],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.telegram_receipt_sent', true);
+
+        $this->assertDatabaseHas('orders', [
+            'business_id' => $store->id,
+            'telegram_user_id' => '778899',
+            'telegram_chat_id' => '778899',
+            'telegram_username' => 'coffee_customer',
+            'telegram_notifications_enabled' => true,
+            'telegram_last_notified_status' => 'pending',
+        ]);
+
+        Http::assertSentCount(2);
+        Http::assertSent(fn ($request) => $request['chat_id'] === 'SELLER_CHAT'
+            && str_contains($request['text'], 'New SellFlow order'));
+        Http::assertSent(fn ($request) => $request['chat_id'] === '778899'
+            && str_contains($request['text'], 'Order received')
+            && $request['reply_markup']['inline_keyboard'][0][0]['text'] === 'Open store');
+    }
+
+    public function test_checkout_rejects_forged_telegram_customer_data(): void
+    {
+        config(['services.telegram.bot_token' => 'TEST_TOKEN']);
+        Http::fake();
+        $store = $this->business('Secure Telegram Store', 'secure-telegram-store');
+        $category = $this->category($store, 'Drinks', true);
+        $this->product($store, $category, 'Tea', 'tea', true);
+
+        $this->postJson('/api/v1/store/secure-telegram-store/checkout', [
+            'customer_name' => 'Forged Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'telegram_init_data' => 'auth_date='.now()->timestamp.'&user=%7B%22id%22%3A123%7D&hash='.str_repeat('0', 64),
+            'items' => [['product_slug' => 'tea', 'quantity' => 1]],
+        ])->assertUnprocessable()->assertJsonValidationErrors('telegram_init_data');
+
+        $this->assertDatabaseCount('orders', 0);
+        Http::assertNothingSent();
+    }
+
     public function test_checkout_rejects_products_from_another_business_and_excess_stock(): void
     {
         $store = $this->business('First Store', 'first-store');
@@ -505,5 +575,24 @@ class StorefrontApiTest extends TestCase
             'stock' => 10,
             'is_active' => $active,
         ]);
+    }
+
+    private function signedTelegramInitData(string $userId, string $username): string
+    {
+        $parameters = [
+            'auth_date' => (string) now()->timestamp,
+            'query_id' => 'AAHdF6IQAAAAAN0XohDhrOrc',
+            'user' => json_encode([
+                'id' => (int) $userId,
+                'first_name' => 'Telegram',
+                'username' => $username,
+            ], JSON_UNESCAPED_SLASHES),
+        ];
+        ksort($parameters, SORT_STRING);
+        $dataCheckString = collect($parameters)->map(fn ($value, $key) => $key.'='.$value)->implode("\n");
+        $secretKey = hash_hmac('sha256', 'TEST_TOKEN', 'WebAppData', true);
+        $parameters['hash'] = hash_hmac('sha256', $dataCheckString, $secretKey);
+
+        return http_build_query($parameters, '', '&', PHP_QUERY_RFC3986);
     }
 }

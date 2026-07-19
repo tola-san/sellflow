@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Business;
+use App\Models\Order;
 use App\Models\TelegramConnectionCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -183,6 +184,43 @@ class TelegramNotificationApiTest extends TestCase
             ])->assertOk();
 
         $this->assertDatabaseMissing('business_notification_settings', ['business_id' => $business->id]);
+    }
+
+    public function test_customer_receives_message_when_seller_updates_order_status(): void
+    {
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+        ]);
+        Http::fake(['https://api.telegram.org/*' => Http::response(['ok' => true])]);
+        $business = $this->actingAsBusinessOwner('Status Store');
+        $order = Order::create([
+            'business_id' => $business->id,
+            'order_number' => 'SF-STATUS-TEST',
+            'customer_name' => 'Telegram Customer',
+            'customer_phone' => '012345678',
+            'telegram_user_id' => '778899',
+            'telegram_chat_id' => '778899',
+            'telegram_notifications_enabled' => true,
+            'telegram_last_notified_status' => 'pending',
+            'delivery_address' => 'Phnom Penh',
+            'subtotal' => 10,
+            'total' => 10,
+            'payment_method' => 'cash',
+            'payment_status' => 'pending',
+            'status' => 'pending',
+        ]);
+
+        $this->patchJson("/api/v1/orders/{$order->id}/status", ['status' => 'confirmed'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'confirmed');
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'telegram_last_notified_status' => 'confirmed',
+        ]);
+        Http::assertSent(fn ($request) => $request['chat_id'] === '778899'
+            && str_contains($request['text'], 'seller confirmed your order'));
     }
 
     private function actingAsBusinessOwner(string $businessName): Business
