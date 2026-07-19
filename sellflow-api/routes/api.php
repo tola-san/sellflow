@@ -3,13 +3,13 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Business\BusinessController;
 use App\Http\Controllers\Api\Business\BusinessThemeController;
+use App\Http\Controllers\Api\Business\TelegramNotificationController;
 use App\Http\Controllers\Api\Category\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
-use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Order\OrderController;
-use App\Http\Controllers\Api\Storefront\StorefrontController;
+use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Storefront\CheckoutController;
-use App\Http\Controllers\Api\Business\TelegramNotificationController;
+use App\Http\Controllers\Api\Storefront\StorefrontController;
 use App\Http\Controllers\Api\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,7 +26,9 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/integrations/telegram/webhook', TelegramWebhookController::class)->middleware('throttle:60,1');
+    Route::post('/integrations/telegram/webhook', TelegramWebhookController::class)
+        ->middleware('throttle:60,1')
+        ->name('telegram.webhook');
 
     /*
     |--------------------------------------------------------------------------

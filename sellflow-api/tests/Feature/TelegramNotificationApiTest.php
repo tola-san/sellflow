@@ -25,7 +25,13 @@ class TelegramNotificationApiTest extends TestCase
 
     public function test_seller_can_generate_a_hashed_expiring_connection_code(): void
     {
-        config(['services.telegram.bot_token' => 'TEST_TOKEN', 'services.telegram.bot_username' => 'sellflow_test_bot']);
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+            'services.telegram.webhook_secret' => 'test-webhook-secret',
+            'services.telegram.webhook_url' => 'https://api.sellflow.test/api/v1/integrations/telegram/webhook',
+        ]);
+        Http::fake(['https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true])]);
         $business = $this->actingAsBusinessOwner('Coffee House');
 
         $response = $this->postJson('/api/v1/business/notifications/telegram/connect-code');
@@ -42,6 +48,9 @@ class TelegramNotificationApiTest extends TestCase
         $this->assertNotSame($plainCode, $record->code_hash);
         $this->assertTrue($record->expires_at->isFuture());
         $this->assertTrue($record->expires_at->lessThanOrEqualTo(now()->addMinutes(10)));
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.telegram.org/botTEST_TOKEN/setWebhook'
+            && $request['url'] === 'https://api.sellflow.test/api/v1/integrations/telegram/webhook'
+            && $request['secret_token'] === 'test-webhook-secret');
     }
 
     public function test_valid_webhook_connects_the_business_and_consumes_the_code(): void
@@ -50,8 +59,9 @@ class TelegramNotificationApiTest extends TestCase
             'services.telegram.bot_token' => 'TEST_TOKEN',
             'services.telegram.bot_username' => 'sellflow_test_bot',
             'services.telegram.webhook_secret' => 'test-webhook-secret',
+            'services.telegram.webhook_url' => 'https://api.sellflow.test/api/v1/integrations/telegram/webhook',
         ]);
-        Http::fake(['https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => []])]);
+        Http::fake(['https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true])]);
         $business = $this->actingAsBusinessOwner('Coffee House');
         $code = $this->postJson('/api/v1/business/notifications/telegram/connect-code')->json('data.code');
 
@@ -86,14 +96,36 @@ class TelegramNotificationApiTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_connection_code_returns_clear_error_when_bot_is_not_configured(): void
+    public function test_connection_code_reports_the_exact_missing_bot_configuration(): void
     {
-        config(['services.telegram.bot_token' => null, 'services.telegram.bot_username' => null]);
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+            'services.telegram.webhook_secret' => null,
+        ]);
         $this->actingAsBusinessOwner('Coffee House');
 
         $this->postJson('/api/v1/business/notifications/telegram/connect-code')
             ->assertStatus(503)
-            ->assertJsonPath('message', 'Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN and TELEGRAM_BOT_USERNAME to the API environment.');
+            ->assertJsonPath('message', 'Telegram bot is not configured. Missing Render API variables: TELEGRAM_WEBHOOK_SECRET. Save them and redeploy the API service.');
+    }
+
+    public function test_connection_code_rejects_a_non_https_webhook_url(): void
+    {
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+            'services.telegram.webhook_secret' => 'test-webhook-secret',
+            'services.telegram.webhook_url' => 'http://sellflow.test/api/v1/integrations/telegram/webhook',
+        ]);
+        Http::preventStrayRequests();
+        $this->actingAsBusinessOwner('Coffee House');
+
+        $this->postJson('/api/v1/business/notifications/telegram/connect-code')
+            ->assertStatus(503)
+            ->assertJsonPath('message', 'TELEGRAM_WEBHOOK_URL must be a valid HTTPS URL for the deployed API service.');
+
+        Http::assertNothingSent();
     }
 
     public function test_connected_seller_can_update_preferences_test_and_disconnect(): void

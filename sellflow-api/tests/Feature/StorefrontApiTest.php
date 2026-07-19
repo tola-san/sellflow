@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\SendNewOrderTelegramNotification;
 use App\Models\Business;
 use App\Models\Category;
 use App\Models\Order;
@@ -10,6 +11,7 @@ use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -89,6 +91,7 @@ class StorefrontApiTest extends TestCase
 
     public function test_public_checkout_calculates_prices_and_creates_tenant_scoped_order(): void
     {
+        Bus::fake([SendNewOrderTelegramNotification::class]);
         $store = $this->business('Checkout Store', 'checkout-store');
         $category = $this->category($store, 'Drinks', true);
         $product = $this->product($store, $category, 'Iced Latte', 'iced-latte', true);
@@ -116,6 +119,76 @@ class StorefrontApiTest extends TestCase
             'customer_phone' => '012345678',
             'total' => 9.00,
         ]);
+
+        $order = Order::query()->where('business_id', $store->id)->firstOrFail();
+        Bus::assertDispatchedAfterResponse(
+            SendNewOrderTelegramNotification::class,
+            fn (SendNewOrderTelegramNotification $job) => $job->orderId === $order->id
+        );
+    }
+
+    public function test_successful_checkout_sends_a_new_order_alert_to_connected_telegram(): void
+    {
+        config(['services.telegram.bot_token' => 'TEST_TOKEN']);
+        Http::fake(['https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true])]);
+        $store = $this->business('Alert & Store', 'alert-store');
+        $store->notificationSetting()->create([
+            'telegram_chat_id' => '987654321',
+            'telegram_chat_name' => 'Alert Team',
+            'telegram_enabled' => true,
+            'new_order_enabled' => true,
+            'payment_enabled' => true,
+            'connected_at' => now(),
+        ]);
+        $category = $this->category($store, 'Drinks', true);
+        $product = $this->product($store, $category, 'Iced Latte', 'iced-latte', true);
+        $product->update(['price' => 4.50, 'stock' => 5]);
+
+        $response = $this->postJson('/api/v1/store/alert-store/checkout', [
+            'customer_name' => 'Telegram <Customer>',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'items' => [['product_slug' => 'iced-latte', 'quantity' => 2]],
+        ]);
+
+        $response->assertCreated();
+        $orderNumber = $response->json('data.order_number');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.telegram.org/botTEST_TOKEN/sendMessage'
+            && $request['chat_id'] === '987654321'
+            && $request['parse_mode'] === 'HTML'
+            && str_contains($request['text'], "<code>#{$orderNumber}</code>")
+            && str_contains($request['text'], '<blockquote><b>Customer</b>')
+            && str_contains($request['text'], 'Telegram &lt;Customer&gt;')
+            && str_contains($request['text'], 'Alert &amp; Store')
+            && str_contains($request['text'], '<b>Total</b>  <code>$9.00</code>'));
+    }
+
+    public function test_checkout_skips_telegram_when_new_order_alerts_are_disabled(): void
+    {
+        config(['services.telegram.bot_token' => 'TEST_TOKEN']);
+        Http::fake();
+        $store = $this->business('Quiet Store', 'quiet-store');
+        $store->notificationSetting()->create([
+            'telegram_chat_id' => '987654321',
+            'telegram_enabled' => true,
+            'new_order_enabled' => false,
+            'payment_enabled' => true,
+            'connected_at' => now(),
+        ]);
+        $category = $this->category($store, 'Drinks', true);
+        $this->product($store, $category, 'Tea', 'tea', true);
+
+        $this->postJson('/api/v1/store/quiet-store/checkout', [
+            'customer_name' => 'Quiet Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'items' => [['product_slug' => 'tea', 'quantity' => 1]],
+        ])->assertCreated();
+
+        Http::assertNothingSent();
     }
 
     public function test_verified_telegram_checkout_notifies_customer_and_connected_seller(): void

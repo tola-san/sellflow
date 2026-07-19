@@ -26,7 +26,10 @@ class TelegramNotificationController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Telegram connection code generated.',
-                'data' => $this->telegram->createConnectionCode($this->business($request)),
+                'data' => $this->telegram->createConnectionCode(
+                    $this->business($request),
+                    (string) config('services.telegram.webhook_url')
+                ),
             ], 201);
         } catch (RuntimeException $exception) {
             return response()->json(['message' => $exception->getMessage()], 503);
