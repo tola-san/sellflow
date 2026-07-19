@@ -165,7 +165,7 @@ class TelegramNotificationService
         return $settings->fresh();
     }
 
-    public function sendMessage(string $chatId, string $text, ?string $parseMode = null): void
+    public function sendMessage(string $chatId, string $text, string|array|null $options = null): void
     {
         $token = trim((string) config('services.telegram.bot_token'));
 
@@ -173,11 +173,16 @@ class TelegramNotificationService
             throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN to the API environment.');
         }
 
-        $payload = array_filter([
+        $payload = [
             'chat_id' => $chatId,
             'text' => $text,
-            'parse_mode' => $parseMode,
-        ], fn ($value) => $value !== null);
+        ];
+
+        if (is_string($options)) {
+            $payload['parse_mode'] = $options;
+        } elseif (is_array($options)) {
+            $payload = [...$payload, ...$options];
+        }
 
         Http::asJson()->timeout(10)->retry(2, 300)
             ->post("https://api.telegram.org/bot{$token}/sendMessage", $payload)

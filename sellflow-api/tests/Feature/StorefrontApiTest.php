@@ -234,7 +234,7 @@ class StorefrontApiTest extends TestCase
 
         Http::assertSentCount(2);
         Http::assertSent(fn ($request) => $request['chat_id'] === 'SELLER_CHAT'
-            && str_contains($request['text'], 'New SellFlow order'));
+            && str_contains($request['text'], 'New order received'));
         Http::assertSent(fn ($request) => $request['chat_id'] === '778899'
             && str_contains($request['text'], 'Order received')
             && $request['reply_markup']['inline_keyboard'][0][0]['text'] === 'Open store');
