@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, BadgeCheck, Banknote, Landmark, ShoppingBag } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { checkoutService, type CheckoutPayload, type PublicOrder } from "../Services/checkout";
 import { storefrontService, type Storefront } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
 import { ErrorMessage, inputClass } from "../components/dashboard/DashboardUI";
+import { useTelegramMainButton, useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 
 const initialForm: Omit<CheckoutPayload, "items"> = {
   customer_name: "",
@@ -23,8 +24,10 @@ export function CheckoutPage() {
   const [order, setOrder] = useState<PublicOrder | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [submitting, setSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const cart = useCart();
+  const { close, customerName, hapticSuccess, isTelegramClient, storePath } = useTelegramMiniApp();
   const items = cart.items(slug);
 
   const primary = store?.business?.theme?.primary_color || "#3b82f6";
@@ -36,6 +39,20 @@ export function CheckoutPage() {
     if (!slug) return;
     storefrontService.getStore(slug).then(setStore).catch(setError);
   }, [slug]);
+
+  useEffect(() => {
+    // Telegram profile data is only a convenience prefill; checkout still validates it as customer input.
+    if (customerName) setForm((current) => current.customer_name ? current : { ...current, customer_name: customerName });
+  }, [customerName]);
+
+  useTelegramMainButton({
+    text: submitting ? "Placing order…" : `Place order · $${subtotal.toFixed(2)}`,
+    color: primary,
+    visible: isTelegramClient && Boolean(store) && items.length > 0 && !order,
+    enabled: !submitting,
+    loading: submitting,
+    onClick: () => formRef.current?.requestSubmit(),
+  });
 
   const change = (key: keyof typeof form, value: string) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -58,6 +75,7 @@ export function CheckoutPage() {
       const created = await checkoutService.createOrder(slug, payload);
       setOrder(created);
       cart.clear(slug);
+      hapticSuccess();
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err);
@@ -95,12 +113,13 @@ export function CheckoutPage() {
           </div>
 
           <Link
-            to={`/${slug}`}
+            to={storePath(slug)}
             className="mt-8 block w-full rounded-2xl py-4 text-lg font-semibold text-white"
             style={{ backgroundColor: primary }}
           >
             Back to Store
           </Link>
+          {isTelegramClient && <button type="button" onClick={close} className="mt-3 w-full rounded-2xl border border-slate-200 py-3.5 text-sm font-semibold text-slate-600">Close</button>}
         </div>
       </div>
     );
@@ -121,7 +140,7 @@ export function CheckoutPage() {
           <ShoppingBag className="mx-auto text-slate-300" size={64} />
           <h1 className="mt-6 text-3xl font-bold">Cart is empty</h1>
           <Link
-            to={`/${slug}`}
+            to={storePath(slug)}
             className="mt-8 inline-flex rounded-2xl px-8 py-4 text-lg font-semibold text-white"
             style={{ backgroundColor: primary }}
           >
@@ -136,7 +155,7 @@ export function CheckoutPage() {
     <div className="min-h-screen bg-slate-50 pb-12">
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 flex items-center">
-          <Link to={`/${slug}/cart`} className="flex items-center gap-2 text-sm font-medium hover:text-slate-900">
+          <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 text-sm font-medium hover:text-slate-900">
             <ArrowLeft size={18} />
             Back to Cart
           </Link>
@@ -155,7 +174,7 @@ export function CheckoutPage() {
         <div className="grid gap-8 lg:grid-cols-5">
           {/* Form */}
           <div className="lg:col-span-3">
-            <form onSubmit={submit} className="space-y-8">
+            <form ref={formRef} onSubmit={submit} className="space-y-8">
               {/* Customer Info */}
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-6">Customer Information</h2>
@@ -214,7 +233,7 @@ export function CheckoutPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-2xl py-4 text-lg font-semibold text-white disabled:opacity-70 transition"
+                className={`${isTelegramClient ? "hidden" : "block"} w-full rounded-2xl py-4 text-lg font-semibold text-white disabled:opacity-70 transition`}
                 style={{ backgroundColor: primary }}
               >
                 {submitting ? "Placing Order..." : "Place Order"}

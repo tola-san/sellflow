@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import { storefrontService, type StorefrontProductDetail } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
+import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 
 export function ProductDetailPage() {
   const { slug = "", productSlug = "" } = useParams();
@@ -15,6 +16,7 @@ export function ProductDetailPage() {
   const [shareOpen, setShareOpen] = useState(false);
   const cart = useCart();
   const { showToast } = useToast();
+  const { hapticImpact, storePath } = useTelegramMiniApp();
 
   useEffect(() => {
     setMissing(false);
@@ -82,6 +84,7 @@ export function ProductDetailPage() {
 
   const addToCart = () => {
     cart.add(slug, product, quantity);
+    hapticImpact();
     showToast(`${quantity} × ${product.name} added to cart.`, "success");
   };
 
@@ -143,7 +146,7 @@ export function ProductDetailPage() {
       }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
           <Link 
-            to={`/${slug}`} 
+            to={storePath(slug)}
             className="group flex min-w-0 flex-1 items-center gap-3 transition-all hover:opacity-80"
           >
             {business.logo ? (
@@ -160,7 +163,7 @@ export function ProductDetailPage() {
           </Link>
 
           <Link 
-            to={`/${slug}/cart`} 
+            to={storePath(slug, "/cart")}
             className="relative flex shrink-0 items-center gap-2 px-3 py-2 text-sm font-semibold transition-all hover:scale-105 active:scale-95 sm:px-4"
             style={{ 
               borderRadius: "var(--store-radius)", 
@@ -180,9 +183,9 @@ export function ProductDetailPage() {
       <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="flex min-w-0 items-center gap-2 overflow-hidden text-sm" aria-label="Breadcrumb" style={{ color: theme.muted_color }}>
-          <Link to={`/${slug}`} className="shrink-0 transition hover:opacity-70">Home</Link>
+          <Link to={storePath(slug)} className="shrink-0 transition hover:opacity-70">Home</Link>
           <span className="shrink-0 opacity-40">/</span>
-          <Link to={`/${slug}`} className="max-w-[42%] truncate transition hover:opacity-70 sm:max-w-none">{business.name}</Link>
+          <Link to={storePath(slug)} className="max-w-[42%] truncate transition hover:opacity-70 sm:max-w-none">{business.name}</Link>
           <span className="shrink-0 opacity-40">/</span>
           <span className="min-w-0 truncate font-medium" style={{ color: theme.text_color }}>{product.name}</span>
         </nav>
@@ -529,6 +532,7 @@ function QuantityControl({
 
 // Product Not Found Component
 function ProductNotFound({ slug }: { slug: string }) {
+  const { storePath } = useTelegramMiniApp();
   return (
     <div className="grid min-h-screen place-items-center bg-gradient-to-br from-slate-50 to-slate-100 px-6 py-12 text-center">
       <div className="animate-fade-in-up">
@@ -540,7 +544,7 @@ function ProductNotFound({ slug }: { slug: string }) {
           Sorry, this product may have been removed or is currently unavailable.
         </p>
         <Link 
-          to={`/${slug}`} 
+          to={storePath(slug)}
           className="group mt-10 inline-flex items-center gap-3 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-semibold text-white transition-all hover:bg-black hover:scale-105 active:scale-95 shadow-xl"
         >
           <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" /> 

@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { storefrontService, type Storefront } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
+import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 
 const backdropVariants = {
   hidden: { opacity: 0 },
@@ -30,6 +31,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     const [loading, setLoading] = useState(true);
 
     const cart = useCart();
+    const { hapticImpact, storePath } = useTelegramMiniApp();
     const items = cart.items(slug);
 
     const primary = store?.business?.theme?.primary_color || "#3b82f6";
@@ -69,7 +71,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     />
 
                     <motion.div
-                        className="fixed right-0 top-0 z-[60] h-full w-full max-w-[420px] bg-white shadow-2xl flex flex-col md:max-w-md"
+                        className="telegram-safe-fixed fixed right-0 top-0 z-[60] h-full w-full max-w-[420px] bg-white shadow-2xl flex flex-col md:max-w-md"
                         variants={drawerVariants}
                         initial="hidden"
                         animate="visible"
@@ -142,11 +144,11 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
                                             <div className="mt-4 flex items-center justify-between">
                                                 <div className="flex items-center border border-slate-200 rounded-xl">
-                                                    <button onClick={() => quantity === 1 ? cart.remove(slug, product.slug) : cart.update(slug, product.slug, quantity - 1)} className="px-3 py-2 active:bg-slate-100">
+                                                    <button onClick={() => { hapticImpact(); quantity === 1 ? cart.remove(slug, product.slug) : cart.update(slug, product.slug, quantity - 1); }} className="px-3 py-2 active:bg-slate-100">
                                                         <Minus size={18} />
                                                     </button>
                                                     <span className="px-5 font-semibold">{quantity}</span>
-                                                    <button onClick={() => cart.update(slug, product.slug, quantity + 1)} className="px-3 py-2 active:bg-slate-100">
+                                                    <button onClick={() => { hapticImpact(); cart.update(slug, product.slug, quantity + 1); }} className="px-3 py-2 active:bg-slate-100">
                                                         <Plus size={18} />
                                                     </button>
                                                 </div>
@@ -169,7 +171,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                                 </div>
 
                                 <Link
-                                    to={`/${slug}/checkout`}
+                                    to={storePath(slug, "/checkout")}
                                     onClick={onClose}
                                     className="block w-full py-4 text-center rounded-2xl font-semibold text-white text-[17px] active:scale-[0.985] transition-all"
                                     style={{ backgroundColor: primary }}

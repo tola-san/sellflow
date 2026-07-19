@@ -18,17 +18,21 @@ import { GuestRoute } from "./components/Auth/GuestRoute";
 import { AuthProvider } from "./components/Auth/AuthContext";
 import { ToastProvider } from "./components/ui/ToastContext";
 import { CartProvider } from "./components/cart/CartContext";
+import { TelegramMiniAppLayout } from "./components/telegram/TelegramMiniAppLayout";
+import { TelegramStoreEntryPage } from "./pages/TelegramStoreEntryPage";
+import { useTelegramMiniApp } from "./components/telegram/TelegramMiniAppContext";
 
 const OrdersPage = lazy(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
 
 function CartRoute() {
     const navigate = useNavigate();
     const { slug } = useParams<{ slug: string }>();
+    const { storePath } = useTelegramMiniApp();
 
     return (
         <CartDrawer
             isOpen={true}
-            onClose={() => navigate(slug ? `/${slug}` : "/")}
+            onClose={() => navigate(slug ? storePath(slug) : "/")}
         />
     );
 }
@@ -61,6 +65,15 @@ export function App() {
                         <Route path="/:slug/checkout" element={<CheckoutPage />} />
                         <Route path="/:slug/products/:productSlug" element={<ProductDetailPage />} />
                         <Route path="/:slug" element={<StorefrontPage />} />
+
+                        {/* Telegram customer Mini App routes */}
+                        <Route path="/telegram/store" element={<TelegramStoreEntryPage />} />
+                        <Route path="/telegram/store/:slug" element={<TelegramMiniAppLayout />}>
+                            <Route index element={<StorefrontPage />} />
+                            <Route path="products/:productSlug" element={<ProductDetailPage />} />
+                            <Route path="cart" element={<CartRoute />} />
+                            <Route path="checkout" element={<CheckoutPage />} />
+                        </Route>
                     </Routes>
                 </AuthProvider>
             </CartProvider>
