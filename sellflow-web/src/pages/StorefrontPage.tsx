@@ -6,6 +6,7 @@ import { storefrontService, type Storefront } from "../Services/storefront";
 import type { ThemeSettings } from "../types/theme";
 import { useCart } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
+import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 
 export function StorefrontPage() {
   const { slug = "" } = useParams();
@@ -15,6 +16,7 @@ export function StorefrontPage() {
   const [missing, setMissing] = useState(false);
   const cart = useCart();
   const { showToast } = useToast();
+  const { hapticImpact, isMiniAppRoute, storePath } = useTelegramMiniApp();
 
   const categoryButtons = useRef<Record<string, HTMLButtonElement | null>>({});
   const categoryNav = useRef<HTMLDivElement | null>(null);
@@ -108,6 +110,8 @@ export function StorefrontPage() {
   const { business, categories } = storefront;
   const theme = business.theme;
   const primary = theme.primary_color;
+  const cartItems = cart.items(slug);
+  const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0);
   const isMinimalHero = theme.hero_style === "minimal";
   
   const fontFamily = theme.font_family === "classic"
@@ -130,13 +134,13 @@ export function StorefrontPage() {
   } as CSSProperties;
 
   return (
-    <div className="min-h-screen" style={themeVariables}>
+    <div className={`min-h-screen ${isMiniAppRoute && cartItems.length ? "pb-24" : ""}`} style={themeVariables}>
       {/* Header */}
       <header className="relative z-10 border-b" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
           {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 rounded-lg object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}><Store size={20} /></span>}
           <div><p className="font-bold leading-tight">{business.name}</p><p className="text-xs" style={{ color: theme.muted_color }}>Powered by SellFlow</p></div>
-          <Link to={`/${slug}/cart`} className="ml-auto flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-full px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
+          <Link to={storePath(slug, "/cart")} className="ml-auto flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-full px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
         </div>
       </header>
 
@@ -145,9 +149,9 @@ export function StorefrontPage() {
         {theme.hero_style === "banner" && business.banner && <img src={business.banner} alt="" className="absolute inset-0 h-full w-full object-cover" />}
         {theme.hero_style === "banner" && <div className="absolute inset-0" style={{ background: `linear-gradient(90deg, ${theme.secondary_color}F2, ${theme.primary_color}99)` }} />}
         {theme.hero_style === "gradient" && <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 80% 10%, white 0, transparent 35%)" }} />}
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
+        <div className={`relative mx-auto max-w-7xl px-4 sm:px-6 ${isMiniAppRoute ? "py-9" : "py-16 sm:py-24"}`}>
           <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: isMinimalHero ? primary : "currentColor", opacity: isMinimalHero ? 1 : 0.8 }}>Welcome to</p>
-          <h1 className="mt-3 max-w-3xl text-4xl font-bold sm:text-6xl">{business.name}</h1>
+          <h1 className={`mt-3 max-w-3xl font-bold ${isMiniAppRoute ? "text-3xl" : "text-4xl sm:text-6xl"}`}>{business.name}</h1>
           {business.description && <p className="mt-5 max-w-2xl text-base leading-7 opacity-80 sm:text-lg">{business.description}</p>}
           <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm opacity-75">
             {business.address && <span className="flex items-center gap-2"><MapPin size={16} />{[business.address, business.city, business.country].filter(Boolean).join(", ")}</span>}
@@ -230,7 +234,7 @@ export function StorefrontPage() {
                     <span className="text-sm text-slate-400">{categoryProducts.length} items</span>
                   </div>
                   <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${theme.grid_columns === 2 ? "lg:grid-cols-2" : theme.grid_columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
-                    {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} onAdd={() => { cart.add(slug, product); showToast(`${product.name} added to cart.`); }} />)}
+                    {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} onAdd={() => { cart.add(slug, product); hapticImpact(); showToast(`${product.name} added to cart.`); }} />)}
                   </div>
                 </section>
               );
@@ -244,6 +248,15 @@ export function StorefrontPage() {
           </div>
         )}
       </main>
+
+      {isMiniAppRoute && cartItems.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-[70] px-3 pb-[max(0.75rem,var(--tg-content-safe-area-inset-bottom,0px))]">
+          <Link to={storePath(slug, "/cart")} className="mx-auto flex min-h-14 max-w-md items-center justify-between gap-4 rounded-2xl px-5 text-sm font-semibold text-white shadow-2xl" style={{ backgroundColor: primary }}>
+            <span className="inline-flex items-center gap-2"><ShoppingBag size={18} />{cart.count(slug)} {cart.count(slug) === 1 ? "item" : "items"}</span>
+            <span>${cartTotal.toFixed(2)} <span aria-hidden="true">→</span></span>
+          </Link>
+        </div>
+      )}
 
       <footer className="mt-16 border-t py-8 text-center text-sm" style={{ borderColor: `${theme.muted_color}35`, backgroundColor: theme.surface_color, color: theme.muted_color }}>
         © {new Date().getFullYear()} {business.name} · Built with SellFlow
@@ -303,5 +316,6 @@ function ProductCard({ product, theme, onAdd }: { product: Storefront["products"
 }
 
 function NotFound() {
-  return <div className="grid min-h-screen place-items-center bg-slate-50 p-6 text-center"><div><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-slate-200 text-slate-500"><Store size={30} /></span><h1 className="mt-5 text-2xl font-bold">Store not found</h1><p className="mt-2 text-slate-500">This store does not exist or is currently unavailable.</p><Link to="/" className="mt-6 inline-block rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white">Go to SellFlow</Link></div></div>;
+  const { isMiniAppRoute } = useTelegramMiniApp();
+  return <div className="grid min-h-screen place-items-center bg-slate-50 p-6 text-center"><div><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-slate-200 text-slate-500"><Store size={30} /></span><h1 className="mt-5 text-2xl font-bold">Store not found</h1><p className="mt-2 text-slate-500">This store does not exist or is currently unavailable.</p><Link to={isMiniAppRoute ? "/telegram/store" : "/"} className="mt-6 inline-block rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white">{isMiniAppRoute ? "Back" : "Go to SellFlow"}</Link></div></div>;
 }
