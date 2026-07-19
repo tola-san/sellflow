@@ -13,20 +13,7 @@ class OrderTelegramNotificationService
 
     public function orderCreated(Order $order): void
     {
-        $order->loadMissing(['business.notificationSetting', 'items']);
-        $settings = $order->business->notificationSetting;
-
-        if ($settings?->telegram_enabled && $settings->new_order_enabled && $settings->telegram_chat_id) {
-            $this->attempt(
-                $order,
-                'seller_receipt',
-                fn () => $this->telegram->sendMessage(
-                    $settings->telegram_chat_id,
-                    $this->sellerOrderMessage($order),
-                    ['parse_mode' => 'HTML']
-                )
-            );
-        }
+        $order->loadMissing(['business', 'items']);
 
         if ($this->canNotifyCustomer($order)) {
             $sent = $this->attempt(
@@ -124,16 +111,6 @@ class OrderTelegramNotificationService
 
             return false;
         }
-    }
-
-    private function sellerOrderMessage(Order $order): string
-    {
-        return "<b>New SellFlow order</b>\n\n"
-            .'<blockquote><b>'.$this->escape($order->business->name).'</b>'."\n"
-            .'Order <code>'.$this->escape($order->order_number).'</code>'."\n"
-            .$this->escape($order->customer_name).' - '.$this->escape($order->customer_phone)."\n"
-            .$order->items->sum('quantity').' item(s) - <b>$'.number_format((float) $order->total, 2).'</b></blockquote>'
-            ."\nOpen the SellFlow dashboard to review and confirm it.";
     }
 
     private function customerReceiptMessage(Order $order): string

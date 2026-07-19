@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Storefront;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Storefront\CheckoutRequest;
 use App\Http\Resources\Storefront\PublicOrderResource;
+use App\Jobs\SendNewOrderTelegramNotification;
 use App\Services\Order\OrderTelegramNotificationService as CustomerOrderTelegramNotifications;
 use App\Services\Storefront\CheckoutService;
 use App\Services\TelegramMiniAppAuthService as TelegramCustomerAuthenticator;
@@ -28,7 +29,11 @@ class CheckoutController extends Controller
             ...$data,
             ...($telegramCustomer ?? []),
         ]);
+
+        // The customer receipt is attempted immediately so checkout can report
+        // whether Telegram accepted it. Seller delivery remains after-response.
         $this->notifications->orderCreated($order);
+        SendNewOrderTelegramNotification::dispatchAfterResponse($order->id);
 
         return response()->json([
             'success' => true,

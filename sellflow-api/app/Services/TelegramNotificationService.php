@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Business;
 use App\Models\BusinessNotificationSetting;
+use App\Models\Order;
 use App\Models\TelegramConnectionCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -21,14 +22,27 @@ class TelegramNotificationService
         ]);
     }
 
-    public function createConnectionCode(Business $business): array
+    public function createConnectionCode(Business $business, string $webhookUrl): array
     {
-        $botUsername = config('services.telegram.bot_username');
+        $botToken = trim((string) config('services.telegram.bot_token'));
+        $botUsername = ltrim(trim((string) config('services.telegram.bot_username')), '@');
+        $webhookSecret = trim((string) config('services.telegram.webhook_secret'));
 
-        if (! is_string(config('services.telegram.bot_token')) || config('services.telegram.bot_token') === ''
-            || ! is_string($botUsername) || $botUsername === '') {
-            throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN and TELEGRAM_BOT_USERNAME to the API environment.');
+        $missingVariables = array_keys(array_filter([
+            'TELEGRAM_BOT_TOKEN' => $botToken,
+            'TELEGRAM_BOT_USERNAME' => $botUsername,
+            'TELEGRAM_WEBHOOK_SECRET' => $webhookSecret,
+        ], fn (string $value): bool => $value === ''));
+
+        if ($missingVariables !== []) {
+            throw new RuntimeException('Telegram bot is not configured. Missing Render API variables: '.implode(', ', $missingVariables).'. Save them and redeploy the API service.');
         }
+
+        if (filter_var($webhookUrl, FILTER_VALIDATE_URL) === false || parse_url($webhookUrl, PHP_URL_SCHEME) !== 'https') {
+            throw new RuntimeException('TELEGRAM_WEBHOOK_URL must be a valid HTTPS URL for the deployed API service.');
+        }
+
+        $this->registerWebhook($botToken, $webhookSecret, $webhookUrl);
 
         TelegramConnectionCode::query()->where('business_id', $business->id)->whereNull('used_at')->delete();
 
@@ -105,6 +119,43 @@ class TelegramNotificationService
         $this->sendMessage($settings->telegram_chat_id, "SellFlow notifications are working for {$business->name}. New order alerts will appear in this chat.");
     }
 
+    public function sendNewOrder(Order $order): void
+    {
+        $order->loadMissing(['business.notificationSetting', 'items']);
+        $settings = $order->business?->notificationSetting;
+
+        if (! $settings?->telegram_enabled || ! $settings->new_order_enabled || ! $settings->telegram_chat_id) {
+            return;
+        }
+
+        $items = $order->items
+            ->take(10)
+            ->map(fn ($item) => '• <b>'.$item->quantity.'×</b> '.$this->escapeHtml($item->product_name).' — $'.$this->money($item->line_total))
+            ->all();
+
+        if ($order->items->count() > 10) {
+            $items[] = '• +'.($order->items->count() - 10).' more item(s)';
+        }
+
+        $message = implode("\n", [
+            '🛍 <b>New order received</b>',
+            '<code>#'.$this->escapeHtml($order->order_number).'</code> · '.$this->escapeHtml($order->business->name),
+            '',
+            '<blockquote><b>Customer</b>',
+            $this->escapeHtml($order->customer_name),
+            '📞 '.$this->escapeHtml($order->customer_phone),
+            '📍 '.$this->escapeHtml($order->delivery_address).'</blockquote>',
+            '',
+            '<b>Order items</b>',
+            ...$items,
+            '',
+            '<b>Total</b>  <code>$'.$this->money($order->total).'</code>',
+            '💳 '.$this->escapeHtml(Str::headline($order->payment_method)).' · '.$this->escapeHtml(Str::headline($order->status)),
+        ]);
+
+        $this->sendMessage($settings->telegram_chat_id, $message, 'HTML');
+    }
+
     public function disconnect(Business $business): BusinessNotificationSetting
     {
         $settings = $this->settings($business);
@@ -114,26 +165,61 @@ class TelegramNotificationService
         return $settings->fresh();
     }
 
-    public function sendMessage(string $chatId, string $text, array $options = []): void
+    public function sendMessage(string $chatId, string $text, string|array|null $options = null): void
     {
-        $token = config('services.telegram.bot_token');
+        $token = trim((string) config('services.telegram.bot_token'));
 
-        if (! is_string($token) || $token === '') {
+        if ($token === '') {
             throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN to the API environment.');
         }
 
+        $payload = [
+            'chat_id' => $chatId,
+            'text' => $text,
+        ];
+
+        if (is_string($options)) {
+            $payload['parse_mode'] = $options;
+        } elseif (is_array($options)) {
+            $payload = [...$payload, ...$options];
+        }
+
         Http::asJson()->timeout(10)->retry(2, 300)
-            ->post("https://api.telegram.org/bot{$token}/sendMessage", [
-                'chat_id' => $chatId,
-                'text' => $text,
-                ...$options,
-            ])
+            ->post("https://api.telegram.org/bot{$token}/sendMessage", $payload)
             ->throw();
+    }
+
+    private function registerWebhook(string $token, string $secret, string $webhookUrl): void
+    {
+        try {
+            $response = Http::asJson()->timeout(10)->retry(2, 300)
+                ->post("https://api.telegram.org/bot{$token}/setWebhook", [
+                    'url' => $webhookUrl,
+                    'secret_token' => $secret,
+                ])
+                ->throw();
+        } catch (\Throwable $exception) {
+            throw new RuntimeException('SellFlow could not register the Telegram webhook. Verify the bot token and deployed API URL, then try again.', previous: $exception);
+        }
+
+        if ($response->json('ok') !== true || $response->json('result') !== true) {
+            throw new RuntimeException('Telegram rejected the webhook configuration. Verify the bot token, webhook secret, and HTTPS API URL.');
+        }
     }
 
     private function hashCode(string $code): string
     {
         return hash('sha256', Str::upper(trim($code)));
+    }
+
+    private function money(string|float|int $amount): string
+    {
+        return number_format((float) $amount, 2, '.', '');
+    }
+
+    private function escapeHtml(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     private function chatName(array $chat): string
