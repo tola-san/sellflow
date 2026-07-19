@@ -48,6 +48,7 @@ interface TelegramWebApp {
   setHeaderColor?: (color: string) => void;
   setBackgroundColor?: (color: string) => void;
   enableClosingConfirmation?: () => void;
+  requestWriteAccess?: (callback: (allowed: boolean) => void) => void;
 }
 
 declare global {
@@ -66,6 +67,7 @@ interface TelegramMiniAppContextValue {
   storePath: (slug: string, suffix?: string) => string;
   hapticImpact: () => void;
   hapticSuccess: () => void;
+  requestWriteAccess: () => Promise<boolean>;
   close: () => void;
 }
 
@@ -120,6 +122,14 @@ export function TelegramMiniAppProvider({ children }: { children: ReactNode }) {
       : `/${encodeURIComponent(slug)}${suffix}`,
     hapticImpact: () => webApp?.HapticFeedback?.impactOccurred("light"),
     hapticSuccess: () => webApp?.HapticFeedback?.notificationOccurred("success"),
+    requestWriteAccess: () => new Promise((resolve) => {
+      if (!isTelegramClient || !webApp?.requestWriteAccess) {
+        resolve(false);
+        return;
+      }
+
+      webApp.requestWriteAccess(resolve);
+    }),
     close: () => webApp?.close(),
   }), [isMiniAppRoute, isTelegramClient, startParam, user, webApp]);
 

@@ -10,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
+    public function __construct(private readonly OrderTelegramNotificationService $notifications) {}
+
     private const STATUS_TRANSITIONS = [
         'pending' => ['confirmed', 'cancelled'],
         'confirmed' => ['preparing', 'cancelled'],
@@ -62,17 +64,29 @@ class OrderService
     public function updateStatus(Order $order, string $nextStatus): Order
     {
         $this->validateTransition('status', $order->status, $nextStatus, self::STATUS_TRANSITIONS);
+        $changed = $order->status !== $nextStatus;
         $order->update(['status' => $nextStatus]);
+        $updated = $order->fresh()->load('items');
 
-        return $order->fresh()->load('items');
+        if ($changed) {
+            $this->notifications->orderStatusChanged($updated);
+        }
+
+        return $updated;
     }
 
     public function updatePaymentStatus(Order $order, string $nextStatus): Order
     {
         $this->validateTransition('payment_status', $order->payment_status, $nextStatus, self::PAYMENT_TRANSITIONS);
+        $changed = $order->payment_status !== $nextStatus;
         $order->update(['payment_status' => $nextStatus]);
+        $updated = $order->fresh()->load('items');
 
-        return $order->fresh()->load('items');
+        if ($changed) {
+            $this->notifications->paymentStatusChanged($updated);
+        }
+
+        return $updated;
     }
 
     private function filteredQuery(Business $business, array $filters): Builder

@@ -22,6 +22,7 @@ class CheckoutRequest extends FormRequest
             'city' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'payment_method' => ['required', Rule::in(['cash', 'bakong'])],
+            'telegram_init_data' => ['nullable', 'string', 'max:8192'],
             'items' => ['required', 'array', 'min:1', 'max:50'],
             'items.*.product_slug' => ['required', 'string', 'max:255', 'distinct'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],

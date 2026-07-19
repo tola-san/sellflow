@@ -27,7 +27,7 @@ export function CheckoutPage() {
   const formRef = useRef<HTMLFormElement>(null);
 
   const cart = useCart();
-  const { close, customerName, hapticSuccess, isTelegramClient, storePath } = useTelegramMiniApp();
+  const { close, customerName, hapticSuccess, isTelegramClient, requestWriteAccess, storePath, webApp } = useTelegramMiniApp();
   const items = cart.items(slug);
 
   const primary = store?.business?.theme?.primary_color || "#3b82f6";
@@ -64,8 +64,14 @@ export function CheckoutPage() {
     setError(null);
 
     try {
+      if (isTelegramClient) {
+        // Permission is optional: declining notifications must never block checkout.
+        await requestWriteAccess();
+      }
+
       const payload: CheckoutPayload = {
         ...form,
+        ...(isTelegramClient && webApp?.initData ? { telegram_init_data: webApp.initData } : {}),
         items: items.map(item => ({
           product_slug: item.product.slug,
           quantity: item.quantity
@@ -94,7 +100,11 @@ export function CheckoutPage() {
           </div>
           <h1 className="mt-6 text-3xl font-bold">Order Received</h1>
           <p className="mt-3 text-slate-600">Thank you, <strong>{order.customer_name}</strong>!</p>
-          <p className="mt-1 text-sm text-slate-500">The seller will contact you soon to confirm.</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {order.telegram_receipt_sent
+              ? "Your receipt was sent by the SellFlow Telegram bot. We will message you when the order status changes."
+              : "The seller will contact you soon to confirm."}
+          </p>
 
           <div className="mt-8 rounded-2xl bg-slate-50 p-6 text-left">
             <p className="text-xs uppercase tracking-wider text-slate-400">Order Number</p>

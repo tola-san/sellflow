@@ -114,7 +114,7 @@ class TelegramNotificationService
         return $settings->fresh();
     }
 
-    public function sendMessage(string $chatId, string $text): void
+    public function sendMessage(string $chatId, string $text, array $options = []): void
     {
         $token = config('services.telegram.bot_token');
 
@@ -123,7 +123,11 @@ class TelegramNotificationService
         }
 
         Http::asJson()->timeout(10)->retry(2, 300)
-            ->post("https://api.telegram.org/bot{$token}/sendMessage", ['chat_id' => $chatId, 'text' => $text])
+            ->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id' => $chatId,
+                'text' => $text,
+                ...$options,
+            ])
             ->throw();
     }
 
