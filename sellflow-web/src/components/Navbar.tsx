@@ -77,8 +77,8 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <a href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-brand flex items-center justify-center shadow-glow">
-              <ShoppingBag className="w-5 h-5 text-white" />
+            <div className="w-full p-2 h-10 rounded-lg bg-brand flex items-center justify-center shadow-glow">
+              <ShoppingBag className=" text-white"  />
             </div>
 
             <span className="font-display font-bold text-xl tracking-tight text-ink">
@@ -103,7 +103,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-zinc-700 hover:text-ink hover:bg-white/60 rounded-full transition-all border border-zinc-200"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-zinc-700 hover:text-ink hover:bg-white/60 rounded-lg transition-all border border-zinc-200"
               aria-label="Toggle language"
             >
               <Globe className="w-4 h-4" />
@@ -121,7 +121,7 @@ export function Navbar() {
 
             <button
               onClick={() => openAuth("register")}
-              className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-full text-sm font-medium transition-all shadow-glow hover:shadow-none hover:scale-105 active:scale-95"
+              className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-glow hover:shadow-none hover:scale-105 active:scale-95"
             >
               {currentLang.tryFree}
             </button>
@@ -204,7 +204,7 @@ export function Navbar() {
                   setIsMobileMenuOpen(false);
                   openAuth("register");
                 }}
-                className="w-full bg-brand text-white px-4 py-3 rounded-xl text-base font-medium text-center shadow-glow active:scale-95 transition-all"
+                className="w-full bg-brand text-white px-4 py-3 rounded-lg text-base font-medium text-center shadow-glow active:scale-95 transition-all"
               >
                 {currentLang.tryFree}
               </button>

@@ -58,25 +58,25 @@ export function Footer() {
         />
 
         <motion.div
-          className="absolute -left-32 -top-36 h-80 w-80 rounded-full bg-violet-600/25 blur-[100px]"
+          className="absolute -left-32 -top-36 h-80 w-80 rounded-xl bg-violet-600/25 blur-[100px]"
           animate={{ x: [0, 70, 0], y: [0, 35, 0], scale: [1, 1.15, 1] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
 
         <motion.div
-          className="absolute -right-24 top-20 h-72 w-72 rounded-full bg-blue-500/20 blur-[110px]"
+          className="absolute -right-24 top-20 h-72 w-72 rounded-xl bg-blue-500/20 blur-[110px]"
           animate={{ x: [0, -50, 0], y: [0, -25, 0], scale: [1, 1.2, 1] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8 pt-5 sm:px-6 sm:pb-10 lg:px-8">
-        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.055] px-5 py-8 shadow-2xl shadow-black/20 backdrop-blur-xl sm:px-8 sm:py-10 lg:px-12">
+        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.055] px-5 py-8 shadow-2xl shadow-black/20 backdrop-blur-xl sm:px-8 sm:py-10 lg:px-12">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_20%,rgba(139,92,246,0.18),transparent_35%)]" />
 
           <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1.5 text-xs font-medium text-violet-200">
+              <span className="inline-flex items-center gap-2 rounded-xl border border-violet-400/20 bg-violet-400/10 px-3 py-1.5 text-xs font-medium text-violet-200">
                 <Sparkles className="h-3.5 w-3.5" />
                 Start selling in minutes
               </span>

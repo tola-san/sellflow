@@ -5,24 +5,24 @@ import { FadeIn } from './ui/FadeIn';
 
 const faqs = [
   {
-    question: 'ខ្ញុំអាចភ្ជាប់ជាមួយ Facebook បានទេ?',
+    question: 'Can I connect with Facebook?',
     answer:
-      'បាន! SellFlow រួមបញ្ចូលជាមួយ Facebook, Instagram និង TikTok យ៉ាងរលូន។ អ្នកអាចគ្រប់គ្រងការបញ្ជាទិញទាំងអស់ពីវេទិកាទាំងនេះក្នុង Dashboard តែមួយ។',
+      'Yes! SellFlow integrates seamlessly with Facebook, Instagram, and TikTok. You can manage all orders from these platforms in a single dashboard.',
   },
   {
-    question: 'ខ្ញុំអាចទទួលបានការជូនដំណឹងតាម Telegram បានទេ?',
+    question: 'Can I receive notifications via Telegram?',
     answer:
-      'បានជាក់លាក់។ ការរួមបញ្ចូល Telegram របស់យើងគឺជាមុខងារដ៏ពេញនិយមបំផុតមួយ។ អ្នកអាចរៀបចំវាក្នុងរយៈពេលពីរបីវិនាទីដើម្បីទទួលបានការជូនដំណឹងភ្លាមៗសម្រាប់ការបញ្ជាទិញថ្មី ការទូទាត់ និងសារពីអតិថិជន។',
+      'Absolutely. Our Telegram integration is one of our most popular features. You can set it up in a few seconds to get instant notifications for new orders, payments, and customer messages.',
   },
   {
-    question: 'តើខ្ញុំត្រូវមានចំណេះដឹងបច្ចេកទេសទេ?',
+    question: 'Do I need technical knowledge?',
     answer:
-      'មិនចាំបាច់ទេ។ SellFlow ត្រូវបានរចនាឡើងសម្រាប់អ្នកដែលមិនមែនជាអ្នកបច្ចេកវិទ្យា។ បើអ្នកប្រើប្រាស់បណ្តាញសង្គមបាន អ្នកក៏អាចប្រើ SellFlow បានដែរ។ ការរៀបចំហាងរបស់អ្នកចំណាយពេលតិចជាង ៥ នាទី។',
+      'Not at all. SellFlow is designed for non-tech users. If you can use social media, you can use SellFlow. Setting up your store takes less than 5 minutes.',
   },
   {
-    question: 'តើមានការសាកល្បងឥតគិតថ្លៃទេ?',
+    question: 'Is there a free trial?',
     answer:
-      'មាន។ យើងផ្តល់ជូនការសាកល្បងឥតគិតថ្លៃ ១៤ ថ្ងៃ លើគ្រប់ផែនការទាំងអស់។ មិនត្រូវការកាតឥណទានទេ ដូច្នេះអ្នកអាចសាកល្បងមុខងារទាំងអស់ដោយគ្មានហានិភ័យ។',
+      'Yes. We offer a 14-day free trial on all plans. No credit card required, so you can test all features risk-free.',
   },
 ];
 
@@ -39,10 +39,10 @@ export function FAQ() {
         <div className="text-center mb-16">
           <FadeIn>
             <h2 className="text-3xl md:text-4xl font-bold text-brand-dark mb-4">
-              សំណួរដែលគេសួរញឹកញាប់
+              Frequently Asked Questions
             </h2>
             <p className="text-lg text-brand-muted">
-              អ្វីគ្រប់យ៉ាងដែលអ្នកត្រូវដឹងអំពី SellFlow
+              Everything you need to know about SellFlow
             </p>
           </FadeIn>
         </div>
@@ -51,7 +51,7 @@ export function FAQ() {
           {faqs.map((faq, index) => (
             <FadeIn key={index} delay={index * 0.08}>
               <div
-                className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
+                className={`border rounded-xl overflow-hidden transition-all duration-300 ${
                   openIndex === index
                     ? 'border-brand-blue bg-brand-cyan/10 shadow-sm'
                     : 'border-brand-gray/50 bg-white hover:border-brand-gray hover:shadow'
