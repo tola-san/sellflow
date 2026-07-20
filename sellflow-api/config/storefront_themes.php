@@ -15,6 +15,7 @@ return [
             'card_style' => 'bordered',
             'button_style' => 'rounded',
             'hero_style' => 'minimal',
+            'banner_overlay_opacity' => 25,
             'grid_columns' => 4,
         ],
         'modern' => [
@@ -28,6 +29,7 @@ return [
             'card_style' => 'elevated',
             'button_style' => 'pill',
             'hero_style' => 'gradient',
+            'banner_overlay_opacity' => 35,
             'grid_columns' => 4,
         ],
         'classic' => [
@@ -41,6 +43,7 @@ return [
             'card_style' => 'bordered',
             'button_style' => 'rounded',
             'hero_style' => 'banner',
+            'banner_overlay_opacity' => 45,
             'grid_columns' => 3,
         ],
     ],

@@ -32,6 +32,7 @@ class StoreBusinessRequest extends FormRequest
             'tiktok_url' => ['nullable', 'url', 'max:2048'],
             'logo_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.config('business_media.max_size_kb', 4096)],
             'banner_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.config('business_media.max_size_kb', 4096)],
+            'banner_overlay_opacity' => ['nullable', 'integer', 'between:0,100'],
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string'],
             'country' => ['nullable', 'string'],

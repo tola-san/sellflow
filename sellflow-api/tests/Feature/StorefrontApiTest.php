@@ -316,6 +316,7 @@ class StorefrontApiTest extends TestCase
             'card_style' => 'elevated',
             'button_style' => 'pill',
             'hero_style' => 'gradient',
+            'banner_overlay_opacity' => 42,
             'grid_columns' => 4,
         ];
 
@@ -333,6 +334,7 @@ class StorefrontApiTest extends TestCase
         $this->getJson('/api/v1/store/theme-store')
             ->assertOk()
             ->assertJsonPath('data.business.theme.primary_color', '#7C3AED')
+            ->assertJsonPath('data.business.theme.banner_overlay_opacity', 42)
             ->assertJsonPath('data.business.theme.grid_columns', 4);
     }
 
@@ -468,6 +470,7 @@ class StorefrontApiTest extends TestCase
             'instagram_url' => 'https://instagram.com/socialstore',
             'telegram_url' => 'https://t.me/socialstore',
             'tiktok_url' => 'https://tiktok.com/@socialstore',
+            'banner_overlay_opacity' => 25,
             'is_active' => 1,
             'logo_image' => UploadedFile::fake()->image('logo.png', 600, 600),
             'banner_image' => UploadedFile::fake()->image('banner.jpg', 1600, 600),
@@ -484,6 +487,7 @@ class StorefrontApiTest extends TestCase
         $this->getJson('/api/v1/store/social-store')
             ->assertOk()
             ->assertJsonPath('data.business.telegram_url', 'https://t.me/socialstore')
+            ->assertJsonPath('data.business.theme.banner_overlay_opacity', 25)
             ->assertJsonMissingPath('data.business.email');
     }
 

@@ -4,6 +4,7 @@ import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons
 import { businessService, type BusinessPayload } from "../Services/business";
 import type { Business } from "../types/business";
 import { ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../components/dashboard/DashboardUI";
+import { withHexOpacity } from "../lib/color";
 
 const emptyBusiness: Business = {
   id: 0,
@@ -35,6 +36,7 @@ export function BusinessPage() {
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [removeLogo, setRemoveLogo] = useState(false);
   const [removeBanner, setRemoveBanner] = useState(false);
+  const [bannerOverlayOpacity, setBannerOverlayOpacity] = useState(35);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -45,6 +47,7 @@ export function BusinessPage() {
       if (business) {
         setExists(true);
         setForm({ ...emptyBusiness, ...business });
+        setBannerOverlayOpacity(business.theme.banner_overlay_opacity ?? 35);
       }
     }).catch(setError).finally(() => setLoading(false));
   }, []);
@@ -64,6 +67,7 @@ export function BusinessPage() {
       banner_image: bannerFile,
       remove_logo: removeLogo,
       remove_banner: removeBanner,
+      banner_overlay_opacity: bannerOverlayOpacity,
     };
 
     try {
@@ -74,6 +78,7 @@ export function BusinessPage() {
       setBannerFile(null);
       setRemoveLogo(false);
       setRemoveBanner(false);
+      setBannerOverlayOpacity(saved.theme.banner_overlay_opacity ?? bannerOverlayOpacity);
       setSuccess("Business profile saved successfully.");
     } catch (exception) {
       setError(exception);
@@ -112,10 +117,18 @@ export function BusinessPage() {
               aspect="banner"
               file={bannerFile}
               currentUrl={removeBanner ? null : form.banner}
+              overlayOpacity={bannerOverlayOpacity}
+              overlayPrimary={form.primary_color}
+              overlaySecondary={form.secondary_color}
               onSelect={(file) => { setBannerFile(file); setRemoveBanner(false); }}
               onRemove={() => { setBannerFile(null); setRemoveBanner(true); }}
             />
           </div>
+          {(bannerFile || (!removeBanner && form.banner)) && (
+            <div className="border-t border-slate-100 px-5 py-5 sm:px-6">
+              <BusinessBannerOverlay value={bannerOverlayOpacity} primaryColor={form.primary_color} secondaryColor={form.secondary_color} onChange={setBannerOverlayOpacity} />
+            </div>
+          )}
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -178,8 +191,9 @@ function SectionHeading({ title, description }: { title: string; description: st
   return <div><h2 className="font-semibold text-slate-900">{title}</h2><p className="mt-1 text-sm text-slate-500">{description}</p></div>;
 }
 
-function ImageUpload({ label, help, aspect, file, currentUrl, onSelect, onRemove }: {
+function ImageUpload({ label, help, aspect, file, currentUrl, overlayOpacity, overlayPrimary, overlaySecondary, onSelect, onRemove }: {
   label: string; help: string; aspect: "square" | "banner"; file: File | null; currentUrl: string | null;
+  overlayOpacity?: number; overlayPrimary?: string; overlaySecondary?: string;
   onSelect: (file: File) => void; onRemove: () => void;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -196,6 +210,12 @@ function ImageUpload({ label, help, aspect, file, currentUrl, onSelect, onRemove
       <div className="mb-2 flex items-center justify-between"><div><p className="text-sm font-semibold text-slate-800">{label}</p><p className="text-xs text-slate-500">{help}</p></div>{image && <button type="button" onClick={onRemove} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label={`Remove ${label}`}><X size={17} /></button>}</div>
       <label className={`group relative flex cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 transition hover:border-purple-300 hover:bg-purple-50/40 ${aspect === "square" ? "aspect-square w-full" : "aspect-[16/6] w-full"}`}>
         {image ? <img src={image} alt={`${label} preview`} className="h-full w-full object-cover" /> : <div className="px-4 text-center text-slate-500"><span className="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-white text-purple-600 shadow-sm">{aspect === "square" ? <ImagePlus size={22} /> : <Store size={22} />}</span><p className="mt-3 text-sm font-semibold text-slate-700">Upload {label.toLowerCase()}</p><p className="mt-1 text-xs">Click to browse</p></div>}
+        {image && aspect === "banner" && overlayOpacity !== undefined && overlayPrimary && overlaySecondary && (
+          <span
+            className="pointer-events-none absolute inset-0"
+            style={{ background: `linear-gradient(90deg, ${withHexOpacity(overlaySecondary, overlayOpacity)}, ${withHexOpacity(overlayPrimary, overlayOpacity * 0.36)})` }}
+          />
+        )}
         <span className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-xl bg-slate-950/75 px-3 py-2 text-xs font-semibold text-white opacity-0 backdrop-blur transition group-hover:opacity-100"><Upload size={15} />Replace image</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) onSelect(selected); event.target.value = ""; }} />
       </label>
@@ -213,4 +233,21 @@ function SocialField({ icon, label, value, placeholder, onChange }: { icon: Reac
 
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return <label className="text-sm font-medium text-slate-700">{label}<span className="mt-1.5 flex gap-2"><input className="h-11 w-14 rounded-lg border border-slate-200 p-1" type="color" value={value} onChange={(event) => onChange(event.target.value)} /><input className={`${inputClass} mt-0`} value={value} onChange={(event) => onChange(event.target.value)} /></span></label>;
+}
+
+function BusinessBannerOverlay({ value, primaryColor, secondaryColor, onChange }: { value: number; primaryColor: string; secondaryColor: string; onChange: (value: number) => void }) {
+  return (
+    <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+      <div className="flex items-start justify-between gap-4">
+        <div><p className="text-sm font-semibold text-slate-800">Banner color overlay</p><p className="mt-1 text-xs leading-5 text-slate-500">Choose how transparent the brand gradient appears over your uploaded banner.</p></div>
+        <span className="min-w-14 rounded-lg bg-white px-2.5 py-1 text-center text-sm font-bold text-purple-700 shadow-sm ring-1 ring-slate-200">{value}%</span>
+      </div>
+      <div className="mt-4 flex items-center gap-3">
+        <span className="text-xs font-medium text-slate-500">Clear</span>
+        <input type="range" min="0" max="100" step="5" value={value} aria-label="Banner color overlay opacity" onChange={(event) => onChange(Number(event.target.value))} className="h-2 min-w-0 flex-1 cursor-pointer appearance-none rounded-full accent-purple-600" style={{ background: `linear-gradient(90deg, transparent, ${secondaryColor}, ${primaryColor})` }} />
+        <span className="text-xs font-medium text-slate-500">Strong</span>
+      </div>
+      <p className="mt-3 text-xs font-medium text-purple-700">Live preview above · click “Save business profile” to publish this opacity.</p>
+    </div>
+  );
 }

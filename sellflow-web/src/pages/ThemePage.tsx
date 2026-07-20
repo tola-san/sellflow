@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ExternalLink, Monitor, Palette, Save, Smartphone, Store } from "lucide-react";
+import { Check, ExternalLink, Monitor, Save, Smartphone, Store } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { businessService } from "../Services/business";
 import { themeService } from "../Services/theme";
@@ -7,6 +7,7 @@ import { ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../componen
 import { useToast } from "../components/ui/ToastContext";
 import type { Business } from "../types/business";
 import { THEME_PRESETS, type ThemePreset, type ThemeSettings } from "../types/theme";
+import { withHexOpacity } from "../lib/color";
 
 const presetDescriptions: Record<ThemePreset, string> = {
   minimal: "Crisp typography and restrained surfaces.",
@@ -27,7 +28,7 @@ export function ThemePage() {
     Promise.all([businessService.getBusiness(), themeService.getTheme()])
       .then(([businessData, themeData]) => {
         setBusiness(businessData);
-        if (themeData) setTheme(themeData);
+        if (themeData) setTheme({ ...THEME_PRESETS[themeData.preset], ...themeData });
       })
       .catch(setError)
       .finally(() => setLoading(false));
@@ -106,6 +107,14 @@ export function ThemePage() {
               <SelectControl label="Store hero" value={theme.hero_style} onChange={(v) => update("hero_style", v as ThemeSettings["hero_style"])} options={["gradient","banner","minimal"]}/>
               <SelectControl label="Desktop grid" value={String(theme.grid_columns)} onChange={(v) => update("grid_columns", Number(v) as ThemeSettings["grid_columns"])} options={["2","3","4"]}/>
             </div>
+            {business.banner && (
+              <BannerOverlayControl
+                value={theme.banner_overlay_opacity ?? 35}
+                primaryColor={theme.primary_color}
+                secondaryColor={theme.secondary_color}
+                onChange={(value) => update("banner_overlay_opacity", value)}
+              />
+            )}
           </Panel>
 
           <button type="button" disabled={saving} onClick={publish} className={buttonPrimary}><Save size={17}/>{saving ? "Publishing..." : "Publish theme"}</button>
@@ -150,8 +159,9 @@ function StorePreview({ business, theme, mobile }: { business: Business; theme: 
     ? "Georgia, 'Kantumruy Pro', serif"
     : "'Plus Jakarta Sans', 'Kantumruy Pro', ui-sans-serif, system-ui";
   const previewHasBanner = Boolean(business.banner);
+  const previewOverlayOpacity = theme.banner_overlay_opacity ?? 35;
   const previewHeroBackground = previewHasBanner
-    ? `linear-gradient(90deg, ${theme.secondary_color}D9, ${theme.primary_color}4D), url("${business.banner}") center / cover`
+    ? `linear-gradient(90deg, ${withHexOpacity(theme.secondary_color, previewOverlayOpacity)}, ${withHexOpacity(theme.primary_color, previewOverlayOpacity * 0.36)}), url("${business.banner}") center / cover`
     : theme.hero_style === "gradient"
       ? `linear-gradient(135deg, ${theme.primary_color}, ${theme.secondary_color})`
       : theme.hero_style === "banner"
@@ -167,4 +177,37 @@ function StorePreview({ business, theme, mobile }: { business: Business; theme: 
 
 function PreviewSocial({ show, children }: { show: boolean; children: React.ReactNode }) {
   return show ? <span className="grid h-6 w-6 place-items-center rounded-full border border-white/30 bg-white/15">{children}</span> : null;
+}
+
+function BannerOverlayControl({ value, primaryColor, secondaryColor, onChange }: { value: number; primaryColor: string; secondaryColor: string; onChange: (value: number) => void }) {
+  return (
+    <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">Banner overlay</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Lower values show more of the uploaded image. Increase it when storefront text needs stronger contrast.</p>
+        </div>
+        <span className="min-w-14 rounded-lg bg-white px-2.5 py-1 text-center text-sm font-bold text-purple-700 shadow-sm ring-1 ring-slate-200">{value}%</span>
+      </div>
+      <div className="mt-4 flex items-center gap-3">
+        <span className="text-xs font-medium text-slate-500">Clear</span>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          step="5"
+          value={value}
+          aria-label="Banner overlay opacity"
+          onChange={(event) => onChange(Number(event.target.value))}
+          className="h-2 min-w-0 flex-1 cursor-pointer appearance-none rounded-full accent-purple-600"
+          style={{ background: `linear-gradient(90deg, transparent, ${secondaryColor}, ${primaryColor})` }}
+        />
+        <span className="text-xs font-medium text-slate-500">Strong</span>
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+        <span className="h-4 w-8 rounded border border-slate-200 bg-[linear-gradient(45deg,#e2e8f0_25%,transparent_25%),linear-gradient(-45deg,#e2e8f0_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#e2e8f0_75%),linear-gradient(-45deg,transparent_75%,#e2e8f0_75%)] bg-[length:8px_8px]" />
+        Transparent background is supported at 0%.
+      </div>
+    </div>
+  );
 }

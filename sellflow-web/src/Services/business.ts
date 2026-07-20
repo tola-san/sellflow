@@ -12,6 +12,7 @@ export interface BusinessPayload extends Omit<Partial<Business>, "logo" | "banne
   banner_image?: File | null;
   remove_logo?: boolean;
   remove_banner?: boolean;
+  banner_overlay_opacity?: number;
 }
 
 //   
