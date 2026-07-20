@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Business extends Model
 {
@@ -20,6 +22,10 @@ class Business extends Model
         'email',
         'phone',
         'website',
+        'facebook_url',
+        'instagram_url',
+        'telegram_url',
+        'tiktok_url',
         'logo',
         'banner',
         'address',
@@ -29,14 +35,13 @@ class Business extends Model
         'secondary_color',
         'theme_preset',
         'theme_settings',
-        'is_active'
+        'is_active',
     ];
-
 
     protected $casts = [
         'is_active' => 'boolean',
         'theme_settings' => 'array',
-    ];  
+    ];
 
     public function resolvedTheme(): array
     {
@@ -58,6 +63,31 @@ class Business extends Model
         return ['preset' => $preset, ...array_merge($defaults, $settings)];
     }
 
+    public function logoUrl(): ?string
+    {
+        return $this->mediaUrl($this->logo);
+    }
+
+    public function bannerUrl(): ?string
+    {
+        return $this->mediaUrl($this->banner);
+    }
+
+    private function mediaUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', 'data:', '/storage/'])) {
+            return $path;
+        }
+
+        $disk = config('business_media.disk', 'public');
+
+        return $disk === 'cloudinary' ? null : Storage::disk($disk)->url($path);
+    }
+
     /**
      * Business belongs to one user.
      */
@@ -69,11 +99,11 @@ class Business extends Model
     /**
      * Business has many categories.
      */
-    public function categories() {
-        
+    public function categories()
+    {
+
         return $this->hasMany(Category::class);
     }
-
 
     /**
      * Business has many products.

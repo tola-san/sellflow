@@ -67,7 +67,6 @@ class CheckoutService
                 'order_number' => $this->orderNumber(),
                 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'],
-                'customer_email' => $data['customer_email'] ?? null,
                 'telegram_user_id' => $data['telegram_user_id'] ?? null,
                 'telegram_chat_id' => $data['telegram_chat_id'] ?? null,
                 'telegram_username' => $data['telegram_username'] ?? null,

@@ -21,15 +21,21 @@ class BusinessResource extends JsonResource
 
             'description' => $this->description,
 
-            'email' => $this->email,
-
             'phone' => $this->phone,
 
             'website' => $this->website,
 
-            'logo' => $this->logo,
+            'facebook_url' => $this->facebook_url,
 
-            'banner' => $this->banner,
+            'instagram_url' => $this->instagram_url,
+
+            'telegram_url' => $this->telegram_url,
+
+            'tiktok_url' => $this->tiktok_url,
+
+            'logo' => $this->logoUrl(),
+
+            'banner' => $this->bannerUrl(),
 
             'address' => $this->address,
 

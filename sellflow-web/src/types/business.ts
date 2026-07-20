@@ -5,9 +5,12 @@ export interface Business {
   name: string;
   slug: string;
   description: string | null;
-  email: string | null;
   phone: string | null;
   website: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  telegram_url: string | null;
+  tiktok_url: string | null;
   logo: string | null;
   banner: string | null;
   address: string | null;
