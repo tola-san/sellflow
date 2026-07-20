@@ -6,6 +6,17 @@ export interface TelegramSettings {
   new_order_enabled: boolean;
   payment_enabled: boolean;
   connected_at: string | null;
+  destinations: TelegramDestination[];
+}
+
+export type TelegramDestinationPurpose = "sales_channel" | "customer_group" | "staff_group";
+
+export interface TelegramDestination {
+  purpose: TelegramDestinationPurpose;
+  chat_name: string;
+  chat_type: string;
+  bot_is_admin: boolean;
+  connected_at: string | null;
 }
 
 export interface TelegramConnectionCode {
@@ -13,6 +24,7 @@ export interface TelegramConnectionCode {
   command: string;
   expires_at: string;
   bot_username: string | null;
+  purpose: TelegramDestinationPurpose;
 }
 
 interface ApiResponse<T> {
@@ -27,8 +39,8 @@ export const telegramNotificationService = {
     return response.data.data;
   },
 
-  async createConnectionCode(): Promise<TelegramConnectionCode> {
-    const response = await api.post<ApiResponse<TelegramConnectionCode>>("/business/notifications/telegram/connect-code");
+  async createConnectionCode(purpose: TelegramDestinationPurpose): Promise<TelegramConnectionCode> {
+    const response = await api.post<ApiResponse<TelegramConnectionCode>>("/business/notifications/telegram/connect-code", { purpose });
     return response.data.data;
   },
 
@@ -37,13 +49,13 @@ export const telegramNotificationService = {
     return response.data.data;
   },
 
-  async sendTest(): Promise<string> {
-    const response = await api.post<{ success: boolean; message: string }>("/business/notifications/telegram/test");
+  async sendTest(purpose: TelegramDestinationPurpose = "staff_group"): Promise<string> {
+    const response = await api.post<{ success: boolean; message: string }>("/business/notifications/telegram/test", { purpose });
     return response.data.message;
   },
 
-  async disconnect(): Promise<TelegramSettings> {
-    const response = await api.delete<ApiResponse<TelegramSettings>>("/business/notifications/telegram");
+  async disconnect(purpose?: TelegramDestinationPurpose): Promise<TelegramSettings> {
+    const response = await api.delete<ApiResponse<TelegramSettings>>("/business/notifications/telegram", { data: purpose ? { purpose } : {} });
     return response.data.data;
   },
 };

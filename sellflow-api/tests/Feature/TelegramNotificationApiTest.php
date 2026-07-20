@@ -86,6 +86,61 @@ class TelegramNotificationApiTest extends TestCase
             && $request['chat_id'] === '987654');
     }
 
+    public function test_customer_group_can_connect_and_use_start_and_shop_commands(): void
+    {
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+            'services.telegram.webhook_secret' => 'test-webhook-secret',
+            'services.telegram.webhook_url' => 'https://api.sellflow.test/api/v1/integrations/telegram/webhook',
+        ]);
+        Http::fake(function ($request) {
+            if (str_ends_with($request->url(), '/getMe')) {
+                return Http::response(['ok' => true, 'result' => ['id' => 555]]);
+            }
+            if (str_ends_with($request->url(), '/getChatMember')) {
+                return Http::response(['ok' => true, 'result' => ['status' => (string) $request['user_id'] === '777' ? 'administrator' : 'member']]);
+            }
+
+            return Http::response(['ok' => true, 'result' => true]);
+        });
+        $business = $this->actingAsBusinessOwner('Glow Beauty');
+        $code = $this->postJson('/api/v1/business/notifications/telegram/connect-code', [
+            'purpose' => 'customer_group',
+        ])->assertCreated()->assertJsonPath('data.purpose', 'customer_group')->json('data.code');
+
+        $webhook = fn (array $message) => $this->withHeader('X-Telegram-Bot-Api-Secret-Token', 'test-webhook-secret')
+            ->postJson('/api/v1/integrations/telegram/webhook', ['message' => $message]);
+
+        $webhook([
+            'text' => "/connect {$code}",
+            'from' => ['id' => 777],
+            'chat' => ['id' => -100123, 'title' => 'Glow Community', 'type' => 'supergroup'],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('business_telegram_destinations', [
+            'business_id' => $business->id,
+            'telegram_chat_id' => '-100123',
+            'purpose' => 'customer_group',
+            'is_active' => true,
+        ]);
+
+        $webhook([
+            'text' => '/start@SellFlowBot',
+            'from' => ['id' => 888],
+            'chat' => ['id' => -100123, 'title' => 'Glow Community', 'type' => 'supergroup'],
+        ])->assertOk();
+        $webhook([
+            'text' => '/shop',
+            'from' => ['id' => 888],
+            'chat' => ['id' => -100123, 'title' => 'Glow Community', 'type' => 'supergroup'],
+        ])->assertOk();
+
+        Http::assertSent(fn ($request) => str_ends_with($request->url(), '/sendMessage')
+            && $request['chat_id'] === '-100123'
+            && data_get($request->data(), 'reply_markup.inline_keyboard.0.0.url') === 'https://t.me/sellflow_test_bot?startapp=glow-beauty');
+    }
+
     public function test_webhook_rejects_missing_or_invalid_secret(): void
     {
         config(['services.telegram.webhook_secret' => 'correct-secret']);

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TelegramConnectionCode extends Model
 {
-    protected $fillable = ['business_id', 'code_hash', 'expires_at', 'used_at'];
+    protected $fillable = ['business_id', 'purpose', 'code_hash', 'expires_at', 'used_at'];
 
     protected function casts(): array
     {

@@ -127,4 +127,9 @@ class Business extends Model
     {
         return $this->hasMany(TelegramConnectionCode::class);
     }
+
+    public function telegramDestinations(): HasMany
+    {
+        return $this->hasMany(BusinessTelegramDestination::class);
+    }
 }
