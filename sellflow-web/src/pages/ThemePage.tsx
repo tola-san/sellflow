@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Check, ExternalLink, Monitor, Palette, Save, Smartphone, Store } from "lucide-react";
+import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { businessService } from "../Services/business";
 import { themeService } from "../Services/theme";
 import { ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../components/dashboard/DashboardUI";
@@ -148,10 +149,22 @@ function StorePreview({ business, theme, mobile }: { business: Business; theme: 
   const font = theme.font_family === "classic"
     ? "Georgia, 'Kantumruy Pro', serif"
     : "'Plus Jakarta Sans', 'Kantumruy Pro', ui-sans-serif, system-ui";
+  const previewHasBanner = Boolean(business.banner);
+  const previewHeroBackground = previewHasBanner
+    ? `linear-gradient(90deg, ${theme.secondary_color}D9, ${theme.primary_color}4D), url("${business.banner}") center / cover`
+    : theme.hero_style === "gradient"
+      ? `linear-gradient(135deg, ${theme.primary_color}, ${theme.secondary_color})`
+      : theme.hero_style === "banner"
+        ? `linear-gradient(135deg, ${theme.secondary_color}, ${theme.primary_color}99)`
+        : theme.background_color;
   return <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-200 p-2 shadow-sm"><div className={`mx-auto overflow-hidden bg-white transition-all duration-300 ${mobile ? "max-w-[320px] rounded-[1.5rem]" : "w-full rounded-xl"}`} style={{ fontFamily: font, color: theme.text_color }}>
-    <div className="flex h-12 items-center gap-2 border-b px-4" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}><span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ backgroundColor: theme.primary_color }}><Store size={14}/></span><strong className="text-xs">{business.name}</strong><span className="ml-auto h-7 w-16" style={{ borderRadius: radius, backgroundColor: `${theme.primary_color}18` }}/></div>
-    <div className="px-5 py-9" style={{ background: theme.hero_style === "gradient" ? `linear-gradient(135deg, ${theme.primary_color}, ${theme.secondary_color})` : theme.hero_style === "banner" ? `linear-gradient(135deg, ${theme.secondary_color}, ${theme.primary_color}99)` : theme.background_color, color: theme.hero_style === "minimal" ? theme.text_color : "white" }}><p className="text-[9px] font-bold uppercase tracking-widest opacity-75">Welcome to</p><h3 className="mt-1 text-xl font-bold">{business.name}</h3><p className="mt-2 max-w-xs text-[10px] opacity-75">Discover our latest products and collections.</p></div>
+    <div className="flex h-12 items-center gap-2 border-b px-4" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>{business.logo ? <img src={business.logo} alt="" className="h-7 w-7 rounded-lg object-cover" /> : <span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ backgroundColor: theme.primary_color }}><Store size={14}/></span>}<strong className="text-xs">{business.name}</strong><span className="ml-auto h-7 w-16" style={{ borderRadius: radius, backgroundColor: `${theme.primary_color}18` }}/></div>
+    <div className="px-5 py-9" style={{ background: previewHeroBackground, color: theme.hero_style === "minimal" && !previewHasBanner ? theme.text_color : "white" }}><p className="text-[9px] font-bold uppercase tracking-widest opacity-75">Welcome to</p><h3 className="mt-1 text-xl font-bold">{business.name}</h3><p className="mt-2 max-w-xs text-[10px] opacity-75">Discover our latest products and collections.</p>{(business.facebook_url || business.instagram_url || business.telegram_url || business.tiktok_url) && <div className="mt-3 flex gap-1.5 text-[10px]"><PreviewSocial show={Boolean(business.facebook_url)}><FaFacebookF /></PreviewSocial><PreviewSocial show={Boolean(business.instagram_url)}><FaInstagram /></PreviewSocial><PreviewSocial show={Boolean(business.telegram_url)}><FaTelegramPlane /></PreviewSocial><PreviewSocial show={Boolean(business.tiktok_url)}><FaTiktok /></PreviewSocial></div>}</div>
     <div className="flex gap-2 overflow-hidden border-b p-3" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}><span className="px-3 py-1.5 text-[9px] font-semibold text-white" style={{ borderRadius: radius, backgroundColor: theme.primary_color }}>All products</span>{["Featured","New"].map((item)=><span key={item} className="border px-3 py-1.5 text-[9px]" style={{ borderRadius: radius, borderColor: `${theme.muted_color}45` }}>{item}</span>)}</div>
     <div className={`grid gap-3 p-4 ${mobile ? "grid-cols-2" : theme.grid_columns === 2 ? "grid-cols-2" : theme.grid_columns === 3 ? "grid-cols-3" : "grid-cols-4"}`} style={{ backgroundColor: theme.background_color }}>{[0,1,2,3].slice(0, mobile ? 4 : theme.grid_columns).map((item)=><div key={item} className="overflow-hidden" style={{ borderRadius: theme.button_style === "square" ? "6px" : "14px", backgroundColor: theme.surface_color, boxShadow: cardShadow, border: cardBorder }}><div className="aspect-square" style={{ background: `linear-gradient(135deg, ${theme.primary_color}20, ${theme.secondary_color}30)` }}/><div className="p-2"><p className="text-[8px] font-bold" style={{ color: theme.primary_color }}>CATEGORY</p><div className="mt-1 h-2 w-3/4 rounded bg-current opacity-70"/><div className="mt-2 h-2 w-1/3 rounded" style={{ backgroundColor: theme.primary_color }}/></div></div>)}</div>
   </div></div>;
+}
+
+function PreviewSocial({ show, children }: { show: boolean; children: React.ReactNode }) {
+  return show ? <span className="grid h-6 w-6 place-items-center rounded-full border border-white/30 bg-white/15">{children}</span> : null;
 }

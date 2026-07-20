@@ -450,6 +450,43 @@ class StorefrontApiTest extends TestCase
         Storage::disk('public')->assertMissing($currentPath);
     }
 
+    public function test_seller_can_upload_business_media_and_publish_social_links(): void
+    {
+        Storage::fake('public');
+        config(['business_media.disk' => 'public']);
+
+        $user = User::factory()->create();
+        $business = $this->business('Social Store', 'social-store', true, $user);
+        Sanctum::actingAs($user);
+
+        $response = $this->post('/api/v1/business', [
+            '_method' => 'PUT',
+            'name' => 'Social Store',
+            'slug' => 'social-store',
+            'phone' => '012345678',
+            'facebook_url' => 'https://facebook.com/socialstore',
+            'instagram_url' => 'https://instagram.com/socialstore',
+            'telegram_url' => 'https://t.me/socialstore',
+            'tiktok_url' => 'https://tiktok.com/@socialstore',
+            'is_active' => 1,
+            'logo_image' => UploadedFile::fake()->image('logo.png', 600, 600),
+            'banner_image' => UploadedFile::fake()->image('banner.jpg', 1600, 600),
+        ], ['Accept' => 'application/json']);
+
+        $response->assertOk()
+            ->assertJsonPath('data.facebook_url', 'https://facebook.com/socialstore')
+            ->assertJsonMissingPath('data.email');
+
+        $business->refresh();
+        Storage::disk('public')->assertExists($business->logo);
+        Storage::disk('public')->assertExists($business->banner);
+
+        $this->getJson('/api/v1/store/social-store')
+            ->assertOk()
+            ->assertJsonPath('data.business.telegram_url', 'https://t.me/socialstore')
+            ->assertJsonMissingPath('data.business.email');
+    }
+
     public function test_product_upload_rejects_non_image_files(): void
     {
         Storage::fake('public');

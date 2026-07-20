@@ -28,8 +28,11 @@ export interface PublicBusiness {
   banner: string | null;
   description: string | null;
   phone: string | null;
-  email: string | null;
   website: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  telegram_url: string | null;
+  tiktok_url: string | null;
   address: string | null;
   city: string | null;
   country: string | null;

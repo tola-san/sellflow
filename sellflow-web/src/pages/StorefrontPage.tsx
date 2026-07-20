@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ExternalLink, Mail, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
+import { ExternalLink, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
+import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { storefrontService, type Storefront } from "../Services/storefront";
@@ -112,7 +113,10 @@ export function StorefrontPage() {
   const primary = theme.primary_color;
   const cartItems = cart.items(slug);
   const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0);
-  const isMinimalHero = theme.hero_style === "minimal";
+  // Uploaded branding takes priority over the preset hero background. This
+  // prevents a valid banner from being saved but hidden behind another preset.
+  const hasBannerHero = Boolean(business.banner);
+  const isMinimalHero = theme.hero_style === "minimal" && !hasBannerHero;
   
   const fontFamily = theme.font_family === "classic"
     ? "Georgia, 'Kantumruy Pro', Cambria, serif"
@@ -146,19 +150,33 @@ export function StorefrontPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden" style={{ color: isMinimalHero ? theme.text_color : "white", background: isMinimalHero ? theme.surface_color : `linear-gradient(125deg, ${theme.secondary_color}, ${theme.primary_color})` }}>
-        {theme.hero_style === "banner" && business.banner && <img src={business.banner} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-        {theme.hero_style === "banner" && <div className="absolute inset-0" style={{ background: `linear-gradient(90deg, ${theme.secondary_color}F2, ${theme.primary_color}99)` }} />}
-        {theme.hero_style === "gradient" && <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 80% 10%, white 0, transparent 35%)" }} />}
-        <div className={`relative mx-auto max-w-7xl px-4 sm:px-6 ${isMiniAppRoute ? "py-9" : "py-16 sm:py-24"}`}>
+        {hasBannerHero && <img src={business.banner!} alt={`${business.name} storefront banner`} className="absolute inset-0 h-full w-full object-cover" />}
+        {hasBannerHero && (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(90deg, ${theme.secondary_color}D9 0%, ${theme.secondary_color}8C 45%, ${theme.primary_color}4D 100%), linear-gradient(0deg, ${theme.secondary_color}52 0%, transparent 55%)`,
+            }}
+          />
+        )}
+        {!hasBannerHero && theme.hero_style === "gradient" && <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 80% 10%, white 0, transparent 35%)" }} />}
+        <div className={`relative mx-auto max-w-7xl px-4 drop-shadow-sm sm:px-6 ${isMiniAppRoute ? "py-9" : "py-16 sm:py-24"}`}>
           <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: isMinimalHero ? primary : "currentColor", opacity: isMinimalHero ? 1 : 0.8 }}>Welcome to</p>
           <h1 className={`mt-3 max-w-3xl font-bold ${isMiniAppRoute ? "text-3xl" : "text-4xl sm:text-6xl"}`}>{business.name}</h1>
           {business.description && <p className="mt-5 max-w-2xl text-base leading-7 opacity-80 sm:text-lg">{business.description}</p>}
           <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm opacity-75">
             {business.address && <span className="flex items-center gap-2"><MapPin size={16} />{[business.address, business.city, business.country].filter(Boolean).join(", ")}</span>}
             {business.phone && <a className="flex items-center gap-2 hover:text-white" href={`tel:${business.phone}`}><Phone size={16} />{business.phone}</a>}
-            {business.email && <a className="flex items-center gap-2 hover:text-white" href={`mailto:${business.email}`}><Mail size={16} />{business.email}</a>}
             {business.website && <a className="flex items-center gap-2 hover:text-white" href={business.website} target="_blank" rel="noreferrer"><ExternalLink size={16} />Website</a>}
           </div>
+          {(business.facebook_url || business.instagram_url || business.telegram_url || business.tiktok_url) && (
+            <div className="mt-5 flex flex-wrap items-center gap-2" aria-label="Store social media">
+              <SocialLink href={business.facebook_url} label="Facebook"><FaFacebookF /></SocialLink>
+              <SocialLink href={business.instagram_url} label="Instagram"><FaInstagram /></SocialLink>
+              <SocialLink href={business.telegram_url} label="Telegram"><FaTelegramPlane /></SocialLink>
+              <SocialLink href={business.tiktok_url} label="TikTok"><FaTiktok /></SocialLink>
+            </div>
+          )}
         </div>
       </section>
 
@@ -318,4 +336,21 @@ function ProductCard({ product, theme, onAdd }: { product: Storefront["products"
 function NotFound() {
   const { isMiniAppRoute } = useTelegramMiniApp();
   return <div className="grid min-h-screen place-items-center bg-slate-50 p-6 text-center"><div><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-slate-200 text-slate-500"><Store size={30} /></span><h1 className="mt-5 text-2xl font-bold">Store not found</h1><p className="mt-2 text-slate-500">This store does not exist or is currently unavailable.</p><Link to={isMiniAppRoute ? "/telegram/store" : "/"} className="mt-6 inline-block rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white">{isMiniAppRoute ? "Back" : "Go to SellFlow"}</Link></div></div>;
+}
+
+function SocialLink({ href, label, children }: { href: string | null; label: string; children: React.ReactNode }) {
+  if (!href) return null;
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`Visit ${label}`}
+      title={label}
+      className="grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-white/15 text-base text-current backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-900"
+    >
+      {children}
+    </a>
+  );
 }

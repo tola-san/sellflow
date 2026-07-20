@@ -7,10 +7,11 @@ import { useCart } from "../components/cart/CartContext";
 import { ErrorMessage, inputClass } from "../components/dashboard/DashboardUI";
 import { useTelegramMainButton, useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 
-const initialForm: Omit<CheckoutPayload, "items"> = {
+type CheckoutForm = Required<Pick<CheckoutPayload, "customer_name" | "customer_phone" | "delivery_address" | "city" | "notes" | "payment_method">>;
+
+const initialForm: CheckoutForm = {
   customer_name: "",
   customer_phone: "",
-  customer_email: "",
   delivery_address: "",
   city: "",
   notes: "",
@@ -191,7 +192,6 @@ export function CheckoutPage() {
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field label="Full Name" required value={form.customer_name} onChange={(v) => change("customer_name", v)} />
                   <Field label="Phone Number" required value={form.customer_phone} onChange={(v) => change("customer_phone", v)} />
-                  <Field label="Email Address" type="email" value={form.customer_email} onChange={(v) => change("customer_email", v)} />
                   <Field label="City" value={form.city} onChange={(v) => change("city", v)} />
                   
                   <div className="sm:col-span-2">

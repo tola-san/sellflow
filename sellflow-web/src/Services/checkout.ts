@@ -3,7 +3,6 @@ import api from "../lib/Axios";
 export interface CheckoutPayload {
   customer_name: string;
   customer_phone: string;
-  customer_email?: string;
   delivery_address: string;
   city?: string;
   notes?: string;
