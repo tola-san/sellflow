@@ -28,6 +28,7 @@ class UpdateThemeRequest extends FormRequest
             'card_style' => ['required', Rule::in(['elevated', 'bordered', 'flat'])],
             'button_style' => ['required', Rule::in(['rounded', 'pill', 'square'])],
             'hero_style' => ['required', Rule::in(['gradient', 'banner', 'minimal'])],
+            'banner_overlay_opacity' => ['sometimes', 'integer', 'between:0,100'],
             'grid_columns' => ['required', 'integer', Rule::in([2, 3, 4])],
         ];
     }

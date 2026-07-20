@@ -34,6 +34,7 @@ class UpdateBusinessRequest extends FormRequest
             'banner_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.config('business_media.max_size_kb', 4096)],
             'remove_logo' => ['nullable', 'boolean'],
             'remove_banner' => ['nullable', 'boolean'],
+            'banner_overlay_opacity' => ['nullable', 'integer', 'between:0,100'],
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string'],
             'country' => ['nullable', 'string'],

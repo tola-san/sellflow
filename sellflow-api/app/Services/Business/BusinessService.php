@@ -29,6 +29,9 @@ class BusinessService
             'country' => $data['country'] ?? null,
             'primary_color' => $data['primary_color'] ?? '#10B981',
             'secondary_color' => $data['secondary_color'] ?? '#0F172A',
+            'theme_settings' => isset($data['banner_overlay_opacity'])
+                ? ['banner_overlay_opacity' => (int) $data['banner_overlay_opacity']]
+                : null,
             'is_active' => $data['is_active'] ?? true,
         ]);
 
@@ -60,6 +63,14 @@ class BusinessService
         $banner = ($data['remove_banner'] ?? false) ? null : $oldBanner;
         $newLogo = null;
         $newBanner = null;
+        $themeSettings = $business->theme_settings;
+
+        if (array_key_exists('banner_overlay_opacity', $data)) {
+            $themeSettings = [
+                ...(is_array($themeSettings) ? $themeSettings : []),
+                'banner_overlay_opacity' => (int) $data['banner_overlay_opacity'],
+            ];
+        }
 
         try {
             $newLogo = isset($data['logo_image']) ? $this->media->store($data['logo_image'], $business->id, 'logo') : null;
@@ -84,6 +95,7 @@ class BusinessService
                 'country' => $data['country'] ?? null,
                 'primary_color' => $data['primary_color'] ?? '#10B981',
                 'secondary_color' => $data['secondary_color'] ?? '#0F172A',
+                'theme_settings' => $themeSettings,
                 'is_active' => $data['is_active'] ?? true,
             ]);
         } catch (Throwable $exception) {

@@ -71,7 +71,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     />
 
                     <motion.div
-                        className="telegram-safe-fixed fixed right-0 top-0 z-[60] h-full w-full max-w-[420px] bg-white shadow-2xl flex flex-col md:max-w-md"
+                        className="telegram-safe-fixed fixed right-0 top-0 z-[60] h-full w-full max-w-[420px] bg-white text-slate-900 shadow-2xl flex flex-col md:max-w-md"
                         variants={drawerVariants}
                         initial="hidden"
                         animate="visible"

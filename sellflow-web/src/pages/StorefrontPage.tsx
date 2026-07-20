@@ -8,6 +8,7 @@ import type { ThemeSettings } from "../types/theme";
 import { useCart } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
+import { withHexOpacity } from "../lib/color";
 
 export function StorefrontPage() {
   const { slug = "" } = useParams();
@@ -117,6 +118,7 @@ export function StorefrontPage() {
   // prevents a valid banner from being saved but hidden behind another preset.
   const hasBannerHero = Boolean(business.banner);
   const isMinimalHero = theme.hero_style === "minimal" && !hasBannerHero;
+  const bannerOverlayOpacity = theme.banner_overlay_opacity ?? 35;
   
   const fontFamily = theme.font_family === "classic"
     ? "Georgia, 'Kantumruy Pro', Cambria, serif"
@@ -155,7 +157,7 @@ export function StorefrontPage() {
           <div
             className="absolute inset-0"
             style={{
-              background: `linear-gradient(90deg, ${theme.secondary_color}D9 0%, ${theme.secondary_color}8C 45%, ${theme.primary_color}4D 100%), linear-gradient(0deg, ${theme.secondary_color}52 0%, transparent 55%)`,
+              background: `linear-gradient(90deg, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity)} 0%, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity * 0.66)} 45%, ${withHexOpacity(theme.primary_color, bannerOverlayOpacity * 0.36)} 100%), linear-gradient(0deg, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity * 0.28)} 0%, transparent 55%)`,
             }}
           />
         )}
