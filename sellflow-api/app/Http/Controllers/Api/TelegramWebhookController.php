@@ -25,7 +25,7 @@ class TelegramWebhookController extends Controller
             return response()->json(['message' => 'Invalid Telegram webhook secret.'], 403);
         }
 
-        $telegram->connectFromWebhook($request->all());
+        $telegram->handleUpdate($request->all());
 
         return response()->json(['ok' => true]);
     }

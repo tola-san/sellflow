@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { BellRing, Bot, Check, CheckCircle2, Clock3, Copy, ExternalLink, LoaderCircle, MessageCircle, RefreshCw, Send, ShieldCheck, Unplug } from "lucide-react";
-import { telegramNotificationService, type TelegramConnectionCode, type TelegramSettings } from "../Services/telegramNotifications";
+import { BellRing, Bot, Check, Clock3, Copy, ExternalLink, LoaderCircle, MessageCircle, Megaphone, RefreshCw, ShieldCheck, Unplug, Users } from "lucide-react";
+import { telegramNotificationService, type TelegramConnectionCode, type TelegramDestinationPurpose, type TelegramSettings } from "../Services/telegramNotifications";
 import { useToast } from "../components/ui/ToastContext";
 
 export function TelegramNotificationsPage() {
@@ -18,7 +18,6 @@ export function TelegramNotificationsPage() {
       const data = await telegramNotificationService.getSettings();
       setSettings(data);
       setError("");
-      if (data.connected) setConnection(null);
     } catch (requestError) {
       setError(errorMessage(requestError));
     } finally {
@@ -34,10 +33,14 @@ export function TelegramNotificationsPage() {
     return () => window.clearInterval(interval);
   }, [connection, loadSettings]);
 
-  const generateCode = async () => {
-    setWorking("connect");
+  useEffect(() => {
+    if (connection && settings?.destinations.some((destination) => destination.purpose === connection.purpose)) setConnection(null);
+  }, [connection, settings]);
+
+  const generateCode = async (purpose: TelegramDestinationPurpose) => {
+    setWorking(`connect:${purpose}`);
     try {
-      setConnection(await telegramNotificationService.createConnectionCode());
+      setConnection(await telegramNotificationService.createConnectionCode(purpose));
       setError("");
     } catch (requestError) {
       setError(errorMessage(requestError));
@@ -68,10 +71,10 @@ export function TelegramNotificationsPage() {
     }
   };
 
-  const sendTest = async () => {
-    setWorking("test");
+  const sendTest = async (purpose: TelegramDestinationPurpose) => {
+    setWorking(`test:${purpose}`);
     try {
-      showToast(await telegramNotificationService.sendTest());
+      showToast(await telegramNotificationService.sendTest(purpose));
     } catch (requestError) {
       showToast(errorMessage(requestError), "error");
     } finally {
@@ -79,11 +82,11 @@ export function TelegramNotificationsPage() {
     }
   };
 
-  const disconnect = async () => {
-    if (!window.confirm("Disconnect this Telegram chat from SellFlow?")) return;
-    setWorking("disconnect");
+  const disconnect = async (purpose: TelegramDestinationPurpose) => {
+    if (!window.confirm("Disconnect this Telegram destination from SellFlow?")) return;
+    setWorking(`disconnect:${purpose}`);
     try {
-      setSettings(await telegramNotificationService.disconnect());
+      setSettings(await telegramNotificationService.disconnect(purpose));
       setConnection(null);
       showToast("Telegram disconnected successfully.");
     } catch (requestError) {
@@ -105,17 +108,15 @@ export function TelegramNotificationsPage() {
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Telegram alerts</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Connect your store to Telegram and test delivery before enabling real customer order alerts.</p>
         </div>
-        <StatusBadge connected={Boolean(settings?.connected)} />
+        <StatusBadge connected={Boolean(settings?.destinations.length || settings?.connected)} />
       </div>
 
       {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
 
-      {settings?.connected ? (
-        <ConnectedView settings={settings} working={working} onSendTest={sendTest} onDisconnect={disconnect} onPreferenceChange={updatePreference} />
-      ) : connection ? (
+      {connection ? (
         <ConnectionInstructions connection={connection} onCopy={copyCommand} onRefresh={() => loadSettings(true)} />
       ) : (
-        <ConnectView working={working === "connect"} onConnect={generateCode} />
+        <DestinationGrid settings={settings!} working={working} onConnect={generateCode} onTest={sendTest} onDisconnect={disconnect} onPreferenceChange={updatePreference} />
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -127,23 +128,28 @@ export function TelegramNotificationsPage() {
   );
 }
 
-function ConnectView({ working, onConnect }: { working: boolean; onConnect: () => void }) {
-  return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
-        <div className="flex gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sky-50 text-sky-600"><Bot size={25} /></span>
-          <div>
-            <h2 className="text-lg font-bold text-slate-950">Connect the SellFlow bot</h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">Generate a temporary command, send it to the bot in a private chat or staff group, then return here to verify the connection.</p>
-          </div>
-        </div>
-        <button type="button" disabled={working} onClick={onConnect} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-purple-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 disabled:opacity-60">
-          {working ? <LoaderCircle className="animate-spin" size={17} /> : <MessageCircle size={17} />} Connect Telegram
-        </button>
-      </div>
-    </section>
-  );
+const destinationMeta = {
+  sales_channel: { title: "Sales channel", text: "Publish products and promotions to subscribers.", icon: Megaphone },
+  customer_group: { title: "Customer group", text: "Let customers use /start and /shop to open your store.", icon: Users },
+  staff_group: { title: "Private staff group", text: "Receive new-order and payment alerts privately.", icon: ShieldCheck },
+} satisfies Record<TelegramDestinationPurpose, { title: string; text: string; icon: typeof Bot }>;
+
+function DestinationGrid({ settings, working, onConnect, onTest, onDisconnect, onPreferenceChange }: { settings: TelegramSettings; working: string | null; onConnect: (purpose: TelegramDestinationPurpose) => void; onTest: (purpose: TelegramDestinationPurpose) => void; onDisconnect: (purpose: TelegramDestinationPurpose) => void; onPreferenceChange: (key: "new_order_enabled" | "payment_enabled", value: boolean) => void }) {
+  return <div className="grid gap-4 lg:grid-cols-3">{(Object.keys(destinationMeta) as TelegramDestinationPurpose[]).map((purpose) => {
+    const meta = destinationMeta[purpose];
+    const Icon = meta.icon;
+    const destination = settings.destinations.find((item) => item.purpose === purpose) || (purpose === "staff_group" && settings.connected ? { chat_name: settings.chat_name || "Telegram chat", chat_type: "legacy", bot_is_admin: false, connected_at: settings.connected_at } : null);
+    return <section key={purpose} className={`rounded-3xl border bg-white p-6 shadow-sm ${destination ? "border-emerald-200" : "border-slate-200"}`}>
+      <span className={`grid h-11 w-11 place-items-center rounded-2xl ${destination ? "bg-emerald-100 text-emerald-700" : "bg-sky-50 text-sky-600"}`}><Icon size={22} /></span>
+      <h2 className="mt-4 font-bold text-slate-950">{meta.title}</h2>
+      <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">{meta.text}</p>
+      {destination ? <>
+        <div className="mt-4 rounded-xl bg-emerald-50 p-3"><p className="text-xs font-semibold text-emerald-800">Connected</p><p className="mt-1 truncate text-sm text-slate-700">{destination.chat_name}</p></div>
+        {purpose === "staff_group" && <div className="mt-3"><PreferenceRow title="New orders" text="Send new-order alerts." enabled={settings.new_order_enabled} onChange={(value) => onPreferenceChange("new_order_enabled", value)} /></div>}
+        <div className="mt-4 flex gap-3"><button type="button" disabled={Boolean(working)} onClick={() => onTest(purpose)} className="flex-1 rounded-xl bg-emerald-600 px-3 py-2.5 text-xs font-semibold text-white">{working === `test:${purpose}` ? "Sending..." : "Test"}</button><button type="button" disabled={Boolean(working)} onClick={() => onDisconnect(purpose)} className="rounded-xl border border-rose-200 px-3 py-2.5 text-rose-600"><Unplug size={16} /></button></div>
+      </> : <button type="button" disabled={Boolean(working)} onClick={() => onConnect(purpose)} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">{working === `connect:${purpose}` ? <LoaderCircle className="animate-spin" size={16} /> : <MessageCircle size={16} />} Connect</button>}
+    </section>;
+  })}</div>;
 }
 
 function ConnectionInstructions({ connection, onCopy, onRefresh }: { connection: TelegramConnectionCode; onCopy: () => void; onRefresh: () => void }) {
@@ -155,7 +161,7 @@ function ConnectionInstructions({ connection, onCopy, onRefresh }: { connection:
       </div>
       <div className="space-y-6 p-6 sm:p-8">
         <div className="grid gap-4 sm:grid-cols-3">
-          <Step number="1" title="Open the bot" text="Use a private chat or add the bot to your staff group." />
+          <Step number="1" title="Add the bot" text={connection.purpose === "sales_channel" ? "Add the bot as a channel administrator." : "Add the bot to the selected Telegram group."} />
           <Step number="2" title="Send the command" text="Paste the one-time command exactly as shown." />
           <Step number="3" title="Return here" text="SellFlow will recognize the connection automatically." />
         </div>
@@ -167,25 +173,6 @@ function ConnectionInstructions({ connection, onCopy, onRefresh }: { connection:
           {username && <a href={`https://t.me/${username}`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-sky-500 px-5 text-sm font-semibold text-white transition hover:bg-sky-600"><ExternalLink size={17} /> Open @{username}</a>}
           <button type="button" onClick={onRefresh} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"><RefreshCw size={17} /> Check connection</button>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function ConnectedView({ settings, working, onSendTest, onDisconnect, onPreferenceChange }: { settings: TelegramSettings; working: string | null; onSendTest: () => void; onDisconnect: () => void; onPreferenceChange: (key: "new_order_enabled" | "payment_enabled", value: boolean) => void }) {
-  return (
-    <section className="overflow-hidden rounded-3xl border border-emerald-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-4 border-b border-emerald-100 bg-emerald-50/60 p-6 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"><CheckCircle2 size={23} /></span><div><h2 className="font-bold text-slate-950">Telegram connected</h2><p className="text-sm text-slate-500">{settings.chat_name || "Telegram chat"}</p></div></div>
-        <button type="button" disabled={working === "test"} onClick={onSendTest} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60">{working === "test" ? <LoaderCircle className="animate-spin" size={16} /> : <Send size={16} />} Send test message</button>
-      </div>
-      <div className="divide-y divide-slate-100 px-6 sm:px-8">
-        <PreferenceRow title="New order alerts" text="Notify this chat when a customer places an order." enabled={settings.new_order_enabled} onChange={(value) => onPreferenceChange("new_order_enabled", value)} />
-        <PreferenceRow title="Payment alerts" text="Notify this chat when a payment is verified." enabled={settings.payment_enabled} onChange={(value) => onPreferenceChange("payment_enabled", value)} />
-      </div>
-      <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <p className="text-xs text-slate-500">Connected {settings.connected_at ? new Date(settings.connected_at).toLocaleString() : "recently"}</p>
-        <button type="button" disabled={working === "disconnect"} onClick={onDisconnect} className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-rose-600 transition hover:text-rose-700 disabled:opacity-50">{working === "disconnect" ? <LoaderCircle className="animate-spin" size={16} /> : <Unplug size={16} />} Disconnect Telegram</button>
       </div>
     </section>
   );
