@@ -164,7 +164,7 @@ export function HowItWorks() {
             viewport={{ once: true }}
             transition={{ duration: 0.55 }}
             whileHover={{ y: -4 }}
-            className="group relative col-span-7 row-span-2 overflow-hidden rounded-[20px] border border-white/60 bg-white/70 p-8 shadow-xl backdrop-blur-xl md:p-10"
+            className="group relative col-span-7 row-span-2 overflow-hidden rounded-xl border border-white/60 bg-white/70 p-8 shadow-xl backdrop-blur-xl md:p-10"
           >
             <div
               className={`pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gradient-to-br ${step1.gradient} opacity-20 blur-3xl transition-opacity duration-500 group-hover:opacity-35`}
@@ -176,7 +176,7 @@ export function HowItWorks() {
                   <motion.div
                     whileHover={{ scale: 1.06 }}
                     transition={{ type: "spring", stiffness: 900, damping: 18 }}
-                    className={`relative flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br ${step1.gradient} shadow-xl ${step1.glow}`}
+                    className={`relative flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br ${step1.gradient} shadow-xl ${step1.glow}`}
                   >
                     <step1.icon className="h-8 w-8 text-white" />
                     <div className="absolute inset-0">
@@ -218,7 +218,7 @@ export function HowItWorks() {
             viewport={{ once: true }}
             transition={{ duration: 0.55, delay: 0.1 }}
             whileHover={{ y: -4 }}
-            className="group relative col-span-5 overflow-hidden rounded-[20px] border border-white/60 bg-white/70 p-7 shadow-xl backdrop-blur-xl"
+            className="group relative col-span-5 overflow-hidden rounded-xl border border-white/60 bg-white/70 p-7 shadow-xl backdrop-blur-xl"
           >
             <div
               className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${step2.gradient} opacity-20 blur-2xl transition-opacity duration-500 group-hover:opacity-35`}
@@ -227,7 +227,7 @@ export function HowItWorks() {
               <motion.div
                 whileHover={{ scale: 1.08 }}
                 transition={{ type: "spring", stiffness: 900, damping: 18 }}
-                className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${step2.gradient} shadow-lg ${step2.glow}`}
+                className={`flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${step2.gradient} shadow-lg ${step2.glow}`}
               >
                 <step2.icon className="h-6 w-6 text-white" />
               </motion.div>
@@ -250,7 +250,7 @@ export function HowItWorks() {
             viewport={{ once: true }}
             transition={{ duration: 0.55, delay: 0.2 }}
             whileHover={{ y: -4 }}
-            className="group relative col-span-5 overflow-hidden rounded-[20px] border border-white/60 bg-white/70 p-7 shadow-xl backdrop-blur-xl"
+            className="group relative col-span-5 overflow-hidden rounded-xl border border-white/60 bg-white/70 p-7 shadow-xl backdrop-blur-xl"
           >
             <div
               className={`pointer-events-none absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-gradient-to-br ${step3.gradient} opacity-20 blur-2xl transition-opacity duration-500 group-hover:opacity-35`}
@@ -259,7 +259,7 @@ export function HowItWorks() {
               <motion.div
                 whileHover={{ scale: 1.08 }}
                 transition={{ type: "spring", stiffness: 900, damping: 18 }}
-                className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${step3.gradient} shadow-lg ${step3.glow}`}
+                className={`flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${step3.gradient} shadow-lg ${step3.glow}`}
               >
                 <step3.icon className="h-6 w-6 text-white" />
               </motion.div>
@@ -282,7 +282,7 @@ export function HowItWorks() {
             viewport={{ once: true }}
             transition={{ duration: 0.55, delay: 0.3 }}
             whileHover={{ y: -4 }}
-            className="group relative col-span-12 overflow-hidden rounded-[20px] border border-white/60 bg-white/70 p-7 shadow-xl backdrop-blur-xl md:p-8"
+            className="group relative col-span-12 overflow-hidden rounded-xl border border-white/60 bg-white/70 p-7 shadow-xl backdrop-blur-xl md:p-8"
           >
             <div
               className={`pointer-events-none absolute -left-16 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-gradient-to-br ${step4.gradient} opacity-20 blur-3xl transition-opacity duration-500 group-hover:opacity-35`}
@@ -292,7 +292,7 @@ export function HowItWorks() {
                 <motion.div
                   whileHover={{ scale: 1.08 }}
                   transition={{ type: "spring", stiffness: 900, damping: 18 }}
-                  className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${step4.gradient} shadow-lg ${step4.glow}`}
+                  className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${step4.gradient} shadow-lg ${step4.glow}`}
                 >
                   <step4.icon className="h-7 w-7 text-white" />
                 </motion.div>
@@ -323,11 +323,11 @@ export function HowItWorks() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-6 shadow-lg backdrop-blur-xl"
+                className="relative overflow-hidden rounded-xl border border-white/60 bg-white/70 p-6 shadow-lg backdrop-blur-xl"
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${step.gradient} shadow-lg ${step.glow}`}
+                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${step.gradient} shadow-lg ${step.glow}`}
                   >
                     <Icon className="h-6 w-6 text-white" />
                   </div>

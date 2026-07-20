@@ -97,13 +97,13 @@ export function Features() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
               whileHover={{ y: -8 }}
-              className={`group relative p-8 rounded-3xl border border-slate-50 ${feature.cardBg} 
+              className={`group relative p-8 rounded-xl border border-zinc-100 ${feature.cardBg} 
                          hover:shadow-xl hover:shadow-black/5 transition-all duration-300 overflow-hidden`}
             >
               {/* Subtle inner highlight */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-              <div className={`relative w-16 h-16 rounded-full ${feature.bg} backdrop-blur-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+              <div className={`relative w-16 h-16 rounded-xl ${feature.bg} backdrop-blur-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
                 <feature.icon className={`w-7 h-7 ${feature.color}`} />
               </div>
 
