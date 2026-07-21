@@ -102,7 +102,7 @@ function DateTimeDisplay() {
       >
         <Bell size={18} className="text-slate-500" />
         {hasNotifications && (
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-xl border-2 border-white"></span>
         )}
       </button>
 
@@ -296,9 +296,9 @@ export function DashboardLayout() {
               {user ? (
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm hover:bg-slate-50 border border-slate-200 transition"
+                  className="flex items-center gap-2 rounded-xl bg-white px-3 py-1.5 text-sm hover:bg-slate-50 border border-slate-200 transition"
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 text-purple-700 font-medium text-xs">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-purple-100 text-purple-700 font-medium text-xs">
                     {getInitials(user.name || user.email || "User")}
                   </div>
                   <span className="hidden sm:inline text-slate-700 font-medium">
@@ -314,7 +314,7 @@ export function DashboardLayout() {
               ) : (
                 <button
                   onClick={() => openAuth('login')}
-                  className="flex items-center gap-2 rounded-full bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition"
+                  className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition"
                 >
                   <User size={16} />
                   Sign In

@@ -107,7 +107,7 @@ export function StorefrontPage() {
   };
 
   if (missing) return <NotFound />;
-  if (!storefront) return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-purple-600" /></div>;
+  if (!storefront) return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="h-10 w-10 animate-spin rounded-xl border-4 border-slate-200 border-t-purple-600" /></div>;
 
   const { business, categories } = storefront;
   const theme = business.theme;
@@ -146,7 +146,7 @@ export function StorefrontPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
           {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 rounded-lg object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}><Store size={20} /></span>}
           <div><p className="font-bold leading-tight">{business.name}</p><p className="text-xs" style={{ color: theme.muted_color }}>Powered by SellFlow</p></div>
-          <Link to={storePath(slug, "/cart")} className="ml-auto flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-full px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
+          <Link to={storePath(slug, "/cart")} className="ml-auto flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
         </div>
       </header>
 
@@ -340,8 +340,24 @@ function NotFound() {
   return <div className="grid min-h-screen place-items-center bg-slate-50 p-6 text-center"><div><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-slate-200 text-slate-500"><Store size={30} /></span><h1 className="mt-5 text-2xl font-bold">Store not found</h1><p className="mt-2 text-slate-500">This store does not exist or is currently unavailable.</p><Link to={isMiniAppRoute ? "/telegram/store" : "/"} className="mt-6 inline-block rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white">{isMiniAppRoute ? "Back" : "Go to SellFlow"}</Link></div></div>;
 }
 
-function SocialLink({ href, label, children }: { href: string | null; label: string; children: React.ReactNode }) {
+
+
+function SocialLink({ href, label, children }: { 
+  href: string | null; 
+  label: string; 
+  children: React.ReactNode;
+}) {
   if (!href) return null;
+
+  const brandColors: Record<string, string> = {
+    Facebook: "#1877F2",
+    Instagram: "linear-gradient(135deg, #E1306C, #F77737, #C13584, #405DE6)",
+    Telegram: "#229ED9",
+    TikTok: "#000000", // or "#EE1D52" for the classic pink
+  };
+
+  const brandColor = "#1877F2";
+  const isInstagram = label === "Instagram";
 
   return (
     <a
@@ -350,7 +366,28 @@ function SocialLink({ href, label, children }: { href: string | null; label: str
       rel="noreferrer"
       aria-label={`Visit ${label}`}
       title={label}
-      className="grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-white/15 text-base text-current backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-900"
+      className="grid h-10 w-10 place-items-center rounded-xl border backdrop-blur-md transition-all hover:-translate-y-0.5 hover:scale-105 active:scale-95"
+      style={{
+        backgroundColor: "#1877F2",
+        borderColor: "#1877F2",
+        color: "white"
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "#1877F2";
+        e.currentTarget.style.borderColor = brandColor;
+        e.currentTarget.style.color = isInstagram ? brandColor : "white";
+        if (isInstagram) {
+          e.currentTarget.style.background = brandColors.Instagram;
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "#1877F2";
+        e.currentTarget.style.borderColor = "#1877F2";
+        e.currentTarget.style.color = isInstagram ? "white" : "white";
+        if (isInstagram) {
+          e.currentTarget.style.background = "rgba(255,255,255,0.15)";
+        }
+      }}
     >
       {children}
     </a>

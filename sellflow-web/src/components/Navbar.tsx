@@ -126,31 +126,7 @@ export function Navbar() {
               {currentLang.tryFree}
             </button>
           </div>
-          {/* Mobile Actions */}
-          <div className="md:hidden flex items-center gap-2">
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1 px-2 py-2 text-zinc-700"
-              aria-label="Toggle language"
-            >
-              <Globe className="w-5 h-5" />
-              <span className="text-xs font-semibold">
-                {currentLang.language}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className="text-ink p-1 focus:outline-none"
-              aria-label="Toggle Menu"
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
-          </div>
+         
         </div>
       </div>
 
