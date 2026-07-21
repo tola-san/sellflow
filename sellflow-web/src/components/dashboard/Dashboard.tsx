@@ -34,7 +34,7 @@ export function DashboardMockup() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-zinc-50 border border-zinc-100 rounded-2xl p-5"
+                className="bg-zinc-50 border border-zinc-100 rounded-lg p-8"
               >
                 <div className={`w-9 h-9 rounded-xl bg-${stat.color}-50 flex items-center justify-center mb-4`}>
                   <stat.icon className={`w-5 h-5 text-${stat.color}-600`} />
@@ -50,7 +50,7 @@ export function DashboardMockup() {
           {/* Main Content Area */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {/* Menu Preview */}
-            <div className="lg:col-span-3 bg-white border border-zinc-100 rounded-2xl p-6">
+            <div className="lg:col-span-3 bg-white border border-zinc-100 rounded-lg p-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="font-semibold">Signature Menu</div>
                 <div className="text-emerald-600 text-xs font-medium flex items-center gap-1">
@@ -73,7 +73,7 @@ export function DashboardMockup() {
             </div>
 
             {/* Revenue Chart */}
-            <div className="lg:col-span-2 bg-white border border-zinc-100 rounded-2xl p-6 flex flex-col">
+            <div className="lg:col-span-2 bg-white border border-zinc-100 rounded-lg p-6 flex flex-col">
               <div className="font-semibold mb-6">This Week</div>
               <div className="flex-1 flex items-end gap-2">
                 {[35, 68, 45, 85, 72, 95, 100].map((height, i) => (

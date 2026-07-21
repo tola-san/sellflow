@@ -111,7 +111,7 @@ export function TelegramNotificationsPage() {
         <StatusBadge connected={Boolean(settings?.destinations.length || settings?.connected)} />
       </div>
 
-      {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+      {error && <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
 
       {connection ? (
         <ConnectionInstructions connection={connection} onCopy={copyCommand} onRefresh={() => loadSettings(true)} />
@@ -139,8 +139,8 @@ function DestinationGrid({ settings, working, onConnect, onTest, onDisconnect, o
     const meta = destinationMeta[purpose];
     const Icon = meta.icon;
     const destination = settings.destinations.find((item) => item.purpose === purpose) || (purpose === "staff_group" && settings.connected ? { chat_name: settings.chat_name || "Telegram chat", chat_type: "legacy", bot_is_admin: false, connected_at: settings.connected_at } : null);
-    return <section key={purpose} className={`rounded-3xl border bg-white p-6 shadow-sm ${destination ? "border-emerald-200" : "border-slate-200"}`}>
-      <span className={`grid h-11 w-11 place-items-center rounded-2xl ${destination ? "bg-emerald-100 text-emerald-700" : "bg-sky-50 text-sky-600"}`}><Icon size={22} /></span>
+    return <section key={purpose} className={`rounded-xl border bg-white p-6 shadow-sm ${destination ? "border-emerald-200" : "border-slate-200"}`}>
+      <span className={`grid h-11 w-11 place-items-center rounded-xl ${destination ? "bg-emerald-100 text-emerald-700" : "bg-sky-50 text-sky-600"}`}><Icon size={22} /></span>
       <h2 className="mt-4 font-bold text-slate-950">{meta.title}</h2>
       <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">{meta.text}</p>
       {destination ? <>
@@ -155,7 +155,7 @@ function DestinationGrid({ settings, working, onConnect, onTest, onDisconnect, o
 function ConnectionInstructions({ connection, onCopy, onRefresh }: { connection: TelegramConnectionCode; onCopy: () => void; onRefresh: () => void }) {
   const username = connection.bot_username?.replace(/^@/, "");
   return (
-    <section className="overflow-hidden rounded-3xl border border-sky-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-sky-200 bg-white shadow-sm">
       <div className="border-b border-sky-100 bg-sky-50/70 px-6 py-4 sm:px-8">
         <div className="flex items-center gap-3"><Clock3 className="text-sky-600" size={19} /><p className="text-sm font-semibold text-sky-800">Waiting for Telegram connection · expires {new Date(connection.expires_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p></div>
       </div>
@@ -165,7 +165,7 @@ function ConnectionInstructions({ connection, onCopy, onRefresh }: { connection:
           <Step number="2" title="Send the command" text="Paste the one-time command exactly as shown." />
           <Step number="3" title="Return here" text="SellFlow will recognize the connection automatically." />
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white sm:flex sm:items-center sm:gap-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-950 p-4 text-white sm:flex sm:items-center sm:gap-4">
           <code className="block min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-sm font-semibold text-emerald-300">{connection.command}</code>
           <button type="button" onClick={onCopy} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-xs font-semibold transition hover:bg-white/20 sm:mt-0"><Copy size={15} /> Copy</button>
         </div>
@@ -187,7 +187,7 @@ function Step({ number, title, text }: { number: string; title: string; text: st
 }
 
 function InfoCard({ icon: Icon, title, text }: { icon: typeof ShieldCheck; title: string; text: string }) {
-  return <div className="rounded-2xl border border-slate-200 bg-white p-5"><Icon className="text-purple-600" size={20} /><h3 className="mt-3 text-sm font-semibold text-slate-900">{title}</h3><p className="mt-1 text-xs leading-5 text-slate-500">{text}</p></div>;
+  return <div className="rounded-xl border border-slate-200 bg-white p-5"><Icon className="text-purple-600" size={20} /><h3 className="mt-3 text-sm font-semibold text-slate-900">{title}</h3><p className="mt-1 text-xs leading-5 text-slate-500">{text}</p></div>;
 }
 
 function StatusBadge({ connected }: { connected: boolean }) {
