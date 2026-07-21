@@ -466,7 +466,6 @@ export function DashboardPage() {
       {/* Mobile-Optimized Header */}
       <header className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-start gap-3 sm:gap-4">
-          <StoreLogo business={business} size="md" />
           <div className="min-w-0 flex-1">
             <div className="mb-1 sm:mb-3 flex items-center gap-2">
               <span className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg sm:rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200">
