@@ -1,54 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingBag, Globe } from "lucide-react";
+import { Menu, X, ShoppingBag } from "lucide-react";
 import { useAuth } from "./Auth/AuthContext";
-
-type Language = "en" | "km";
-
-const translations = {
-  en: {
-    features: "Features",
-    pricing: "Pricing",
-    solutions: "Business Solutions",
-    about: "About Us",
-    login: "Log In",
-    tryFree: "Try for Free",
-    language: "EN",
-  },
-  km: {
-    features: "មុខងារប្រព័ន្ធ",
-    pricing: "គម្រោងតម្លៃ",
-    solutions: "ដំណោះស្រាយអាជីវកម្ម",
-    about: "អំពីយើង",
-    login: "ចូលប្រើប្រាស់",
-    tryFree: "សាកល្បងឥតគិតថ្លៃ",
-    language: "ខ្មែរ",
-  },
-};
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<Language>("km");
 
   const { openAuth } = useAuth();
 
-  const currentLang = translations[language];
-
   const navLinks = [
-    { name: currentLang.features, href: "#features" },
-    { name: currentLang.pricing, href: "#pricing" },
-    { name: currentLang.solutions, href: "#solutions" },
-    { name: currentLang.about, href: "#about" },
+    { name: "Features", href: "#features" },
+    { name: "Pricing", href: "#pricing" },
+    { name: "Business Solutions", href: "#solutions" },
+    { name: "About Us", href: "#about" },
   ];
-
-  useEffect(() => {
-    const savedLang = localStorage.getItem("preferredLanguage") as Language | null;
-
-    if (savedLang === "en" || savedLang === "km") {
-      setLanguage(savedLang);
-    }
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -60,11 +26,23 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const toggleLanguage = () => {
-    const newLang: Language = language === "en" ? "km" : "en";
+  // Animation variants for hamburger icon
+  const menuIconVariants = {
+    closed: { rotate: 0 },
+    open: { rotate: 90 },
+  };
 
-    setLanguage(newLang);
-    localStorage.setItem("preferredLanguage", newLang);
+  // Animation variants for mobile menu items
+  const menuItemVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.05,
+        duration: 0.2,
+      },
+    }),
   };
 
   return (
@@ -78,9 +56,8 @@ export function Navbar() {
           {/* Logo */}
           <a href="/" className="flex items-center gap-2">
             <div className="w-full p-2 h-10 rounded-lg bg-brand flex items-center justify-center shadow-glow">
-              <ShoppingBag className=" text-white"  />
+              <ShoppingBag className="text-white" />
             </div>
-
             <span className="font-display font-bold text-xl tracking-tight text-ink">
               Sellflow
             </span>
@@ -102,31 +79,39 @@ export function Navbar() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
             <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-zinc-700 hover:text-ink hover:bg-white/60 rounded-lg transition-all border border-zinc-200"
-              aria-label="Toggle language"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="text-xs font-semibold tracking-wide">
-                {currentLang.language}
-              </span>
-            </button>
-
-            <button
               onClick={() => openAuth("login")}
               className="text-sm font-medium text-muted hover:text-ink transition-colors"
             >
-              {currentLang.login}
+              Log In
             </button>
 
             <button
               onClick={() => openAuth("register")}
               className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-glow hover:shadow-none hover:scale-105 active:scale-95"
             >
-              {currentLang.tryFree}
+              Try for Free
             </button>
           </div>
-         
+
+          {/* Mobile Hamburger */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/60 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <motion.div
+              animate={isMobileMenuOpen ? "open" : "closed"}
+              variants={menuIconVariants}
+              transition={{ duration: 0.2 }}
+              className="absolute"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6 text-ink" />
+              ) : (
+                <Menu className="w-6 h-6 text-ink" />
+              )}
+            </motion.div>
+          </button>
         </div>
       </div>
 
@@ -141,49 +126,50 @@ export function Navbar() {
             className="absolute left-4 right-4 mt-2 md:hidden bg-white/95 border border-line shadow-xl rounded-2xl overflow-hidden backdrop-blur-xl"
           >
             <div className="px-5 py-6 flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
+              {navLinks.map((link, index) => (
+                <motion.a
                   key={link.href}
                   href={link.href}
+                  custom={index}
+                  initial="hidden"
+                  animate="visible"
+                  variants={menuItemVariants}
                   className="text-base font-medium text-ink hover:text-brand transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.name}
-                </a>
+                </motion.a>
               ))}
 
               <div className="h-px bg-zinc-200 my-1" />
 
-              <button
-                onClick={toggleLanguage}
-                className="flex items-center justify-between w-full text-base font-medium text-ink py-2"
-              >
-                <span>Language</span>
-                <span className="flex items-center gap-2 text-brand">
-                  <Globe className="w-4 h-4" />
-                  {currentLang.language}
-                </span>
-              </button>
-
-              <button
+              <motion.button
+                custom={4}
+                initial="hidden"
+                animate="visible"
+                variants={menuItemVariants}
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   openAuth("login");
                 }}
                 className="w-full text-left text-base font-medium text-ink py-2"
               >
-                {currentLang.login}
-              </button>
+                Log In
+              </motion.button>
 
-              <button
+              <motion.button
+                custom={5}
+                initial="hidden"
+                animate="visible"
+                variants={menuItemVariants}
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   openAuth("register");
                 }}
                 className="w-full bg-brand text-white px-4 py-3 rounded-lg text-base font-medium text-center shadow-glow active:scale-95 transition-all"
               >
-                {currentLang.tryFree}
-              </button>
+                Try for Free
+              </motion.button>
             </div>
           </motion.div>
         )}
