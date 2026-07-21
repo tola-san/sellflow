@@ -462,7 +462,7 @@ export function DashboardPage() {
   const fulfillment = summary.total ? Math.round((summary.completed / summary.total) * 100) : 0;
 
   return (
-    <div className="space-y-4 sm:space-y-8 pb-20 sm:pb-8">
+    <div className="space-y-4 sm:space-y-8 pb-8">
       {/* Mobile-Optimized Header */}
       <header className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-start gap-3 sm:gap-4">
@@ -707,28 +707,6 @@ export function DashboardPage() {
           </div>
         </article>
       </section>
-
-      {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 sm:hidden z-50">
-        <div className="flex justify-around items-center">
-          <Link to="/dashboard" className="flex flex-col items-center gap-0.5 text-violet-600">
-            <Sparkles className="h-5 w-5" />
-            <span className="text-[8px] font-medium">Dashboard</span>
-          </Link>
-          <Link to="/dashboard/orders" className="flex flex-col items-center gap-0.5 text-slate-400">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="text-[8px] font-medium">Orders</span>
-          </Link>
-          <Link to="/dashboard/products" className="flex flex-col items-center gap-0.5 text-slate-400">
-            <Package className="h-5 w-5" />
-            <span className="text-[8px] font-medium">Products</span>
-          </Link>
-          <Link to="/dashboard/business" className="flex flex-col items-center gap-0.5 text-slate-400">
-            <Store className="h-5 w-5" />
-            <span className="text-[8px] font-medium">Store</span>
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }
