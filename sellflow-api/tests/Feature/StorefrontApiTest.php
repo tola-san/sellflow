@@ -127,6 +127,36 @@ class StorefrontApiTest extends TestCase
         );
     }
 
+    public function test_website_checkout_returns_a_secure_telegram_receipt_link(): void
+    {
+        Bus::fake([SendNewOrderTelegramNotification::class]);
+        config(['services.telegram.bot_username' => 'sellflow_test_bot']);
+        $store = $this->business('Link Store', 'link-store');
+        $category = $this->category($store, 'Drinks', true);
+        $this->product($store, $category, 'Tea', 'tea', true);
+
+        $response = $this->postJson('/api/v1/store/link-store/checkout', [
+            'customer_name' => 'Website Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'items' => [['product_slug' => 'tea', 'quantity' => 1]],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.telegram_receipt_sent', false);
+
+        $url = $response->json('data.telegram_link_url');
+        $this->assertStringStartsWith('https://t.me/sellflow_test_bot?start=sfl_', $url);
+        $token = parse_url($url, PHP_URL_QUERY);
+        parse_str($token, $query);
+        $this->assertDatabaseHas('order_telegram_links', [
+            'token_hash' => hash('sha256', $query['start']),
+            'used_at' => null,
+        ]);
+        $this->assertDatabaseMissing('order_telegram_links', ['token_hash' => $query['start']]);
+    }
+
     public function test_successful_checkout_sends_a_new_order_alert_to_connected_telegram(): void
     {
         config(['services.telegram.bot_token' => 'TEST_TOKEN']);
