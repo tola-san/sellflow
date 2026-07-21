@@ -7,6 +7,7 @@ use App\Http\Requests\Storefront\CheckoutRequest;
 use App\Http\Resources\Storefront\PublicOrderResource;
 use App\Jobs\SendNewOrderTelegramNotification;
 use App\Services\Order\OrderTelegramNotificationService as CustomerOrderTelegramNotifications;
+use App\Services\Order\OrderTelegramLinkService;
 use App\Services\Storefront\CheckoutService;
 use App\Services\TelegramMiniAppAuthService as TelegramCustomerAuthenticator;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +18,7 @@ class CheckoutController extends Controller
         protected CheckoutService $checkoutService,
         protected TelegramCustomerAuthenticator $telegramAuth,
         protected CustomerOrderTelegramNotifications $notifications,
+        protected OrderTelegramLinkService $telegramLinks,
     ) {}
 
     public function store(CheckoutRequest $request, string $slug): JsonResponse
@@ -33,12 +35,16 @@ class CheckoutController extends Controller
         // The customer receipt is attempted immediately so checkout can report
         // whether Telegram accepted it. Seller delivery remains after-response.
         $this->notifications->orderCreated($order);
+        $telegramLinkUrl = $this->telegramLinks->create($order);
         SendNewOrderTelegramNotification::dispatchAfterResponse($order->id);
 
         return response()->json([
             'success' => true,
             'message' => 'Order placed successfully.',
-            'data' => new PublicOrderResource($order),
+            'data' => [
+                ...(new PublicOrderResource($order))->resolve($request),
+                'telegram_link_url' => $telegramLinkUrl,
+            ],
         ], 201);
     }
 }

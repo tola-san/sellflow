@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Business;
 use App\Models\Order;
+use App\Models\OrderTelegramLink;
 use App\Models\TelegramConnectionCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -276,6 +277,63 @@ class TelegramNotificationApiTest extends TestCase
         ]);
         Http::assertSent(fn ($request) => $request['chat_id'] === '778899'
             && str_contains($request['text'], 'seller confirmed your order'));
+    }
+
+    public function test_website_customer_can_claim_an_order_and_receive_the_receipt_once(): void
+    {
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+            'services.telegram.webhook_secret' => 'test-secret',
+        ]);
+        Http::fake(['https://api.telegram.org/*' => Http::response(['ok' => true])]);
+        $business = $this->actingAsBusinessOwner('Claim Store');
+        $order = Order::create([
+            'business_id' => $business->id,
+            'order_number' => 'SF-CLAIM-TEST',
+            'customer_name' => 'Website Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'subtotal' => 10,
+            'total' => 10,
+            'payment_method' => 'cash',
+            'payment_status' => 'pending',
+            'status' => 'pending',
+        ]);
+        $token = 'sfl_'.str_repeat('A', 40);
+        OrderTelegramLink::create([
+            'order_id' => $order->id,
+            'token_hash' => hash('sha256', $token),
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $payload = [
+            'message' => [
+                'text' => "/start {$token}",
+                'from' => ['id' => 778899, 'username' => 'website_customer'],
+                'chat' => ['id' => 778899, 'type' => 'private'],
+            ],
+        ];
+        $webhook = fn () => $this->withHeader('X-Telegram-Bot-Api-Secret-Token', 'test-secret')
+            ->postJson('/api/v1/integrations/telegram/webhook', $payload);
+
+        $webhook()->assertOk();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'telegram_chat_id' => '778899',
+            'telegram_username' => 'website_customer',
+            'telegram_notifications_enabled' => true,
+            'telegram_last_notified_status' => 'pending',
+        ]);
+        $this->assertNotNull(OrderTelegramLink::firstOrFail()->used_at);
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request) => $request['chat_id'] === '778899'
+            && str_contains($request['text'], 'Order received')
+            && str_contains($request['text'], 'SF-CLAIM-TEST'));
+
+        $webhook()->assertOk();
+        Http::assertSentCount(1);
     }
 
     private function actingAsBusinessOwner(string $businessName): Business
