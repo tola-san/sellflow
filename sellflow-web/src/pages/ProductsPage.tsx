@@ -188,12 +188,12 @@ export function ProductsPage() {
       
       <ErrorMessage error={error}/>
       
-      {!categories.length && (
+      {/* {!categories.length && (
         <div className="rounded-xl bg-amber-50 px-5 py-4 text-sm text-amber-800 border border-amber-200 flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
           Create an active category before adding products.
         </div>
-      )}
+      )} */}
 
       {/* Stats Section */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -509,17 +509,17 @@ function ProductCard({ product, edit, remove }: { product: Product; edit: (produ
         </div>
         
         {/* Quick actions overlay */}
-        <div className="absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-slate-950/80 to-transparent px-3 pb-3 pt-8 transition duration-300 group-hover:translate-y-0">
+        <div className="absolute inset-x-0 bottom-0 translate-y-full  px-3 pb-3 pt-8 transition duration-300 group-hover:translate-y-0">
           <div className="flex items-center justify-center gap-2">
             <button 
               onClick={() => edit(product)}
-              className="rounded-xl bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-lg transition hover:bg-violet-50 hover:text-violet-600"
+              className="rounded-full bg-purple-100/40 backdrop-blur-xl  px-3 py-1.5 text-xs font-semibold text-slate-100 shadow-lg transition hover:bg-violet-50 hover:text-violet-600"
             >
               Edit
             </button>
             <button 
               onClick={() => remove(product)}
-              className="rounded-xl bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-lg transition hover:bg-red-50 hover:text-red-600"
+              className="rounded-full bg-red-100/30 px-3 py-1.5 text-xs font-semibold text-red-600 backdrop-blur-xl shadow-lg transition hover:bg-red-100 hover:text-red-600"
             >
               Delete
             </button>
