@@ -71,7 +71,7 @@ const socialChannels: SocialChannel[] = [
   {
     label: "WhatsApp",
     icon: FaWhatsapp,
-    className: "bg-emerald-500 text-white",
+    className: "bg-purple-500 text-white",
     position: "bottom-5 right-5 sm:right-10",
     delay: 1,
   },
@@ -84,10 +84,10 @@ const setupSteps = [
 ];
 
 const orderStatuses = [
-  { label: "New", icon: CircleDot, className: "border-purple-200 bg-purple-50 text-purple-700" },
-  { label: "Confirmed", icon: BadgeCheck, className: "border-cyan-200 bg-cyan-50 text-cyan-700" },
+  { label: "New", icon: CircleDot, className: "border-blue-200 bg-blue-50 text-blue-700" },
+  { label: "Confirmed", icon: BadgeCheck, className: "border-violet-200 bg-violet-50 text-violet-700" },
   { label: "Processing", icon: LoaderCircle, className: "border-amber-200 bg-amber-50 text-amber-700" },
-  { label: "Completed", icon: PackageCheck, className: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+  { label: "Completed", icon: PackageCheck, className: "border-purple-200 bg-purple-50 text-purple-700" },
 ];
 
 const dailyBenefits = [
@@ -107,11 +107,10 @@ function BenefitCard({
   className?: string; 
   index: number; 
   reduceMotion: boolean | null;
-  layout?: "full" | "half" | "third" | "two-thirds" | "full-width";
+  layout?: "full" | "half" | "third" | "two-thirds";
 }) {
   const getGridSpan = () => {
     switch(layout) {
-      case "full-width": return "lg:col-span-2"; // For full width in a 2-col grid
       case "full": return "lg:col-span-12";
       case "half": return "lg:col-span-6";
       case "third": return "lg:col-span-4";
@@ -127,7 +126,7 @@ function BenefitCard({
       viewport={{ once: true, margin: "-70px" }}
       whileHover={reduceMotion ? undefined : { y: -4 }}
       transition={{ duration: 0.55, delay: index * 0.05, ease: "easeOut" }}
-      className={`relative overflow-hidden rounded-3xl border border-purple-200/80 bg-white shadow-[0_24px_70px_-48px_rgba(139,92,246,0.25)] transition-all hover:shadow-[0_30px_80px_-45px_rgba(139,92,246,0.35)] hover:border-purple-300/80 ${getGridSpan()} ${className}`}
+      className={`relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] transition-all hover:shadow-[0_30px_80px_-45px_rgba(15,23,42,0.42)] hover:border-slate-300/80 ${getGridSpan()} ${className}`}
     >
       {children}
     </motion.article>
@@ -141,16 +140,16 @@ export function Benefits() {
     <section
       id="benefits"
       aria-labelledby="benefits-heading"
-      className="relative isolate overflow-hidden border-y border-purple-200/70 bg-gradient-to-br from-purple-50/50 via-white to-cyan-50/50 py-20 sm:py-28"
+      className="relative isolate overflow-hidden border-y border-slate-200/70 bg-slate-50/70 py-20 sm:py-28"
     >
-      {/* Background decorations - Purple & Cyan */}
+      {/* Background decorations */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_0%,rgba(139,92,246,0.12),transparent_30%),radial-gradient(circle_at_85%_65%,rgba(6,182,212,0.10),transparent_25%),linear-gradient(to_bottom,#ffffff,rgba(248,250,252,0.78))]"
+        className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.12),transparent_30%),radial-gradient(circle_at_85%_65%,rgba(124,58,237,0.08),transparent_25%),linear-gradient(to_bottom,#ffffff,rgba(248,250,252,0.78))]"
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 opacity-[0.15] [background-image:radial-gradient(rgba(139,92,246,0.15)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_72%)]"
+        className="absolute inset-0 -z-10 opacity-[0.28] [background-image:radial-gradient(rgba(100,116,139,0.28)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_72%)]"
       />
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -162,7 +161,7 @@ export function Benefits() {
           transition={{ duration: 0.65, ease: "easeOut" }}
           className="relative mx-auto max-w-3xl text-center"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-white/80 px-4 py-2 text-xs font-semibold text-purple-700 shadow-sm backdrop-blur-sm">
+          <span className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-white px-4 py-2 text-xs font-semibold text-purple-700 shadow-sm">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             Why SellFlow
           </span>
@@ -171,9 +170,7 @@ export function Benefits() {
             className="mt-6 text-4xl font-semibold leading-[1.06] tracking-[-0.045em] text-slate-950 sm:text-5xl lg:text-6xl"
           >
             Everything you need to{" "}
-            <span className="font-editorial bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
-              sell smarter
-            </span>
+            <span className="font-editorial text-purple-600">sell smarter</span>
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             Stop switching between spreadsheets, chat apps, and multiple selling platforms.
@@ -182,7 +179,7 @@ export function Benefits() {
           </p>
         </motion.header>
 
-        {/* Main Grid - 2-column layout */}
+        {/* Main Grid - Clean 2-column layout with clear sections */}
         <div className="mt-12 grid grid-cols-1 gap-5 lg:grid-cols-2">
           
           {/* LEFT COLUMN */}
@@ -192,16 +189,15 @@ export function Benefits() {
               index={0}
               reduceMotion={reduceMotion}
               layout="full"
-              className="min-h-[480px] bg-gradient-to-br from-white via-purple-50/30 to-cyan-50/30 p-6 sm:p-8"
+              className="min-h-[480px] bg-gradient-to-br from-white via-white to-purple-50/70 p-6 sm:p-8"
             >
-              <div aria-hidden="true" className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-purple-200/30 blur-3xl" />
-              <div aria-hidden="true" className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-cyan-200/20 blur-3xl" />
+              <div aria-hidden="true" className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-purple-200/35 blur-3xl" />
               <div className="relative flex h-full flex-col">
                 <div className="flex items-start justify-between gap-4">
-                  <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/25">
+                  <span className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-950 text-white shadow-lg">
                     <LayoutDashboard className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <span className="rounded-full border border-purple-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-purple-600">
+                  <span className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                     All channels
                   </span>
                 </div>
@@ -229,24 +225,24 @@ export function Benefits() {
                         title={channel.label}
                         animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
                         transition={{ duration: 3.8, delay: channel.delay, repeat: Infinity, ease: "easeInOut" }}
-                        className={`absolute z-10 grid h-10 w-10 place-items-center rounded-2xl shadow-lg ring-4 ring-white/80 sm:h-11 sm:w-11 ${channel.className} ${channel.position}`}
+                        className={`absolute z-10 grid h-10 w-10 place-items-center rounded-2xl shadow-lg ring-4 ring-white sm:h-11 sm:w-11 ${channel.className} ${channel.position}`}
                       >
                         <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </motion.span>
                     );
                   })}
 
-                  <div className="absolute left-1/2 top-1/2 z-20 w-[160px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-purple-200 bg-white/95 p-3 shadow-xl backdrop-blur-sm sm:w-[200px] sm:p-4">
+                  <div className="absolute left-1/2 top-1/2 z-20 w-[160px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl sm:w-[200px] sm:p-4">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2 text-xs font-semibold text-slate-900">
-                        <span className="grid h-6 w-6 place-items-center rounded-lg bg-gradient-to-r from-purple-600 to-cyan-600 text-white text-[10px]">S</span>
+                        <span className="grid h-6 w-6 place-items-center rounded-lg bg-purple-500 text-white text-[10px]">S</span>
                         SellFlow
                       </span>
                       <span className="h-2 w-2 rounded-full bg-purple-500 ring-4 ring-purple-100" />
                     </div>
                     <div className="mt-3 grid grid-cols-3 gap-1.5">
                       {["Orders", "Sales", "Products"].map((item, itemIndex) => (
-                        <div key={item} className="rounded-lg bg-gradient-to-br from-purple-50/50 to-cyan-50/50 p-1.5 text-center">
+                        <div key={item} className="rounded-lg bg-slate-50 p-1.5 text-center">
                           <p className="text-[8px] text-slate-400">{item}</p>
                           <p className="mt-0.5 text-xs font-bold text-slate-800">{[24, "$840", 18][itemIndex]}</p>
                         </div>
@@ -264,7 +260,7 @@ export function Benefits() {
               layout="half"
               className="p-6 sm:p-8"
             >
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-purple-100 to-cyan-100 text-purple-700">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-violet-100 text-violet-700">
                 <ShoppingBag className="h-5 w-5" aria-hidden="true" />
               </span>
               <h3 className="mt-6 text-2xl font-semibold tracking-[-0.025em] text-slate-950">
@@ -294,7 +290,7 @@ export function Benefits() {
               layout="half"
               className="p-6 sm:p-8"
             >
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-cyan-100 to-purple-100 text-cyan-700">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-purple-100 text-purple-700">
                 <Rocket className="h-5 w-5" aria-hidden="true" />
               </span>
               <h3 className="mt-6 text-2xl font-semibold tracking-[-0.025em] text-slate-950">
@@ -307,12 +303,12 @@ export function Benefits() {
                 {setupSteps.map((step, index) => {
                   const Icon = step.icon;
                   return (
-                    <li key={step.label} className="flex items-center gap-3 rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50/50 to-cyan-50/50 p-2.5">
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white text-purple-600 shadow-sm">
+                    <li key={step.label} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5">
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-purple-100 text-purple-600 shadow-sm">
                         <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                       </span>
                       <span className="text-sm font-semibold text-slate-700">{step.label}</span>
-                      <span className="ml-auto text-xs font-bold text-purple-300">0{index + 1}</span>
+                      <span className="ml-auto text-xs font-bold text-slate-300">0{index + 1}</span>
                     </li>
                   );
                 })}
@@ -327,18 +323,17 @@ export function Benefits() {
               index={1}
               reduceMotion={reduceMotion}
               layout="full"
-              className="min-h-[480px] bg-gradient-to-br from-purple-900 via-purple-800 to-cyan-900 p-6 text-white sm:p-8"
+              className="min-h-[480px] bg-slate-950 p-6 text-white sm:p-8"
             >
-              <div aria-hidden="true" className="absolute -right-20 -top-16 h-60 w-60 rounded-full bg-purple-500/20 blur-3xl" />
-              <div aria-hidden="true" className="absolute -left-20 -bottom-16 h-60 w-60 rounded-full bg-cyan-500/20 blur-3xl" />
+              <div aria-hidden="true" className="absolute -right-20 -top-16 h-60 w-60 rounded-full bg-sky-500/20 blur-3xl" />
               <div className="relative flex h-full flex-col">
-                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-500 text-white shadow-lg shadow-purple-500/30">
+                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-sky-500 text-white shadow-lg shadow-sky-950/30">
                   <BellRing className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <h3 className="mt-6 text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">
                   Never miss a new order
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-purple-200 sm:text-base">
+                <p className="mt-2 text-sm leading-6 text-slate-300 sm:text-base mb-8">
                   Receive real-time Telegram notifications whenever a customer places an order
                   or an order status changes.
                 </p>
@@ -346,25 +341,25 @@ export function Benefits() {
                 <motion.div
                   animate={reduceMotion ? undefined : { y: [0, -7, 0] }}
                   transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative mt-auto rounded-3xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur sm:p-5"
+                  className="relative mt-auto rounded-3xl border border-white bg-sky-100 p-4 backdrop-blur sm:p-5"
                 >
                   <motion.span
                     aria-hidden="true"
                     animate={reduceMotion ? undefined : { scale: [1, 1.7], opacity: [0.5, 0] }}
                     transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
-                    className="absolute right-5 top-5 h-2.5 w-2.5 rounded-full bg-emerald-400"
+                    className="absolute right-5 top-5 h-2.5 w-2.5 rounded-full bg-purple-400"
                   />
                   <div className="flex items-center gap-3">
-                    <span className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 text-white">
+                    <span className="grid h-10 w-10 place-items-center rounded-full bg-sky-500 text-white">
                       <FaTelegramPlane className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <div>
                       <p className="text-sm font-semibold">SellFlow orders</p>
-                      <p className="text-xs text-purple-300">just now</p>
+                      <p className="text-xs text-slate-400">just now</p>
                     </div>
                   </div>
                   <div className="mt-4 rounded-2xl bg-white p-4 text-slate-900">
-                    <span className="inline-flex rounded-full bg-gradient-to-r from-purple-100 to-cyan-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-purple-700">
+                    <span className="inline-flex rounded-full bg-purple-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-purple-700">
                       New order
                     </span>
                     <div className="mt-3 flex items-center justify-between gap-3">
@@ -377,7 +372,7 @@ export function Benefits() {
                     <button
                       type="button"
                       aria-label="View order from Maya Chen"
-                      className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 px-4 text-sm font-semibold text-white transition-all hover:from-purple-700 hover:to-cyan-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
+                      className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white transition-colors hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
                     >
                       View order
                       <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
@@ -392,15 +387,14 @@ export function Benefits() {
               index={4}
               reduceMotion={reduceMotion}
               layout="full"
-              className="bg-gradient-to-br from-white via-purple-50/30 to-cyan-50/30 p-6 sm:p-8"
+              className=" p-6 sm:p-8"
             >
-              <div aria-hidden="true" className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
-              <div className="relative grid h-full gap-6 sm:grid-cols-[0.9fr_1.1fr] sm:items-center">
+              <div className="grid h-full gap-6 sm:grid-cols-[0.9fr_1.1fr] sm:items-center">
                 <div>
-                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-purple-100 to-cyan-100 text-purple-700">
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-100 text-cyan-700">
                     <BarChart3 className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <h3 className="mt-6 text-2xl font-semibold tracking-[-0.025em] text-slate-950 sm:text-3xl">
+                  <h3 className="mt-6 text-2xl font-semibold tracking-[-0.025em] text-purple500 sm:text-3xl">
                     Real sales data
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -409,7 +403,7 @@ export function Benefits() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-purple-200 bg-white p-4 shadow-sm sm:p-5">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       ["Revenue", "$8,420"],
@@ -417,12 +411,12 @@ export function Benefits() {
                       ["Conversion", "4.8%"],
                     ].map(([label, value]) => (
                       <div key={label}>
-                        <p className="text-[10px] font-medium text-slate-400">{label}</p>
+                        <p className="text-[10px] font-medium text-purple-500">{label}</p>
                         <p className="mt-0.5 text-sm font-bold text-slate-900">{value}</p>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-5 flex h-24 items-end gap-1.5" aria-hidden="true">
+                      <div className="mt-5 flex h-24 items-end gap-1.5" aria-hidden="true">
                     {[38, 54, 46, 72, 64, 88, 100].map((height, index) => (
                       <div key={height + index} className="flex h-full flex-1 items-end rounded-t-md bg-slate-100">
                         <motion.div
@@ -430,14 +424,14 @@ export function Benefits() {
                           whileInView={{ height: `${height}%` }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.75, delay: index * 0.08, ease: "easeOut" }}
-                          className="w-full rounded-t-md bg-gradient-to-t from-purple-500 to-cyan-400"
+                          className="w-full rounded-t-md bg-gradient-to-b from-purple-500 to-slate-800"
                         />
                       </div>
                     ))}
                   </div>
                   <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
                     <span className="text-[10px] font-medium text-slate-500">Last 7 days</span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-50 to-cyan-50 px-2 py-0.5 text-[10px] font-bold text-purple-700">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700">
                       <TrendingUp className="h-3 w-3" aria-hidden="true" />
                       18.4%
                     </span>
@@ -445,49 +439,49 @@ export function Benefits() {
                 </div>
               </div>
             </BenefitCard>
+
+            {/* Card 6: Simple & Daily */}
+            <BenefitCard
+              index={5}
+              reduceMotion={reduceMotion}
+              layout="full"
+              className="p-6 sm:p-8"
+            >
+              <div className="grid gap-6 sm:grid-cols-2 sm:items-center">
+                <div>
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-100 text-blue-700">
+                    <MousePointerClick className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-6 text-2xl font-semibold tracking-[-0.025em] text-slate-950">
+                    Simple enough to use every day
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    SellFlow removes unnecessary complexity so sellers can focus on customers,
+                    products, and growth.
+                  </p>
+                </div>
+
+                <ul className="divide-y divide-slate-100">
+                  {dailyBenefits.map((benefit) => {
+                    const Icon = benefit.icon;
+                    return (
+                      <li key={benefit.label} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600">
+                          <Icon className="h-4 w-4" aria-hidden="true" />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-800">{benefit.label}</span>
+                          <span className="mt-0.5 block text-xs text-slate-500">{benefit.description}</span>
+                        </span>
+                        <CheckCircle2 className="ml-auto h-4 w-4 shrink-0 text-purple-500" aria-hidden="true" />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </BenefitCard>
           </div>
         </div>
-
-        {/* Card 6: Simple & Daily - FULL WIDTH outside the 2-col grid */}
-        <BenefitCard
-          index={5}
-          reduceMotion={reduceMotion}
-          layout="full" // This will now span full width since it's outside the grid
-          className="mt-5 p-6 sm:p-8"
-        >
-          <div className="grid gap-8 sm:grid-cols-2 sm:items-center">
-            <div>
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-purple-100 to-cyan-100 text-purple-700">
-                <MousePointerClick className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <h3 className="mt-6 text-2xl font-semibold tracking-[-0.025em] text-slate-950 sm:text-3xl">
-                Simple enough to use every day
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">
-                SellFlow removes unnecessary complexity so sellers can focus on customers,
-                products, and growth.
-              </p>
-            </div>
-
-            <ul className="divide-y divide-purple-100">
-              {dailyBenefits.map((benefit) => {
-                const Icon = benefit.icon;
-                return (
-                  <li key={benefit.label} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-purple-50 to-cyan-50 text-purple-600">
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                    <div>
-                      <span className="block text-sm font-semibold text-slate-800">{benefit.label}</span>
-                      <span className="mt-0.5 block text-sm text-slate-500">{benefit.description}</span>
-                    </div>
-                    <CheckCircle2 className="ml-auto h-5 w-5 shrink-0 text-purple-500" aria-hidden="true" />
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </BenefitCard>
 
         {/* Footer */}
         <motion.p
@@ -495,7 +489,7 @@ export function Benefits() {
           whileInView={reduceMotion ? undefined : { opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mx-auto mt-10 flex max-w-xl items-center justify-center gap-2 text-center text-sm font-medium text-slate-500"
+          className="mx-auto mt-12 flex max-w-xl items-center justify-center gap-2 text-center text-sm font-medium text-slate-500"
         >
           <Check className="h-4 w-4 text-purple-600" aria-hidden="true" />
           One workspace for your storefront, channels, orders, and growth.

@@ -33,15 +33,30 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto max-w-6xl px-5 text-center sm:px-8">
         <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="mx-auto mb-8 flex max-w-full items-center overflow-hidden rounded-full border border-violet-200/80 bg-white/80 text-[11px] font-semibold text-slate-600 shadow-lg shadow-violet-100/70 backdrop-blur-xl sm:w-fit sm:text-xs"
-        >
-          <span className="shrink-0 self-stretch bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-2 text-white">New</span>
-          <span className="min-w-0 whitespace-nowrap px-3 py-2 sm:hidden">Telegram order updates are live</span>
-          <span className="hidden whitespace-nowrap px-3 py-2 sm:inline">Telegram orders, storefront themes, and live status updates</span>
-        </motion.div>
+  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+  animate={{ opacity: 1, y: 0, scale: 1 }}
+  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+  className="mx-auto mb-8 flex max-w-fit items-center overflow-hidden rounded-full border border-violet-200/60 bg-white/80 text-[11px] font-medium shadow-lg shadow-violet-100/50 backdrop-blur-xl backdrop-saturate-150 sm:text-xs"
+>
+  <span className="relative shrink-0 self-stretch bg-gradient-to-r from-violet-600 to-indigo-600 px-3.5 py-1.5 text-white shadow-sm">
+    <span className="relative z-10">✨ New</span>
+    <motion.span
+      className="absolute inset-0 bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0"
+      animate={{ opacity: [0, 1, 0] }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+    />
+  </span>
+  <span className="min-w-0 whitespace-nowrap px-3.5 py-1.5 text-slate-700 sm:hidden">
+    Telegram order updates are live
+  </span>
+  <span className="hidden whitespace-nowrap px-3.5 py-1.5 text-slate-700 sm:inline">
+    <span className="font-semibold text-violet-600">Telegram orders</span>
+    {" • "}
+    <span className="font-semibold text-violet-600">storefront themes</span>
+    {" • "}
+    live status updates
+  </span>
+</motion.div>
 
         <motion.h1
           initial={{ opacity: 0, y: 32 }}
