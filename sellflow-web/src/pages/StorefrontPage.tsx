@@ -5,7 +5,8 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { storefrontService, type Storefront } from "../Services/storefront";
 import type { ThemeSettings } from "../types/theme";
-import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, isCustomerTheme, type CustomerThemeId } from "../theme/customerThemes";
+import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, type CustomerThemeId } from "../theme/customerThemes";
+import { resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
 import { useCart } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
@@ -16,7 +17,7 @@ export function StorefrontPage() {
   const [storefront, setStorefront] = useState<Storefront | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
-  const [customerTheme, setCustomerTheme] = useState<CustomerThemeId | "store">("store");
+  const { selection: customerTheme, select: selectCustomerTheme } = useCustomerTheme(slug);
   const [missing, setMissing] = useState(false);
   const cart = useCart();
   const { showToast } = useToast();
@@ -27,8 +28,6 @@ export function StorefrontPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem(`sellflow:storefront-theme:${slug}`);
-    setCustomerTheme(savedTheme && isCustomerTheme(savedTheme) ? savedTheme : "store");
     setMissing(false);
     storefrontService.getStore(slug).then((data) => {
       setStorefront(data);
@@ -110,18 +109,11 @@ export function StorefrontPage() {
     searchInputRef.current?.focus();
   };
 
-  const selectCustomerTheme = (value: CustomerThemeId | "store") => {
-    setCustomerTheme(value);
-    const storageKey = `sellflow:storefront-theme:${slug}`;
-    if (value === "store") window.localStorage.removeItem(storageKey);
-    else window.localStorage.setItem(storageKey, value);
-  };
-
   if (missing) return <NotFound />;
   if (!storefront) return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-purple-600" /></div>;
 
   const { business, categories } = storefront;
-  const theme = customerTheme === "store" ? business.theme : CUSTOMER_THEMES[customerTheme];
+  const theme = resolveCustomerTheme(business.theme, customerTheme);
   const primary = theme.primary_color;
   const cartItems = cart.items(slug);
   const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0);

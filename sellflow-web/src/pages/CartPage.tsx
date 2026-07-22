@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
 import { X, ShoppingBag, Minus, Plus, Trash2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { storefrontService, type Storefront } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
+import { customerThemeVariables, resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
 
-const backdropVariants = {
+const backdropVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
   exit: { opacity: 0 }
 };
 
-const drawerVariants = {
+const drawerVariants: Variants = {
   hidden: { x: "100%" },
   visible: { 
     x: 0,
@@ -32,9 +33,12 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
     const cart = useCart();
     const { hapticImpact, storePath } = useTelegramMiniApp();
+    const { selection: customerTheme } = useCustomerTheme(slug);
     const items = cart.items(slug);
 
-    const primary = store?.business?.theme?.primary_color || "#3b82f6";
+    const theme = store ? resolveCustomerTheme(store.business.theme, customerTheme) : null;
+    const primary = theme?.primary_color || "#3b82f6";
+    const themeVariables = theme ? customerThemeVariables(theme) : undefined;
     const subtotal = items.reduce((sum, item) => 
         sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0
     );
@@ -71,7 +75,8 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     />
 
                     <motion.div
-                        className="telegram-safe-fixed fixed right-0 top-0 z-[60] h-full w-full max-w-[420px] bg-white text-slate-900 shadow-2xl flex flex-col md:max-w-md"
+                        className="customer-flow-theme telegram-safe-fixed fixed right-0 top-0 z-[60] h-full w-full max-w-[420px] bg-white text-slate-900 shadow-2xl flex flex-col md:max-w-md"
+                        style={theme ? { ...themeVariables, backgroundColor: theme.surface_color } : undefined}
                         variants={drawerVariants}
                         initial="hidden"
                         animate="visible"
@@ -96,7 +101,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                         <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4">
                             {loading ? (
                                 <div className="flex h-full items-center justify-center">
-                                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+                                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
                                 </div>
                             ) : missing ? (
                                 <div className="flex h-full items-center justify-center text-center">
