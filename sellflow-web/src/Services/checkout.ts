@@ -20,6 +20,7 @@ export interface PublicOrder {
   payment_status: string;
   status: string;
   telegram_receipt_sent: boolean;
+  telegram_link_url: string | null;
   items: { product_name: string; product_slug: string; thumbnail: string | null; unit_price: string; quantity: number; line_total: string }[];
   created_at: string;
 }
