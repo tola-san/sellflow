@@ -24,6 +24,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { authService } from "../../Services/auth";
 import { useToast } from "../ui/ToastContext";
 import { useAuth } from "../../components/Auth/AuthContext";
+import { DASHBOARD_THEMES, DASHBOARD_THEME_EVENT, dashboardThemeVariables, getDashboardThemeId, type DashboardThemeId } from "../../theme/dashboardThemes";
 
 const links = [
   { label: "Overview", path: "/dashboard", icon: LayoutDashboard, end: true },
@@ -167,9 +168,16 @@ function DateTimeDisplay() {
 export function DashboardLayout() {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [dashboardTheme, setDashboardTheme] = useState<DashboardThemeId>(() => getDashboardThemeId());
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { openAuth, user, clearSession } = useAuth();
+
+  useEffect(() => {
+    const syncTheme = (event: Event) => setDashboardTheme((event as CustomEvent<DashboardThemeId>).detail);
+    window.addEventListener(DASHBOARD_THEME_EVENT, syncTheme);
+    return () => window.removeEventListener(DASHBOARD_THEME_EVENT, syncTheme);
+  }, []);
 
   const getInitials = (name: string) => {
     if (!name) return "U";
@@ -258,7 +266,7 @@ export function DashboardLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="dashboard-theme min-h-screen bg-slate-50 text-slate-900" data-dashboard-theme={dashboardTheme} style={dashboardThemeVariables(DASHBOARD_THEMES[dashboardTheme])}>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex">
         {sidebar}
       </aside>

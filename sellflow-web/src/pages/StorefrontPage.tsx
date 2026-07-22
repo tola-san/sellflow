@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ExternalLink, MapPin, Palette, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
+import { Check, ChevronDown, ExternalLink, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -153,26 +153,16 @@ export function StorefrontPage() {
   return (
     <div className={`min-h-screen ${isMiniAppRoute && cartItems.length ? "pb-24" : ""}`} style={themeVariables}>
       {/* Header */}
-      <header className="relative z-10 border-b" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>
+      <header className="relative z-[60] border-b" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
           {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 rounded-lg object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}><Store size={20} /></span>}
           <div className="min-w-0"><p className="truncate font-bold leading-tight">{business.name}</p><p className="hidden text-xs sm:block" style={{ color: theme.muted_color }}>Powered by SellFlow</p></div>
-          <label className="relative ml-auto flex items-center" title="Choose storefront theme">
-            <Palette size={17} className="pointer-events-none absolute left-3" aria-hidden="true" />
-            <span className="sr-only">Storefront theme</span>
-            <select
-              value={customerTheme}
-              onChange={(event) => selectCustomerTheme(event.target.value as CustomerThemeId | "store")}
-              className="h-10 w-10 cursor-pointer appearance-none border py-2 pl-9 pr-0 text-sm font-semibold text-transparent outline-none transition focus:ring-2 sm:w-auto sm:max-w-none sm:pr-3 sm:text-current"
-              style={{ borderRadius: "var(--store-radius)", borderColor: `${theme.muted_color}45`, backgroundColor: theme.background_color, color: theme.text_color, "--tw-ring-color": `${primary}55` } as CSSProperties}
-              aria-label="Storefront theme"
-            >
-              <option className="text-slate-900" value="store">Store theme</option>
-              {(Object.keys(CUSTOMER_THEMES) as CustomerThemeId[]).map((themeId) => (
-                <option className="text-slate-900" key={themeId} value={themeId}>{CUSTOMER_THEME_LABELS[themeId]}</option>
-              ))}
-            </select>
-          </label>
+          <ThemePicker
+            value={customerTheme}
+            storeTheme={business.theme}
+            activeTheme={theme}
+            onChange={selectCustomerTheme}
+          />
           <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
         </div>
       </header>
@@ -199,7 +189,7 @@ export function StorefrontPage() {
             {business.website && <a className="flex items-center gap-2 hover:text-white" href={business.website} target="_blank" rel="noreferrer"><ExternalLink size={16} />Website</a>}
           </div>
           {(business.facebook_url || business.instagram_url || business.telegram_url || business.tiktok_url) && (
-            <div className="mt-5 flex flex-wrap items-center gap-2" aria-label="Store social media">
+            <div className="mt-5 flex w-fit flex-wrap items-center gap-2 rounded-2xl border border-white/15 bg-black/10 p-1.5 shadow-sm backdrop-blur-md" aria-label="Store social media">
               <SocialLink href={business.facebook_url} label="Facebook"><FaFacebookF /></SocialLink>
               <SocialLink href={business.instagram_url} label="Instagram"><FaInstagram /></SocialLink>
               <SocialLink href={business.telegram_url} label="Telegram"><FaTelegramPlane /></SocialLink>
@@ -312,6 +302,101 @@ export function StorefrontPage() {
   );
 }
 
+function ThemePicker({ value, storeTheme, activeTheme, onChange }: {
+  value: CustomerThemeId | "store";
+  storeTheme: ThemeSettings;
+  activeTheme: ThemeSettings;
+  onChange: (value: CustomerThemeId | "store") => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const menuId = "storefront-theme-menu";
+  const options: Array<{ id: CustomerThemeId | "store"; label: string; theme: ThemeSettings }> = [
+    { id: "store", label: "Store theme", theme: storeTheme },
+    ...(Object.keys(CUSTOMER_THEMES) as CustomerThemeId[]).map((id) => ({
+      id,
+      label: CUSTOMER_THEME_LABELS[id],
+      theme: CUSTOMER_THEMES[id],
+    })),
+  ];
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!pickerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  const selectedLabel = value === "store" ? "Theme" : CUSTOMER_THEME_LABELS[value];
+
+  return (
+    <div ref={pickerRef} className="relative ml-auto">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={menuId}
+        className="flex h-10 items-center gap-2 border px-2.5 text-sm font-semibold shadow-sm transition hover:-translate-y-px focus:outline-none focus:ring-2 sm:px-3"
+        style={{ borderRadius: "var(--store-radius)", borderColor: `${activeTheme.muted_color}45`, backgroundColor: activeTheme.background_color, color: activeTheme.text_color, "--tw-ring-color": `${activeTheme.primary_color}55` } as CSSProperties}
+      >
+        <ThemeSwatch theme={activeTheme} />
+        <span className="hidden max-w-24 truncate sm:block">{selectedLabel}</span>
+        <ChevronDown size={15} className={`hidden transition-transform sm:block ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+        <span className="sr-only">Choose storefront theme</span>
+      </button>
+
+      {open && (
+        <div
+          id={menuId}
+          role="listbox"
+          aria-label="Storefront themes"
+          className="fixed left-3 right-3 top-20 z-[100] max-h-[min(70vh,34rem)] overflow-y-auto rounded-3xl border border-black/10 bg-[#f7f7f8] p-2.5 text-slate-800 shadow-[0_24px_70px_rgba(15,23,42,0.24)] [scrollbar-color:#a3a3a3_transparent] [scrollbar-width:thin] sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+12px)] sm:w-72"
+        >
+          <p className="px-3 pb-2 pt-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Theme</p>
+          <div className="space-y-0.5">
+            {options.map((option) => {
+              const selected = value === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  onClick={() => { onChange(option.id); setOpen(false); }}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-2.5 py-2 text-left text-[15px] transition ${selected ? "bg-white font-semibold shadow-sm" : "hover:bg-white/75"}`}
+                >
+                  <ThemeSwatch theme={option.theme} />
+                  <span className="flex-1">{option.label}</span>
+                  {selected && <Check size={18} strokeWidth={3} className="text-slate-900" aria-hidden="true" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ThemeSwatch({ theme }: { theme: ThemeSettings }) {
+  const colors = [theme.primary_color, theme.secondary_color, theme.text_color, theme.muted_color];
+  return (
+    <span className="grid h-7 w-7 shrink-0 grid-cols-2 gap-[3px] rounded-lg border border-black/5 p-1 shadow-sm" style={{ backgroundColor: theme.surface_color }} aria-hidden="true">
+      {colors.map((color, index) => <span key={`${color}-${index}`} className="rounded-full" style={{ backgroundColor: color }} />)}
+    </span>
+  );
+}
+
 function Filter({ active, theme, onClick, children, buttonRef }: { 
   active: boolean; 
   theme: ThemeSettings;
@@ -369,22 +454,35 @@ function NotFound() {
 
 
 
-function SocialLink({ href, label, children }: { 
-  href: string | null; 
-  label: string; 
+function SocialLink({ href, label, children }: {
+  href: string | null;
+  label: "Facebook" | "Instagram" | "Telegram" | "TikTok";
   children: React.ReactNode;
 }) {
   if (!href) return null;
 
-  const brandColors: Record<string, string> = {
-    Facebook: "#1877F2",
-    Instagram: "linear-gradient(135deg, #E1306C, #F77737, #C13584, #405DE6)",
-    Telegram: "#229ED9",
-    TikTok: "#000000", // or "#EE1D52" for the classic pink
+  const brandStyles: Record<typeof label, CSSProperties> = {
+    Facebook: {
+      background: "#1877F2",
+      borderColor: "rgba(255,255,255,.32)",
+      boxShadow: "0 8px 20px rgba(24,119,242,.28)",
+    },
+    Instagram: {
+      background: "linear-gradient(135deg, #833AB4 0%, #C13584 30%, #E1306C 52%, #F77737 76%, #FCAF45 100%)",
+      borderColor: "rgba(255,255,255,.32)",
+      boxShadow: "0 8px 20px rgba(225,48,108,.28)",
+    },
+    Telegram: {
+      background: "#229ED9",
+      borderColor: "rgba(255,255,255,.32)",
+      boxShadow: "0 8px 20px rgba(34,158,217,.28)",
+    },
+    TikTok: {
+      background: "#010101",
+      borderColor: "rgba(255,255,255,.28)",
+      boxShadow: "inset 2px 0 #25F4EE, inset -2px 0 #FE2C55, 0 8px 20px rgba(0,0,0,.3)",
+    },
   };
-
-  const brandColor = "#1877F2";
-  const isInstagram = label === "Instagram";
 
   return (
     <a
@@ -393,30 +491,16 @@ function SocialLink({ href, label, children }: {
       rel="noreferrer"
       aria-label={`Visit ${label}`}
       title={label}
-      className="grid h-10 w-10 place-items-center rounded-xl border backdrop-blur-md transition-all hover:-translate-y-0.5 hover:scale-105 active:scale-95"
-      style={{
-        backgroundColor: "#1877F2",
-        borderColor: "#1877F2",
-        color: "white"
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = "#1877F2";
-        e.currentTarget.style.borderColor = brandColor;
-        e.currentTarget.style.color = isInstagram ? brandColor : "white";
-        if (isInstagram) {
-          e.currentTarget.style.background = brandColors.Instagram;
-        }
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "#1877F2";
-        e.currentTarget.style.borderColor = "#1877F2";
-        e.currentTarget.style.color = isInstagram ? "white" : "white";
-        if (isInstagram) {
-          e.currentTarget.style.background = "rgba(255,255,255,0.15)";
-        }
-      }}
+      className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-xl border text-lg text-white transition duration-200 hover:-translate-y-0.5 hover:scale-105 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent active:translate-y-0 active:scale-95"
+      style={brandStyles[label]}
     >
-      {children}
+      {label === "TikTok" ? (
+        <>
+          <span className="absolute translate-x-[1.5px] text-[#25F4EE]" aria-hidden="true">{children}</span>
+          <span className="absolute -translate-x-[1.5px] text-[#FE2C55]" aria-hidden="true">{children}</span>
+          <span className="relative text-white" aria-hidden="true">{children}</span>
+        </>
+      ) : <span aria-hidden="true">{children}</span>}
     </a>
   );
 }
