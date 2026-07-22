@@ -1,117 +1,106 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  Bot,
-  Check,
-  ChevronRight,
-  Sparkles,
-} from "lucide-react";
-
-import { HeroBackground } from "./ui/HeroBackground";
+import { ArrowUpRight, Check, ExternalLink, Star } from "lucide-react";
+import { useAuth } from "./Auth/AuthContext";
 import { DotField } from "./ui/DotField";
 
-const trustPoints = ["Free forever plan", "No credit card", "Launch in minutes"];
+const trustPoints = ["Free to start", "No credit card", "Launch in minutes"];
+const sellerInitials = [
+  { initials: "DS", color: "bg-violet-600" },
+  { initials: "LM", color: "bg-sky-500" },
+  { initials: "SK", color: "bg-fuchsia-500" },
+  { initials: "MN", color: "bg-slate-800" },
+];
 
 export function Hero() {
+  const { openAuth } = useAuth();
+
   return (
-    <section id="home" className="relative isolate -mt-24 overflow-hidden bg-white pb-14 pt-36 sm:-mt-28 sm:pb-20 sm:pt-44 lg:-mt-32 lg:min-h-[850px] lg:pb-24 lg:pt-48">
-      <HeroBackground intensity="strong" />
-      <DotField className="z-0 [mask-image:linear-gradient(to_bottom,black_10%,black_72%,transparent_100%)]" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-300 to-transparent" />
+    <section id="home" className="relative isolate overflow-hidden border-b border-violet-100 bg-white pb-20 pt-28 sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-40">
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_18%_28%,rgba(186,230,253,.55),transparent_30%),radial-gradient(circle_at_82%_30%,rgba(254,215,170,.42),transparent_31%),radial-gradient(circle_at_50%_50%,rgba(221,214,254,.55),transparent_42%),linear-gradient(to_bottom,#fff,#fbfaff_78%,#fff)]" />
+      <motion.div
+        aria-hidden="true"
+        className="absolute left-[8%] top-28 -z-10 h-72 w-72 rounded-full bg-sky-200/35 blur-[95px]"
+        animate={{ x: [0, 70, 0], y: [0, 35, 0], scale: [1, 1.12, 1] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        aria-hidden="true"
+        className="absolute right-[6%] top-32 -z-10 h-80 w-80 rounded-full bg-violet-300/30 blur-[105px]"
+        animate={{ x: [0, -60, 0], y: [0, -30, 0], scale: [1.08, 0.96, 1.08] }}
+        transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <DotField gap={30} className="z-0 opacity-55 [mask-image:linear-gradient(to_bottom,black_5%,black_72%,transparent_100%)]" />
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-4 px-4 sm:px-6 lg:grid-cols-[.95fr_1.05fr] lg:gap-8 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-violet-200/80 bg-white/85 px-3.5 py-1.5 text-xs font-semibold text-violet-700 shadow-sm backdrop-blur-xl sm:text-sm"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            Built for modern online businesses
-          </motion.div>
+      <div className="relative z-10 mx-auto max-w-6xl px-5 text-center sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto mb-8 flex max-w-full items-center overflow-hidden rounded-full border border-violet-200/80 bg-white/80 text-[11px] font-semibold text-slate-600 shadow-lg shadow-violet-100/70 backdrop-blur-xl sm:w-fit sm:text-xs"
+        >
+          <span className="shrink-0 self-stretch bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-2 text-white">New</span>
+          <span className="min-w-0 whitespace-nowrap px-3 py-2 sm:hidden">Telegram order updates are live</span>
+          <span className="hidden whitespace-nowrap px-3 py-2 sm:inline">Telegram orders, storefront themes, and live status updates</span>
+        </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: 0.05 }}
-            className="mt-6 text-4xl font-semibold leading-[1.04] tracking-[-0.045em] text-slate-950 sm:text-5xl lg:text-[4rem]"
+        <motion.h1
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+          className="mx-auto max-w-6xl text-5xl font-medium leading-[1.02] tracking-[-0.055em] text-slate-950 sm:text-6xl md:text-7xl lg:text-[5.6rem]"
+        >
+          Build a bold storefront with{" "}
+          <span className="font-editorial whitespace-nowrap tracking-[-0.035em] text-violet-700">thoughtful flow</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.1, ease: "easeInOut" }}
+          className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8"
+        >
+          Launch a professional storefront, share one link, collect customer orders, and manage your business from one calm dashboard—without writing code.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.2, ease: "easeInOut" }}
+          className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+        >
+          <motion.button
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => openAuth("register")}
+            className="group relative inline-flex h-12 items-center overflow-hidden rounded-full bg-slate-950 py-1 pl-6 pr-14 text-sm font-semibold text-white shadow-xl shadow-violet-200 transition-all duration-500 hover:pl-14 hover:pr-6"
           >
-            Turn Your Social Audience
-            <span className="block bg-gradient-to-r from-violet-700 via-fuchsia-500 to-blue-500 bg-clip-text text-transparent">
-              Into Real Sales
+            <span className="relative z-10">Create your store</span>
+            <span className="absolute right-1 grid h-10 w-10 place-items-center rounded-full bg-white text-slate-950 transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
+              <ArrowUpRight className="h-4 w-4" />
             </span>
-          </motion.h1>
+          </motion.button>
+          <a href="#features" className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-violet-200 bg-white/75 px-6 text-sm font-semibold text-slate-800 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-violet-400 hover:text-violet-700">
+            Explore the platform <ExternalLink className="h-4 w-4" />
+          </a>
+        </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.14 }}
-            className="mx-auto mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8 lg:mx-0"
-          >
-            Launch a professional online storefront, showcase your products,
-            accept customer orders, and manage your sales from one simple
-            platform.
-            <span className="mt-2 block">
-              No coding or complicated setup. Share your Sellflow store on
-              Facebook, Telegram, TikTok, or anywhere your customers shop.
-            </span>
-          </motion.p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.35 }} className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
+          {trustPoints.map((item) => <span key={item} className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600" />{item}</span>)}
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.22 }}
-            className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center lg:justify-start"
-          >
-            <Link
-              to="/register"
-              className="group inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-slate-300 transition hover:-translate-y-0.5 hover:bg-violet-700"
-            >
-              Create your free store
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-
-            <a
-              href="#features"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-violet-200 hover:text-violet-700"
-            >
-              See how Sellflow works
-              <ChevronRight className="h-4 w-4" />
-            </a>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.34 }}
-            className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 lg:justify-start"
-          >
-            {trustPoints.map((point) => (
-              <span
-                key={point}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 sm:text-sm"
-              >
-                <Check className="h-3.5 w-3.5 text-emerald-500" />
-                {point}
-              </span>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.45 }} className="mt-8 flex items-center justify-center gap-4">
+          <div className="flex items-center pl-2">
+            {sellerInitials.map((seller) => (
+              <motion.span key={seller.initials} whileHover={{ y: -4, zIndex: 10 }} className={`-ml-2 grid h-10 w-10 place-items-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-sm ${seller.color}`}>
+                {seller.initials}
+              </motion.span>
             ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-8 hidden items-center gap-3 text-xs font-medium text-slate-400 lg:flex"
-          >
-            <Bot className="h-4 w-4 text-violet-500" />
-            Automate orders and notifications while staying connected with your
-            customers.
-          </motion.div>
-</div>
-
-        <div className="h-[340px] sm:h-[430px] lg:h-[510px]" aria-hidden="true" />
+          </div>
+          <div className="text-left">
+            <div className="flex gap-0.5">{Array.from({ length: 5 }).map((_, index) => <Star key={index} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />)}</div>
+            <p className="mt-1 text-xs text-slate-500">Designed for ambitious local sellers</p>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -55,6 +55,12 @@ body {
 .font-display {
   font-family: "Plus Jakarta Sans", "Kantumruy Pro", system-ui, sans-serif;
 }
+
+.font-editorial {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+}
 /* Animated gradient mesh background */
 .gradient-mesh {
   background-size: 200% 200%;
