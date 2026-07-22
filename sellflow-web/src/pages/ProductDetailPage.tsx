@@ -6,6 +6,7 @@ import { storefrontService, type StorefrontProductDetail } from "../Services/sto
 import { useCart } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
+import { resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
 
 export function ProductDetailPage() {
   const { slug = "", productSlug = "" } = useParams();
@@ -17,6 +18,7 @@ export function ProductDetailPage() {
   const cart = useCart();
   const { showToast } = useToast();
   const { hapticImpact, storePath } = useTelegramMiniApp();
+  const { selection: customerTheme } = useCustomerTheme(slug);
 
   useEffect(() => {
     setMissing(false);
@@ -60,7 +62,7 @@ export function ProductDetailPage() {
   );
 
   const { business, product } = detail;
-  const theme = business.theme;
+  const theme = resolveCustomerTheme(business.theme, customerTheme);
   const currentPrice = Number(product.discount_price || product.price);
   const regularPrice = Number(product.price);
   const discountPercent = product.discount_price 

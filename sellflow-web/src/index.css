@@ -62,6 +62,29 @@ body {
 .dashboard-theme[data-dashboard-theme="midnight"] > div > header .text-slate-500,
 .dashboard-theme[data-dashboard-theme="midnight"] > div > header .text-slate-600 { color: var(--dashboard-muted); }
 
+.customer-flow-theme { background-color: var(--customer-background); color: var(--customer-text); }
+.customer-flow-theme .bg-slate-50 { background-color: var(--customer-background); }
+.customer-flow-theme .bg-white { background-color: var(--customer-surface); }
+.customer-flow-theme .border-slate-200,
+.customer-flow-theme .border-slate-300 { border-color: var(--customer-border); }
+.customer-flow-theme .text-slate-900,
+.customer-flow-theme .text-slate-800,
+.customer-flow-theme .text-slate-700 { color: var(--customer-text); }
+.customer-flow-theme .text-slate-600,
+.customer-flow-theme .text-slate-500,
+.customer-flow-theme .text-slate-400 { color: var(--customer-muted); }
+.customer-flow-theme input,
+.customer-flow-theme textarea,
+.customer-flow-theme select { background-color: var(--customer-surface); border-color: var(--customer-border); color: var(--customer-text); }
+.customer-flow-theme header { background-color: var(--customer-surface); border-color: var(--customer-border); }
+.customer-flow-theme .bg-slate-100 { background-color: color-mix(in srgb, var(--customer-muted) 12%, var(--customer-surface)); }
+.customer-flow-theme .bg-purple-50,
+.customer-flow-theme .bg-purple-100 { background-color: color-mix(in srgb, var(--customer-primary) 12%, var(--customer-surface)); }
+.customer-flow-theme .text-purple-600,
+.customer-flow-theme .text-purple-700 { color: var(--customer-primary); }
+.customer-flow-theme .border-purple-500 { border-color: var(--customer-primary); }
+.customer-flow-theme .ring-purple-100 { --tw-ring-color: color-mix(in srgb, var(--customer-primary) 24%, transparent); }
+
 .telegram-mini-app-shell {
   min-height: var(--tg-viewport-stable-height, 100dvh);
   padding-top: var(--tg-content-safe-area-inset-top, 0px);

@@ -6,6 +6,7 @@ import { storefrontService, type Storefront } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
 import { ErrorMessage, inputClass } from "../components/dashboard/DashboardUI";
 import { useTelegramMainButton, useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
+import { customerThemeVariables, resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
 
 type CheckoutForm = Required<Pick<CheckoutPayload, "customer_name" | "customer_phone" | "delivery_address" | "city" | "notes" | "payment_method">>;
 
@@ -29,9 +30,12 @@ export function CheckoutPage() {
 
   const cart = useCart();
   const { close, customerName, hapticSuccess, isTelegramClient, requestWriteAccess, storePath, webApp } = useTelegramMiniApp();
+  const { selection: customerTheme } = useCustomerTheme(slug);
   const items = cart.items(slug);
 
-  const primary = store?.business?.theme?.primary_color || "#3b82f6";
+  const theme = store ? resolveCustomerTheme(store.business.theme, customerTheme) : null;
+  const primary = theme?.primary_color || "#3b82f6";
+  const themeVariables = theme ? customerThemeVariables(theme) : undefined;
   const subtotal = items.reduce((sum, item) => 
     sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0
   );
@@ -94,7 +98,7 @@ export function CheckoutPage() {
   // Success Screen
   if (order) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
+      <div className="customer-flow-theme min-h-screen bg-slate-50 flex items-center justify-center p-5" style={themeVariables}>
         <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl">
           <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-600">
             <BadgeCheck size={48} />
@@ -161,7 +165,7 @@ export function CheckoutPage() {
 
   if (!items.length) {
     return (
-      <div className="grid min-h-screen place-items-center bg-slate-50 p-5 text-center text-slate-900">
+      <div className="customer-flow-theme grid min-h-screen place-items-center bg-slate-50 p-5 text-center text-slate-900" style={themeVariables}>
         <div>
           <ShoppingBag className="mx-auto text-slate-300" size={64} />
           <h1 className="mt-6 text-3xl font-bold">Cart is empty</h1>
@@ -178,7 +182,7 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-12 text-slate-900">
+    <div className="customer-flow-theme min-h-screen bg-slate-50 pb-12 text-slate-900" style={themeVariables}>
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 flex items-center">
           <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 text-sm font-medium hover:text-slate-900">
