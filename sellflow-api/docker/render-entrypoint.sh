@@ -3,7 +3,22 @@ set -eu
 
 PORT="${PORT:-10000}"
 
-# Prevent local MySQL settings copied into Render from overriding PostgreSQL.
+# Render may expose the managed database as DATABASE_URL. Laravel uses DB_URL in
+# this project, so normalize both names before configuration is cached.
+if [ -z "${DB_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
+    export DB_URL="$DATABASE_URL"
+fi
+
+# A managed PostgreSQL URL is authoritative. This prevents stale MySQL values
+# saved on an older Render service from selecting localhost MySQL in production.
+case "${DB_URL:-}" in
+    postgres://*|postgresql://*)
+        export DB_CONNECTION=pgsql
+        export DB_PORT=5432
+        ;;
+esac
+
+# Prevent a copied local MySQL port from overriding PostgreSQL.
 if [ "${DB_CONNECTION:-}" = "pgsql" ] && { [ -z "${DB_PORT:-}" ] || [ "${DB_PORT}" = "3306" ]; }; then
     export DB_PORT=5432
 fi

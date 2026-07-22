@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, BadgeCheck, Banknote, Landmark, ShoppingBag } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Banknote, Landmark, Send, ShoppingBag } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { checkoutService, type CheckoutPayload, type PublicOrder } from "../Services/checkout";
 import { storefrontService, type Storefront } from "../Services/storefront";
@@ -104,7 +104,7 @@ export function CheckoutPage() {
           <p className="mt-1 text-sm text-slate-500">
             {order.telegram_receipt_sent
               ? "Your receipt was sent by the SellFlow Telegram bot. We will message you when the order status changes."
-              : "The seller will contact you soon to confirm."}
+              : "Your order is confirmed. Choose Telegram below for instant receipt and live status updates."}
           </p>
 
           <div className="mt-8 rounded-2xl bg-slate-50 p-6 text-left">
@@ -123,10 +123,25 @@ export function CheckoutPage() {
             </div>
           </div>
 
+          {!order.telegram_receipt_sent && order.telegram_link_url && !isTelegramClient && (
+            <a
+              href={order.telegram_link_url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#229ED9] py-4 text-lg font-semibold text-white transition hover:bg-[#168acd]"
+            >
+              <Send size={20} />
+              Get live updates on Telegram
+            </a>
+          )}
+          {!order.telegram_receipt_sent && order.telegram_link_url && !isTelegramClient && (
+            <p className="mt-2 text-xs leading-5 text-slate-500">Instant receipt, payment confirmation, and order updates. No password required.</p>
+          )}
+
           <Link
             to={storePath(slug)}
-            className="mt-8 block w-full rounded-2xl py-4 text-lg font-semibold text-white"
-            style={{ backgroundColor: primary }}
+            className={`${!order.telegram_receipt_sent && order.telegram_link_url && !isTelegramClient ? "mt-3 border border-slate-200 text-slate-700" : "mt-8 text-white"} block w-full rounded-2xl py-4 text-lg font-semibold`}
+            style={!order.telegram_receipt_sent && order.telegram_link_url && !isTelegramClient ? undefined : { backgroundColor: primary }}
           >
             Back to Store
           </Link>
