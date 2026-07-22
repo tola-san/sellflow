@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ExternalLink, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
+import { ExternalLink, MapPin, Palette, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { storefrontService, type Storefront } from "../Services/storefront";
 import type { ThemeSettings } from "../types/theme";
+import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, isCustomerTheme, type CustomerThemeId } from "../theme/customerThemes";
 import { useCart } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
@@ -15,6 +16,7 @@ export function StorefrontPage() {
   const [storefront, setStorefront] = useState<Storefront | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
+  const [customerTheme, setCustomerTheme] = useState<CustomerThemeId | "store">("store");
   const [missing, setMissing] = useState(false);
   const cart = useCart();
   const { showToast } = useToast();
@@ -25,6 +27,8 @@ export function StorefrontPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const savedTheme = window.localStorage.getItem(`sellflow:storefront-theme:${slug}`);
+    setCustomerTheme(savedTheme && isCustomerTheme(savedTheme) ? savedTheme : "store");
     setMissing(false);
     storefrontService.getStore(slug).then((data) => {
       setStorefront(data);
@@ -106,11 +110,18 @@ export function StorefrontPage() {
     searchInputRef.current?.focus();
   };
 
+  const selectCustomerTheme = (value: CustomerThemeId | "store") => {
+    setCustomerTheme(value);
+    const storageKey = `sellflow:storefront-theme:${slug}`;
+    if (value === "store") window.localStorage.removeItem(storageKey);
+    else window.localStorage.setItem(storageKey, value);
+  };
+
   if (missing) return <NotFound />;
-  if (!storefront) return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="h-10 w-10 animate-spin rounded-xl border-4 border-slate-200 border-t-purple-600" /></div>;
+  if (!storefront) return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-purple-600" /></div>;
 
   const { business, categories } = storefront;
-  const theme = business.theme;
+  const theme = customerTheme === "store" ? business.theme : CUSTOMER_THEMES[customerTheme];
   const primary = theme.primary_color;
   const cartItems = cart.items(slug);
   const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0);
@@ -145,8 +156,24 @@ export function StorefrontPage() {
       <header className="relative z-10 border-b" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
           {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 rounded-lg object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}><Store size={20} /></span>}
-          <div><p className="font-bold leading-tight">{business.name}</p><p className="text-xs" style={{ color: theme.muted_color }}>Powered by SellFlow</p></div>
-          <Link to={storePath(slug, "/cart")} className="ml-auto flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
+          <div className="min-w-0"><p className="truncate font-bold leading-tight">{business.name}</p><p className="hidden text-xs sm:block" style={{ color: theme.muted_color }}>Powered by SellFlow</p></div>
+          <label className="relative ml-auto flex items-center" title="Choose storefront theme">
+            <Palette size={17} className="pointer-events-none absolute left-3" aria-hidden="true" />
+            <span className="sr-only">Storefront theme</span>
+            <select
+              value={customerTheme}
+              onChange={(event) => selectCustomerTheme(event.target.value as CustomerThemeId | "store")}
+              className="h-10 w-10 cursor-pointer appearance-none border py-2 pl-9 pr-0 text-sm font-semibold text-transparent outline-none transition focus:ring-2 sm:w-auto sm:max-w-none sm:pr-3 sm:text-current"
+              style={{ borderRadius: "var(--store-radius)", borderColor: `${theme.muted_color}45`, backgroundColor: theme.background_color, color: theme.text_color, "--tw-ring-color": `${primary}55` } as CSSProperties}
+              aria-label="Storefront theme"
+            >
+              <option className="text-slate-900" value="store">Store theme</option>
+              {(Object.keys(CUSTOMER_THEMES) as CustomerThemeId[]).map((themeId) => (
+                <option className="text-slate-900" key={themeId} value={themeId}>{CUSTOMER_THEME_LABELS[themeId]}</option>
+              ))}
+            </select>
+          </label>
+          <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
         </div>
       </header>
 
