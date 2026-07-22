@@ -6,18 +6,16 @@ import { themeService } from "../Services/theme";
 import { ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../components/dashboard/DashboardUI";
 import { useToast } from "../components/ui/ToastContext";
 import type { Business } from "../types/business";
-import { THEME_PRESETS, type ThemePreset, type ThemeSettings } from "../types/theme";
+import { THEME_PRESETS, type ThemeSettings } from "../types/theme";
+import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, type CustomerThemeId } from "../theme/customerThemes";
+import { DASHBOARD_THEMES, getDashboardThemeId, saveDashboardTheme, type DashboardThemeId } from "../theme/dashboardThemes";
 import { withHexOpacity } from "../lib/color";
-
-const presetDescriptions: Record<ThemePreset, string> = {
-  minimal: "Crisp typography and restrained surfaces.",
-  modern: "Bold gradients, soft shadows, and pill controls.",
-  classic: "Warm colors and a traditional shop layout.",
-};
 
 export function ThemePage() {
   const [business, setBusiness] = useState<Business | null>(null);
   const [theme, setTheme] = useState<ThemeSettings>(THEME_PRESETS.modern);
+  const [selectedTemplate, setSelectedTemplate] = useState<CustomerThemeId | null>(null);
+  const [dashboardTheme, setDashboardTheme] = useState<DashboardThemeId>(() => getDashboardThemeId());
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,17 +26,25 @@ export function ThemePage() {
     Promise.all([businessService.getBusiness(), themeService.getTheme()])
       .then(([businessData, themeData]) => {
         setBusiness(businessData);
-        if (themeData) setTheme({ ...THEME_PRESETS[themeData.preset], ...themeData });
+        if (themeData) {
+          const resolvedTheme = { ...THEME_PRESETS[themeData.preset], ...themeData };
+          setTheme(resolvedTheme);
+          setSelectedTemplate(findMatchingTemplate(resolvedTheme));
+        }
       })
       .catch(setError)
       .finally(() => setLoading(false));
   }, []);
 
   const update = <K extends keyof ThemeSettings>(key: K, value: ThemeSettings[K]) => {
+    setSelectedTemplate(null);
     setTheme((current) => ({ ...current, [key]: value }));
   };
 
-  const selectPreset = (preset: ThemePreset) => setTheme({ ...THEME_PRESETS[preset] });
+  const selectTemplate = (template: CustomerThemeId) => {
+    setSelectedTemplate(template);
+    setTheme({ ...CUSTOMER_THEMES[template] });
+  };
 
   const publish = async () => {
     setSaving(true);
@@ -71,18 +77,42 @@ export function ThemePage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
         <div className="space-y-6">
-          <Panel title="Theme presets" description="Selecting a preset resets the controls below to its defaults.">
-            <div className="grid gap-3 sm:grid-cols-3">
-              {(Object.keys(THEME_PRESETS) as ThemePreset[]).map((preset) => {
-                const item = THEME_PRESETS[preset];
-                const active = theme.preset === preset;
-                return <button key={preset} type="button" onClick={() => selectPreset(preset)} className={`relative rounded-lg border p-3 text-left transition ${active ? "border-purple-500 ring-2 ring-purple-100" : "border-slate-200 hover:border-slate-300"}`}>
-                  {active && <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-purple-600 text-white"><Check size={12}/></span>}
-                  <span className="flex h-20 overflow-hidden rounded-xl border border-black/5" style={{ background: `linear-gradient(135deg, ${item.background_color}, ${item.primary_color}35)` }}>
-                    <span className="m-auto h-10 w-16 rounded-lg" style={{ backgroundColor: item.surface_color, boxShadow: item.card_style === "elevated" ? "0 8px 20px #0002" : "none", border: item.card_style === "bordered" ? `1px solid ${item.muted_color}55` : "none" }}/>
+          <Panel title="Dashboard appearance" description="Personalize your private SellFlow workspace. This does not change the customer storefront.">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {(Object.keys(DASHBOARD_THEMES) as DashboardThemeId[]).map((themeId) => {
+                const item = DASHBOARD_THEMES[themeId];
+                const active = dashboardTheme === themeId;
+                return <button key={themeId} type="button" onClick={() => { setDashboardTheme(themeId); saveDashboardTheme(themeId); }} className={`relative rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${active ? "border-purple-500 ring-2 ring-purple-100" : "border-slate-200"}`}>
+                  {active && <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full text-white shadow" style={{ backgroundColor: item.accent }}><Check size={14}/></span>}
+                  <span className="block h-16 overflow-hidden rounded-lg border" style={{ backgroundColor: item.canvas, borderColor: item.border }}>
+                    <span className="m-2 flex h-12 overflow-hidden rounded-md" style={{ backgroundColor: item.surface }}>
+                      <span className="w-4" style={{ backgroundColor: item.accent }}/><span className="m-auto h-2 w-12 rounded-full" style={{ backgroundColor: item.accentSoft }}/>
+                    </span>
                   </span>
-                  <span className="mt-3 block text-sm font-semibold capitalize">{preset}</span>
-                  <span className="mt-1 block text-xs leading-5 text-slate-500">{presetDescriptions[preset]}</span>
+                  <span className="mt-2 block text-sm font-semibold">{item.label}</span>
+                </button>;
+              })}
+            </div>
+          </Panel>
+
+          <Panel title="Theme gallery" description="Choose a ready-made theme, then customize every detail below before publishing.">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {(Object.keys(CUSTOMER_THEMES) as CustomerThemeId[]).map((template) => {
+                const item = CUSTOMER_THEMES[template];
+                const active = selectedTemplate === template;
+                return <button key={template} type="button" onClick={() => selectTemplate(template)} className={`group relative overflow-hidden rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${active ? "border-purple-500 ring-2 ring-purple-100" : "border-slate-200 hover:border-slate-300"}`}>
+                  {active && <span className="absolute right-2 top-2 z-10 grid h-6 w-6 place-items-center rounded-full bg-purple-600 text-white shadow"><Check size={14}/></span>}
+                  <span className="relative flex h-20 overflow-hidden rounded-lg border border-black/5" style={{ background: `linear-gradient(135deg, ${item.background_color}, ${item.primary_color}45)` }}>
+                    <span className="m-auto h-10 w-16 rounded-lg" style={{ backgroundColor: item.surface_color, boxShadow: item.card_style === "elevated" ? "0 8px 20px #0003" : "none", border: item.card_style === "bordered" ? `1px solid ${item.muted_color}55` : "none" }}>
+                      <span className="mx-auto mt-3 block h-2 w-9 rounded-full" style={{ backgroundColor: item.primary_color }}/>
+                    </span>
+                  </span>
+                  <span className="mt-3 flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold">{CUSTOMER_THEME_LABELS[template]}</span>
+                    <span className="flex gap-1" aria-hidden="true">
+                      {[item.primary_color, item.secondary_color, item.surface_color].map((color) => <span key={color} className="h-3 w-3 rounded-full border border-black/10" style={{ backgroundColor: color }}/>) }
+                    </span>
+                  </span>
                 </button>;
               })}
             </div>
@@ -133,6 +163,13 @@ export function ThemePage() {
       </div>
     </>
   );
+}
+
+function findMatchingTemplate(theme: ThemeSettings): CustomerThemeId | null {
+  const keys = Object.keys(theme) as Array<keyof ThemeSettings>;
+  return (Object.keys(CUSTOMER_THEMES) as CustomerThemeId[]).find((template) =>
+    keys.every((key) => CUSTOMER_THEMES[template][key] === theme[key])
+  ) ?? null;
 }
 
 function Panel({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
