@@ -209,15 +209,46 @@ export function CheckoutPage() {
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-6">Customer Information</h2>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Full Name" required value={form.customer_name} onChange={(v) => change("customer_name", v)} />
-                  <Field label="Phone Number" required value={form.customer_phone} onChange={(v) => change("customer_phone", v)} />
-                  <Field label="City" value={form.city} onChange={(v) => change("city", v)} />
+                  <Field
+                    name="customer_name"
+                    label="Full Name"
+                    required
+                    autoComplete="name"
+                    maxLength={255}
+                    value={form.customer_name}
+                    onChange={(v) => change("customer_name", v)}
+                  />
+                  <Field
+                    name="customer_phone"
+                    label="Phone Number"
+                    type="tel"
+                    required
+                    autoComplete="tel"
+                    inputMode="tel"
+                    maxLength={50}
+                    pattern="\+?[0-9][0-9\s().-]{6,49}"
+                    title="Enter a valid phone number with at least 7 digits."
+                    value={form.customer_phone}
+                    onChange={(v) => change("customer_phone", v)}
+                  />
+                  <Field
+                    name="city"
+                    label="City"
+                    autoComplete="address-level2"
+                    maxLength={255}
+                    value={form.city}
+                    onChange={(v) => change("city", v)}
+                  />
                   
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium mb-2">Delivery Address <span className="text-red-500">*</span></label>
+                    <label htmlFor="delivery_address" className="block text-sm font-medium mb-2">Delivery Address <span className="text-red-500">*</span></label>
                     <textarea
+                      id="delivery_address"
+                      name="delivery_address"
                       required
                       rows={3}
+                      maxLength={1000}
+                      autoComplete="street-address"
                       className={inputClass}
                       value={form.delivery_address}
                       onChange={(e) => change("delivery_address", e.target.value)}
@@ -226,9 +257,12 @@ export function CheckoutPage() {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium mb-2">Order Notes (Optional)</label>
+                    <label htmlFor="notes" className="block text-sm font-medium mb-2">Order Notes (Optional)</label>
                     <textarea
+                      id="notes"
+                      name="notes"
                       rows={3}
+                      maxLength={1000}
                       className={inputClass}
                       value={form.notes}
                       onChange={(e) => change("notes", e.target.value)}
@@ -243,15 +277,17 @@ export function CheckoutPage() {
                 <h2 className="text-xl font-semibold mb-5">Payment Method</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <PaymentOption
-                    active={form.payment_method === "cash"}
-                    onClick={() => setForm(v => ({ ...v, payment_method: "cash" }))}
+                    value="cash"
+                    checked={form.payment_method === "cash"}
+                    onChange={() => setForm(v => ({ ...v, payment_method: "cash" }))}
                     icon={<Banknote size={26} />}
                     title="Cash on Delivery"
                     description="Pay when the seller delivers"
                   />
                   <PaymentOption
-                    active={form.payment_method === "bakong"}
-                    onClick={() => setForm(v => ({ ...v, payment_method: "bakong" }))}
+                    value="bakong"
+                    checked={form.payment_method === "bakong"}
+                    onChange={() => setForm(v => ({ ...v, payment_method: "bakong" }))}
                     icon={<Landmark size={26} />}
                     title="Bakong"
                     description="Bank transfer via Bakong"
@@ -315,26 +351,45 @@ export function CheckoutPage() {
 /* ====================== Helper Components ====================== */
 
 function Field({
+  name,
   label,
   value,
   onChange,
   type = "text",
-  required = false
+  required = false,
+  autoComplete,
+  inputMode,
+  maxLength,
+  pattern,
+  title,
 }: {
+  name: "customer_name" | "customer_phone" | "city";
   label: string;
   value: string;
   onChange: (value: string) => void;
-  type?: string;
+  type?: React.HTMLInputTypeAttribute;
   required?: boolean;
+  autoComplete?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  maxLength?: number;
+  pattern?: string;
+  title?: string;
 }) {
   return (
-    <label className="block">
+    <label htmlFor={name} className="block">
       <span className="text-sm font-medium text-slate-700">
         {label} {required && <span className="text-red-500">*</span>}
       </span>
       <input
+        id={name}
+        name={name}
         type={type}
         required={required}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        maxLength={maxLength}
+        pattern={pattern}
+        title={title}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={inputClass}
@@ -344,33 +399,41 @@ function Field({
 }
 
 function PaymentOption({
-  active,
-  onClick,
+  value,
+  checked,
+  onChange,
   icon,
   title,
   description
 }: {
-  active: boolean;
-  onClick: () => void;
+  value: CheckoutForm["payment_method"];
+  checked: boolean;
+  onChange: () => void;
   icon: React.ReactNode;
   title: string;
   description: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <label
       className={`flex w-full gap-4 rounded-2xl border p-5 text-left transition-all ${
-        active 
+        checked
           ? "border-purple-500 bg-purple-50 ring-2 ring-purple-100" 
           : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
       }`}
     >
-      <div className={active ? "text-purple-600" : "text-slate-400"}>{icon}</div>
+      <input
+        type="radio"
+        name="payment_method"
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        className="sr-only"
+      />
+      <div className={checked ? "text-purple-600" : "text-slate-400"}>{icon}</div>
       <div>
         <strong className="block">{title}</strong>
         <span className="text-sm text-slate-500 mt-1 block">{description}</span>
       </div>
-    </button>
+    </label>
   );
 }
