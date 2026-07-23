@@ -18,11 +18,11 @@ class BusinessController extends Controller
 
     public function show(Request $request): JsonResponse
     {
+        $business = $request->user()->business;
+
         return response()->json([
             'success' => true,
-            'data' => new BusinessResource(
-                $request->user()->business
-            ),
+            'data' => $business ? new BusinessResource($business) : null,
         ]);
     }
 
