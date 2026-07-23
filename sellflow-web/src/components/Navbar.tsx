@@ -68,7 +68,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 sm:flex">
-          <button onClick={() => openAuth("login")} className="rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white">
+          <button onClick={() => openAuth("login")} className="rounded-full px-4 border border-slate-200 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white">
             Sign in
           </button>
           <motion.button
@@ -111,7 +111,7 @@ export function Navbar() {
               ))}
             </nav>
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
-              <button onClick={() => { setMobileOpen(false); openAuth("login"); }} className="rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold">Sign in</button>
+              <button onClick={() => { setMobileOpen(false); openAuth("login"); }} className="rounded-full border border-zinc-200 px-4 py-3 text-sm font-semibold">Sign in</button>
               <button onClick={() => { setMobileOpen(false); openAuth("register"); }} className="rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white">Start free</button>
             </div>
           </motion.div>
