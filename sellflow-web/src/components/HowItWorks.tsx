@@ -189,7 +189,7 @@ function OrdersCard() {
     <motion.article
       {...cardMotion}
       transition={{ duration: 0.55, delay: 0.14 }}
-      className="group relative overflow-hidden rounded-[28px] border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6 sm:p-8 lg:col-span-7"
+      className="group relative overflow-hidden rounded-xl border border-zinc-200 bg-gradient-to-br from-cyan-50 via-white to-purple-100 p-6 sm:p-8 lg:col-span-12"
     >
       <div className="flex items-center justify-between">
         <StepLabel number="04" label="Receive orders" />
@@ -224,7 +224,7 @@ function OrdersCard() {
             ["#1023", "Dara S.", "$46.00", "bg-amber-100 text-amber-700", "Preparing"],
             ["#1022", "Lina M.", "$32.00", "bg-sky-100 text-sky-700", "Ready"],
           ].map(([id, name, total, statusColor, status]) => (
-            <div key={id} className="flex items-center gap-3 rounded-xl border border-white bg-white/85 p-3 shadow-sm backdrop-blur">
+            <div key={id} className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white/85 p-3 shadow-sm backdrop-blur">
               <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-slate-100">
                 <ShoppingBag className="h-3.5 w-3.5 text-slate-500" />
               </div>
@@ -243,7 +243,7 @@ function OrdersCard() {
 }
 
 export function HowItWorks() {
-  const { openAuth } = useAuth();
+  
 
   return (
     <section id="how-it-works" className="relative overflow-hidden bg-[#fafafa] py-24 sm:py-28 lg:py-32">
@@ -288,29 +288,7 @@ export function HowItWorks() {
           <OrdersCard />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-8 flex flex-col items-center justify-between gap-5 rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-sm sm:flex-row sm:px-7"
-        >
-          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500 sm:justify-start">
-            {["Free to start", "No credit card", "Ready in minutes"].map((item) => (
-              <span key={item} className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-emerald-600" />
-                {item}
-              </span>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => openAuth("register")}
-            className="group inline-flex h-11 shrink-0 items-center gap-3 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-violet-700"
-          >
-            Create your store
-            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" />
-          </button>
-        </motion.div>
+      
       </div>
     </section>
   );
