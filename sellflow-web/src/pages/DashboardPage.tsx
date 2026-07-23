@@ -684,6 +684,7 @@ export function DashboardPage() {
                 <span className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-xl bg-slate-100 text-slate-500">
                   <Package className="h-3 w-3 sm:h-4 sm:w-4" />
                 </span>
+                
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs sm:text-sm font-medium text-slate-800">{product.name}</p>
                   <p className="text-[9px] sm:text-[11px] text-slate-400 truncate">{product.category?.name || "Uncategorized"}</p>
