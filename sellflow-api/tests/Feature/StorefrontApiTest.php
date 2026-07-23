@@ -328,6 +328,33 @@ class StorefrontApiTest extends TestCase
         $this->getJson('/api/v1/orders')->assertUnauthorized();
     }
 
+    public function test_new_seller_can_load_the_empty_business_page_and_create_a_store(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/v1/business')
+            ->assertOk()
+            ->assertExactJson([
+                'success' => true,
+                'data' => null,
+            ]);
+
+        $this->postJson('/api/v1/business', [
+            'name' => 'New Store',
+            'slug' => 'new-store',
+            'is_active' => true,
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.name', 'New Store')
+            ->assertJsonPath('data.slug', 'new-store');
+
+        $this->assertDatabaseHas('businesses', [
+            'user_id' => $user->id,
+            'slug' => 'new-store',
+        ]);
+    }
+
     public function test_seller_can_publish_a_valid_theme_to_the_public_storefront(): void
     {
         $user = User::factory()->create();
