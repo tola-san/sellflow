@@ -85,7 +85,18 @@ export function BusinessPage() {
       setBannerOverlayOpacity(saved.theme.banner_overlay_opacity ?? bannerOverlayOpacity);
       const token = localStorage.getItem("token");
       if (token && user) {
-        setSession(token, { ...user, business_type: saved.business_type });
+        setSession(token, {
+          ...user,
+          business_type: saved.business_type,
+          business: {
+            id: saved.id,
+            name: saved.name,
+            slug: saved.slug,
+            business_type: saved.business_type,
+            logo: saved.logo,
+            is_active: saved.is_active,
+          },
+        });
       }
       setSuccess("Business profile saved successfully.");
     } catch (exception) {

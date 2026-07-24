@@ -14,7 +14,7 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $business = $this->business()->first(['business_type']);
+        $business = $this->business()->first();
         $hasBusiness = $business !== null;
 
         return [
@@ -25,6 +25,14 @@ class UserResource extends JsonResource
             'has_business' => $hasBusiness,
             'onboarding_completed' => $hasBusiness,
             'business_type' => $business?->business_type,
+            'business' => $business ? [
+                'id' => $business->id,
+                'name' => $business->name,
+                'slug' => $business->slug,
+                'business_type' => $business->business_type,
+                'logo' => $business->logoUrl(),
+                'is_active' => $business->is_active,
+            ] : null,
         ];
     }
 }

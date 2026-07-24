@@ -11,6 +11,10 @@ import {
   Calendar,
   Clock,
   Bell,
+  AlertTriangle,
+  ChevronsUpDown,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { authService } from "../../Services/auth";
@@ -147,11 +151,17 @@ function DateTimeDisplay() {
 export function DashboardLayout() {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem("sellflow.sidebar.collapsed") === "true");
   const [dashboardTheme, setDashboardTheme] = useState<DashboardThemeId>(() => getDashboardThemeId());
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { openAuth, user, clearSession } = useAuth();
-  const moduleSections = dashboardModuleSections(user?.business_type);
+  const business = user?.business;
+  const moduleSections = dashboardModuleSections(
+    business?.business_type ?? user?.business_type,
+    business?.slug,
+    business?.is_active ?? true,
+  );
 
   useEffect(() => {
     const syncTheme = (event: Event) => setDashboardTheme((event as CustomEvent<DashboardThemeId>).detail);
@@ -181,44 +191,74 @@ export function DashboardLayout() {
     navigate("/");
   };
 
-  const sidebar = (
+  const toggleCollapsed = () => {
+    setCollapsed((current) => {
+      const next = !current;
+      localStorage.setItem("sellflow.sidebar.collapsed", String(next));
+      return next;
+    });
+  };
+
+  const sidebar = (isCollapsed: boolean, mobile = false) => (
     <>
-      <div className="flex h-16 items-center justify-between border-b border-slate-200 px-6">
-        <div className="flex items-center gap-3">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-purple-600 text-white">
-            <Boxes size={19} />
-          </span>
-          <div>
-            <p className="font-bold">SellFlow</p>
-            <p className="max-w-36 truncate text-xs text-slate-500">
-              {user?.business_type ? businessTypeLabel(user.business_type) : "Business dashboard"}
-            </p>
+      <div className="border-b border-slate-200 p-3">
+        <div className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between gap-2"}`}>
+          <div className={`flex min-w-0 items-center ${isCollapsed ? "" : "gap-3"}`}>
+            {business?.logo ? (
+              <img src={business.logo} alt="" className="h-10 w-10 shrink-0 rounded-xl border border-slate-200 object-cover" />
+            ) : (
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-purple-600 text-sm font-bold text-white">
+                {business ? getInitials(business.name) : <Boxes size={19} />}
+              </span>
+            )}
+            {!isCollapsed && (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-slate-900">{business?.name ?? "SellFlow"}</p>
+                <p className="truncate text-[11px] text-slate-500">
+                  {business?.business_type ? businessTypeLabel(business.business_type) : "Business dashboard"}
+                </p>
+              </div>
+            )}
           </div>
+          {mobile && (
+            <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" onClick={() => setOpen(false)} aria-label="Close menu">
+              <X size={20} />
+            </button>
+          )}
         </div>
-        <button
-          className="lg:hidden"
-          onClick={() => setOpen(false)}
-          aria-label="Close menu"
-        >
-          <X size={20} />
-        </button>
+
+        {!isCollapsed && (
+          <button
+            type="button"
+            disabled
+            title="Business switching will be available with multi-business support."
+            className="mt-3 flex w-full cursor-not-allowed items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs text-slate-500"
+          >
+            <span className="truncate">Current business</span>
+            <ChevronsUpDown size={14} />
+          </button>
+        )}
       </div>
 
-      <nav className="flex-1 space-y-5 overflow-y-auto p-4">
+      <nav className={`flex-1 space-y-5 overflow-y-auto ${isCollapsed ? "p-2.5" : "p-4"}`}>
         {moduleSections.map((section) => (
           <div key={section.key}>
-            <div className="mb-1.5 flex items-center justify-between px-3">
-              <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
-                section.personalized ? "text-purple-600" : "text-slate-400"
-              }`}>
-                {section.label}
-              </p>
-              {section.personalized && (
-                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-bold uppercase text-purple-700">
-                  Your type
-                </span>
-              )}
-            </div>
+            {isCollapsed ? (
+              <div className="mx-2 mb-2 border-t border-slate-200" />
+            ) : (
+              <div className="mb-1.5 flex items-center justify-between px-3">
+                <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
+                  section.personalized ? "text-purple-600" : "text-slate-400"
+                }`}>
+                  {section.label}
+                </p>
+                {section.personalized && (
+                  <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-bold uppercase text-purple-700">
+                    Your type
+                  </span>
+                )}
+              </div>
+            )}
 
             <div className="space-y-1">
               {section.modules.map((module) => {
@@ -229,15 +269,19 @@ export function DashboardLayout() {
                     <div
                       key={module.key}
                       title={`${module.description} — planned module`}
-                      className="flex cursor-not-allowed items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-400"
+                      className={`flex cursor-not-allowed items-center rounded-xl py-2.5 text-sm text-slate-400 ${
+                        isCollapsed ? "justify-center px-2" : "justify-between px-3"
+                      }`}
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         <Icon size={18} className="shrink-0" />
-                        <span className="truncate">{module.label}</span>
+                        {!isCollapsed && <span className="truncate">{module.label}</span>}
                       </div>
-                      <span className="ml-2 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-slate-400">
-                        Soon
-                      </span>
+                      {!isCollapsed && (
+                        <span className="ml-2 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-slate-400">
+                          Soon
+                        </span>
+                      )}
                     </div>
                   );
                 }
@@ -250,18 +294,18 @@ export function DashboardLayout() {
                     title={module.description}
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                      `flex items-center rounded-xl py-2.5 text-sm font-medium transition ${
                         isActive
                           ? "bg-purple-50 text-purple-700"
                           : "text-slate-600 hover:bg-slate-100"
-                      }`
+                      } ${isCollapsed ? "justify-center px-2" : "justify-between px-3"}`
                     }
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <Icon size={18} className="shrink-0" />
-                      <span className="truncate">{module.label}</span>
+                      {!isCollapsed && <span className="truncate">{module.label}</span>}
                     </div>
-                    {module.badge && (
+                    {!isCollapsed && module.badge && (
                       <span className="ml-2 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-emerald-600">
                         {module.badge}
                       </span>
@@ -274,14 +318,30 @@ export function DashboardLayout() {
         ))}
       </nav>
 
-      {/* Sign out button removed from sidebar */}
+      {!mobile && (
+        <div className="border-t border-slate-200 p-2.5">
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={`flex w-full items-center rounded-xl p-2.5 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 ${
+              isCollapsed ? "justify-center" : "gap-3"
+            }`}
+          >
+            {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            {!isCollapsed && <span>Collapse sidebar</span>}
+          </button>
+        </div>
+      )}
     </>
   );
 
   return (
     <div className="dashboard-theme min-h-screen bg-slate-50 text-slate-900" data-dashboard-theme={dashboardTheme} style={dashboardThemeVariables(DASHBOARD_THEMES[dashboardTheme])}>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex">
-        {sidebar}
+      <aside className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-slate-200 bg-white transition-[width] duration-200 lg:flex ${
+        collapsed ? "w-[76px]" : "w-[260px]"
+      }`}>
+        {sidebar(collapsed)}
       </aside>
 
       {open && (
@@ -292,12 +352,12 @@ export function DashboardLayout() {
             aria-label="Close menu overlay"
           />
           <aside className="fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-white lg:hidden">
-            {sidebar}
+            {sidebar(false, true)}
           </aside>
         </>
       )}
 
-      <div className="lg:pl-64">
+      <div className={`transition-[padding] duration-200 ${collapsed ? "lg:pl-[76px]" : "lg:pl-[260px]"}`}>
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
           <div className="flex items-center">
             <button
@@ -307,7 +367,7 @@ export function DashboardLayout() {
             >
               <Menu size={20} />
             </button>
-            <p className="font-semibold">Manage your catalog</p>
+            <p className="font-semibold">{business ? `Manage ${business.name}` : "Manage your catalog"}</p>
           </div>
 
           <div className="flex items-center gap-4">
@@ -388,6 +448,15 @@ export function DashboardLayout() {
         </header>
 
         <main className="p-4 sm:p-6 lg:p-8">
+          {business && !business.is_active && (
+            <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold">This business is inactive</p>
+                <p className="mt-0.5 text-amber-700">Reactivate the store from Business Profile. Navigation is limited while the store is inactive.</p>
+              </div>
+            </div>
+          )}
           <Outlet />
         </main>
       </div>
