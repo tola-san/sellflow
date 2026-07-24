@@ -2,6 +2,15 @@ import React, { useCallback, useEffect, useState, createContext, useContext } fr
 import type { BusinessType } from '../../types/businessTypes';
 export type AuthMode = 'login' | 'register';
 
+export interface AuthBusiness {
+  id: number;
+  name: string;
+  slug: string;
+  business_type: BusinessType;
+  logo: string | null;
+  is_active: boolean;
+}
+
 export interface AuthUser {
   id?: number;
   name?: string;
@@ -9,6 +18,7 @@ export interface AuthUser {
   has_business?: boolean;
   onboarding_completed?: boolean;
   business_type?: BusinessType | null;
+  business?: AuthBusiness | null;
   [key: string]: unknown;
 }
 

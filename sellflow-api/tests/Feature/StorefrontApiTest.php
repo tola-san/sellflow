@@ -344,7 +344,8 @@ class StorefrontApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.has_business', false)
             ->assertJsonPath('data.onboarding_completed', false)
-            ->assertJsonPath('data.business_type', null);
+            ->assertJsonPath('data.business_type', null)
+            ->assertJsonPath('data.business', null);
 
         $this->postJson('/api/v1/business', [
             'name' => 'New Store',
@@ -367,7 +368,11 @@ class StorefrontApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.has_business', true)
             ->assertJsonPath('data.onboarding_completed', true)
-            ->assertJsonPath('data.business_type', 'food_beverage');
+            ->assertJsonPath('data.business_type', 'food_beverage')
+            ->assertJsonPath('data.business.name', 'New Store')
+            ->assertJsonPath('data.business.slug', 'new-store')
+            ->assertJsonPath('data.business.business_type', 'food_beverage')
+            ->assertJsonPath('data.business.is_active', true);
 
         $anotherUser = User::factory()->create();
         Sanctum::actingAs($anotherUser);

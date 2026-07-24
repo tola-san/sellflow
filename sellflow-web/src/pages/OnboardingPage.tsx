@@ -85,7 +85,7 @@ export function OnboardingPage() {
     setError("");
 
     try {
-      await businessService.saveBusiness(
+      const saved = await businessService.saveBusiness(
         {
           business_type: form.business_type,
           name: form.name.trim(),
@@ -105,6 +105,14 @@ export function OnboardingPage() {
           has_business: true,
           onboarding_completed: true,
           business_type: form.business_type,
+          business: {
+            id: saved.id,
+            name: saved.name,
+            slug: saved.slug,
+            business_type: saved.business_type,
+            logo: saved.logo,
+            is_active: saved.is_active,
+          },
         });
       }
 
