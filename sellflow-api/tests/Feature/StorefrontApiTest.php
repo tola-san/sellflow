@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Jobs\SendNewOrderTelegramNotification;
 use App\Models\Business;
 use App\Models\Category;
+use App\Models\ModifierGroup;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -125,6 +126,67 @@ class StorefrontApiTest extends TestCase
             SendNewOrderTelegramNotification::class,
             fn (SendNewOrderTelegramNotification $job) => $job->orderId === $order->id
         );
+    }
+
+    public function test_restaurant_modifiers_are_published_validated_and_priced_by_the_server(): void
+    {
+        Bus::fake([SendNewOrderTelegramNotification::class]);
+        $store = $this->business('Coffee House', 'coffee-house');
+        $store->update(['business_type' => 'food_beverage']);
+        $category = $this->category($store, 'Coffee', true);
+        $product = $this->product($store, $category, 'Iced Latte', 'iced-latte', true);
+        $group = ModifierGroup::create([
+            'business_id' => $store->id,
+            'name' => 'Size',
+            'selection_type' => 'single',
+            'is_required' => true,
+            'min_select' => 1,
+            'max_select' => 1,
+            'is_active' => true,
+        ]);
+        $large = $group->options()->create([
+            'name' => 'Large',
+            'price_adjustment' => 1.25,
+            'is_active' => true,
+        ]);
+        $group->products()->attach($product);
+
+        $this->getJson('/api/v1/store/coffee-house/products/iced-latte')
+            ->assertOk()
+            ->assertJsonPath('data.product.modifier_groups.0.name', 'Size')
+            ->assertJsonPath('data.product.modifier_groups.0.options.0.name', 'Large');
+
+        $this->postJson('/api/v1/store/coffee-house/checkout', [
+            'customer_name' => 'Test Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'items' => [['product_slug' => 'iced-latte', 'quantity' => 2]],
+        ])->assertUnprocessable();
+
+        $this->postJson('/api/v1/store/coffee-house/checkout', [
+            'customer_name' => 'Test Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'items' => [[
+                'product_slug' => 'iced-latte',
+                'quantity' => 2,
+                'modifier_ids' => [$large->id],
+            ]],
+        ])->assertCreated()
+            ->assertJsonPath('data.items.0.unit_price', '5.75')
+            ->assertJsonPath('data.items.0.modifiers.0.option_name', 'Large')
+            ->assertJsonPath('data.total', '11.50');
+    }
+
+    public function test_modifier_management_is_restricted_to_restaurant_businesses(): void
+    {
+        $user = User::factory()->create();
+        $this->business('Retail Store', 'retail-store', true, $user);
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/v1/modifier-groups')->assertForbidden();
     }
 
     public function test_website_checkout_returns_a_secure_telegram_receipt_link(): void

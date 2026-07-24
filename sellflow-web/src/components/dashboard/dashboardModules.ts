@@ -88,7 +88,7 @@ const businessSections: Record<SidebarProfile, DashboardModuleSection[]> = {
       modules: [
         available("menu-items", "Menu items", "Food and drink items available to customers", Package, "/dashboard/products"),
         available("menu-categories", "Menu categories", "Organize the customer-facing menu", FolderTree, "/dashboard/categories"),
-        planned("add-ons", "Add-ons", "Extras, sizes, and preparation options", ListPlus),
+        available("add-ons", "Add-ons", "Extras, sizes, and preparation options", ListPlus, "/dashboard/add-ons"),
         planned("menu-availability", "Availability", "Schedule item and menu availability", CalendarDays),
       ],
     },

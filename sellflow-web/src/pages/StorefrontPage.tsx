@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Check, ChevronDown, ExternalLink, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { storefrontService, type Storefront } from "../Services/storefront";
 import type { ThemeSettings } from "../types/theme";
@@ -14,6 +14,7 @@ import { withHexOpacity } from "../lib/color";
 
 export function StorefrontPage() {
   const { slug = "" } = useParams();
+  const navigate = useNavigate();
   const [storefront, setStorefront] = useState<Storefront | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
@@ -263,7 +264,15 @@ export function StorefrontPage() {
                     <span className="text-sm text-slate-400">{categoryProducts.length} items</span>
                   </div>
                   <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${theme.grid_columns === 2 ? "lg:grid-cols-2" : theme.grid_columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
-                    {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} onAdd={() => { cart.add(slug, product); hapticImpact(); showToast(`${product.name} added to cart.`); }} />)}
+                    {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} onAdd={() => {
+                      if ((product.modifier_groups || []).length > 0) {
+                        navigate(storePath(slug, `/products/${product.slug}`));
+                        return;
+                      }
+                      cart.add(slug, product);
+                      hapticImpact();
+                      showToast(`${product.name} added to cart.`);
+                    }} />)}
                   </div>
                 </section>
               );

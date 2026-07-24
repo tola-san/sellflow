@@ -36,9 +36,7 @@ export function CheckoutPage() {
   const theme = store ? resolveCustomerTheme(store.business.theme, customerTheme) : null;
   const primary = theme?.primary_color || "#3b82f6";
   const themeVariables = theme ? customerThemeVariables(theme) : undefined;
-  const subtotal = items.reduce((sum, item) => 
-    sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0
-  );
+  const subtotal = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
 
   useEffect(() => {
     if (!slug) return;
@@ -79,7 +77,8 @@ export function CheckoutPage() {
         ...(isTelegramClient && webApp?.initData ? { telegram_init_data: webApp.initData } : {}),
         items: items.map(item => ({
           product_slug: item.product.slug,
-          quantity: item.quantity
+          quantity: item.quantity,
+          modifier_ids: item.modifiers.map((modifier) => modifier.id),
         }))
       };
 
@@ -312,8 +311,8 @@ export function CheckoutPage() {
               <h2 className="font-semibold text-lg mb-6">Order Summary</h2>
 
               <div className="space-y-5">
-                {items.map(({ product, quantity }) => (
-                  <div key={product.slug} className="flex gap-4">
+                {items.map(({ line_id, product, quantity, modifiers, unit_price }) => (
+                  <div key={line_id} className="flex gap-4">
                     <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
                       {product.thumbnail && (
                         <img src={product.thumbnail} alt={product.name} className="h-full w-full object-cover" />
@@ -321,10 +320,11 @@ export function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="line-clamp-2 font-medium">{product.name}</p>
+                      {modifiers.length > 0 && <p className="mt-0.5 text-xs leading-5 text-slate-500">{modifiers.map((option) => option.name).join(", ")}</p>}
                       <p className="text-sm text-slate-500 mt-0.5">Qty: {quantity}</p>
                     </div>
                     <p className="font-semibold whitespace-nowrap">
-                      ${(Number(product.discount_price || product.price) * quantity).toFixed(2)}
+                      ${(unit_price * quantity).toFixed(2)}
                     </p>
                   </div>
                 ))}

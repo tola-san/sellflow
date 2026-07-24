@@ -22,7 +22,7 @@ class ProductService
 
         return $user->business
             ->products()
-            ->with('category')
+            ->with(['category', 'modifierGroups.options'])
             ->latest()
             ->get();
     }
@@ -61,7 +61,7 @@ class ProductService
 
     public function show(Product $product): Product
     {
-        return $product->load('category');
+        return $product->load(['category', 'modifierGroups.options']);
     }
 
     public function update(Product $product, array $data): Product
@@ -102,7 +102,7 @@ class ProductService
             $this->deleteManagedThumbnail($oldThumbnail);
         }
 
-        return $product->fresh()->load('category');
+        return $product->fresh()->load(['category', 'modifierGroups.options']);
     }
 
     public function destroy(Product $product): void

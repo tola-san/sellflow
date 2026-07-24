@@ -10,6 +10,22 @@ export interface PublicCategory {
   sort_order: number;
 }
 
+export interface PublicModifierOption {
+  id: number;
+  name: string;
+  price_adjustment: string;
+}
+
+export interface PublicModifierGroup {
+  id: number;
+  name: string;
+  selection_type: "single" | "multiple";
+  is_required: boolean;
+  min_select: number;
+  max_select: number | null;
+  options: PublicModifierOption[];
+}
+
 export interface PublicProduct {
   name: string;
   slug: string;
@@ -20,6 +36,7 @@ export interface PublicProduct {
   thumbnail: string | null;
   is_featured: boolean;
   category: PublicCategory;
+  modifier_groups: PublicModifierGroup[];
 }
 
 export interface PublicBusiness {

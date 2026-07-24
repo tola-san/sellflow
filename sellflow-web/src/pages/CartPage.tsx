@@ -39,9 +39,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     const theme = store ? resolveCustomerTheme(store.business.theme, customerTheme) : null;
     const primary = theme?.primary_color || "#3b82f6";
     const themeVariables = theme ? customerThemeVariables(theme) : undefined;
-    const subtotal = items.reduce((sum, item) => 
-        sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0
-    );
+    const subtotal = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
 
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => e.key === "Escape" && isOpen && onClose();
@@ -126,8 +124,8 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                                     </button>
                                 </div>
                             ) : (
-                                items.map(({ product, quantity }) => (
-                                    <div key={product.slug} className="flex gap-4 rounded-2xl border border-slate-100 p-4 bg-white">
+                                items.map(({ line_id, product, quantity, modifiers, unit_price }) => (
+                                    <div key={line_id} className="flex gap-4 rounded-2xl border border-slate-100 p-4 bg-white">
                                         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100">
                                             {product.thumbnail ? (
                                                 <img src={product.thumbnail} alt={product.name} className="h-full w-full object-cover" />
@@ -143,21 +141,22 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                                                 {product.category.name}
                                             </p>
                                             <p className="mt-1 text-[15px] font-medium leading-tight line-clamp-2">{product.name}</p>
+                                            {modifiers.length > 0 && <p className="mt-1 text-xs leading-5 text-slate-500">{modifiers.map((option) => option.name).join(", ")}</p>}
                                             <p className="mt-1.5 font-semibold">
-                                                ${Number(product.discount_price || product.price).toFixed(2)}
+                                                ${unit_price.toFixed(2)}
                                             </p>
 
                                             <div className="mt-4 flex items-center justify-between">
                                                 <div className="flex items-center border border-slate-200 rounded-xl">
-                                                    <button onClick={() => { hapticImpact(); quantity === 1 ? cart.remove(slug, product.slug) : cart.update(slug, product.slug, quantity - 1); }} className="px-3 py-2 active:bg-slate-100">
+                                                    <button onClick={() => { hapticImpact(); quantity === 1 ? cart.remove(slug, line_id) : cart.update(slug, line_id, quantity - 1); }} className="px-3 py-2 active:bg-slate-100">
                                                         <Minus size={18} />
                                                     </button>
                                                     <span className="px-5 font-semibold">{quantity}</span>
-                                                    <button onClick={() => { hapticImpact(); cart.update(slug, product.slug, quantity + 1); }} className="px-3 py-2 active:bg-slate-100">
+                                                    <button onClick={() => { hapticImpact(); cart.update(slug, line_id, quantity + 1); }} className="px-3 py-2 active:bg-slate-100">
                                                         <Plus size={18} />
                                                     </button>
                                                 </div>
-                                                <button onClick={() => cart.remove(slug, product.slug)} className="p-2 text-slate-400 hover:text-rose-500">
+                                                <button onClick={() => cart.remove(slug, line_id)} className="p-2 text-slate-400 hover:text-rose-500">
                                                     <Trash2 size={20} />
                                                 </button>
                                             </div>

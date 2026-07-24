@@ -7,6 +7,7 @@ export interface OrderItem {
   product_name: string;
   product_slug: string;
   thumbnail: string | null;
+  modifiers: { group_name: string; option_name: string; price_adjustment: string }[];
   unit_price: string;
   quantity: number;
   line_total: string;

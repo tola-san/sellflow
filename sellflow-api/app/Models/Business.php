@@ -114,6 +114,11 @@ class Business extends Model
         return $this->hasMany(Product::class);
     }
 
+    public function modifierGroups(): HasMany
+    {
+        return $this->hasMany(ModifierGroup::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);

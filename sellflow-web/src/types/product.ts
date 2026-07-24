@@ -1,4 +1,5 @@
 import type { Category } from "./category";
+import type { ModifierGroup } from "../Services/modifierGroups";
 
 export interface Product {
   id: number;
@@ -15,5 +16,6 @@ export interface Product {
   is_featured: boolean;
   is_active: boolean;
   category?: Category;
+  modifier_groups?: ModifierGroup[];
   created_at: string;
 }
