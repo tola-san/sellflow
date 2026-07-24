@@ -1,8 +1,10 @@
 import type { ThemeSettings } from "./theme";
+import type { BusinessType } from "./businessTypes";
 
 export interface Business {
   id: number;
   name: string;
+  business_type: BusinessType;
   slug: string;
   description: string | null;
   phone: string | null;

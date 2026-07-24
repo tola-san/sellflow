@@ -1,10 +1,14 @@
 import React, { useCallback, useEffect, useState, createContext, useContext } from 'react';
+import type { BusinessType } from '../../types/businessTypes';
 export type AuthMode = 'login' | 'register';
 
 export interface AuthUser {
   id?: number;
   name?: string;
   email?: string;
+  has_business?: boolean;
+  onboarding_completed?: boolean;
+  business_type?: BusinessType | null;
   [key: string]: unknown;
 }
 

@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import {
-  BarChart3,
   Boxes,
-  FolderTree,
-  LayoutDashboard,
   LogOut,
   Menu,
-  Package,
-  Palette,
-  ShoppingCart,
-  Store,
   X,
   User,
   ChevronDown,
@@ -18,28 +11,14 @@ import {
   Calendar,
   Clock,
   Bell,
-  Send,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { authService } from "../../Services/auth";
 import { useToast } from "../ui/ToastContext";
 import { useAuth } from "../../components/Auth/AuthContext";
 import { DASHBOARD_THEMES, DASHBOARD_THEME_EVENT, dashboardThemeVariables, getDashboardThemeId, type DashboardThemeId } from "../../theme/dashboardThemes";
-
-const links = [
-  { label: "Overview", path: "/dashboard", icon: LayoutDashboard, end: true },
-  { label: "Business", path: "/dashboard/business", icon: Store },
-  { label: "Categories", path: "/dashboard/categories", icon: FolderTree },
-  { label: "Products", path: "/dashboard/products", icon: Package },
-  { label: "Theme", path: "/dashboard/theme", icon: Palette },
-  {
-    label: "Orders",
-    path: "/dashboard/orders",
-    icon: ShoppingCart,
-    isNew: true,
-  },
-  { label: "Notifications", path: "/dashboard/notifications", icon: Send, isNew: true },
-];
+import { businessTypeLabel } from "../../types/businessTypes";
+import { dashboardModuleSections } from "./dashboardModules";
 
 // Date/Time Component with Click Handler and Date Picker
 function DateTimeDisplay() {
@@ -172,6 +151,7 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { openAuth, user, clearSession } = useAuth();
+  const moduleSections = dashboardModuleSections(user?.business_type);
 
   useEffect(() => {
     const syncTheme = (event: Event) => setDashboardTheme((event as CustomEvent<DashboardThemeId>).detail);
@@ -210,7 +190,9 @@ export function DashboardLayout() {
           </span>
           <div>
             <p className="font-bold">SellFlow</p>
-            <p className="text-xs text-slate-500">Business dashboard</p>
+            <p className="max-w-36 truncate text-xs text-slate-500">
+              {user?.business_type ? businessTypeLabel(user.business_type) : "Business dashboard"}
+            </p>
           </div>
         </div>
         <button
@@ -222,43 +204,74 @@ export function DashboardLayout() {
         </button>
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
-        {links.map(({ label, path, icon: Icon, end, isNew }) => (
-          <NavLink
-            key={path}
-            to={path}
-            end={end}
-            onClick={() => setOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition ${
-                isActive
-                  ? "bg-purple-50 text-purple-700"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`
-            }
-          >
-            <div className="flex items-center gap-3">
-              <Icon size={19} />
-              <span>{label}</span>
+      <nav className="flex-1 space-y-5 overflow-y-auto p-4">
+        {moduleSections.map((section) => (
+          <div key={section.key}>
+            <div className="mb-1.5 flex items-center justify-between px-3">
+              <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
+                section.personalized ? "text-purple-600" : "text-slate-400"
+              }`}>
+                {section.label}
+              </p>
+              {section.personalized && (
+                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-bold uppercase text-purple-700">
+                  Your type
+                </span>
+              )}
             </div>
 
-            {isNew && (
-              <span className="rounded-xl bg-green-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-500 border border-green-300">
-                NEW
-              </span>
-            )}
-          </NavLink>
-        ))}
+            <div className="space-y-1">
+              {section.modules.map((module) => {
+                const Icon = module.icon;
 
-        <div className="pt-4">
-          <p className="px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Coming next
-          </p>
-          <div className="mt-2 flex items-center gap-3 px-4 py-3 text-sm text-slate-400">
-            <BarChart3 size={19} />
-            Advanced analytics
+                if (module.status === "planned" || !module.path) {
+                  return (
+                    <div
+                      key={module.key}
+                      title={`${module.description} — planned module`}
+                      className="flex cursor-not-allowed items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-400"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <Icon size={18} className="shrink-0" />
+                        <span className="truncate">{module.label}</span>
+                      </div>
+                      <span className="ml-2 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-slate-400">
+                        Soon
+                      </span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <NavLink
+                    key={module.key}
+                    to={module.path}
+                    end={module.end}
+                    title={module.description}
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                        isActive
+                          ? "bg-purple-50 text-purple-700"
+                          : "text-slate-600 hover:bg-slate-100"
+                      }`
+                    }
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Icon size={18} className="shrink-0" />
+                      <span className="truncate">{module.label}</span>
+                    </div>
+                    {module.badge && (
+                      <span className="ml-2 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-emerald-600">
+                        {module.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ))}
       </nav>
 
       {/* Sign out button removed from sidebar */}

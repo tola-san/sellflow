@@ -1,195 +1,191 @@
 # SellFlow
 
-> Free & Open Source Digital Product Catalog built with Laravel 12 REST API and Next.js.
+> Free and open-source storefront and order-management platform for small businesses.
 
----
+SellFlow lets business owners publish a branded product catalog through a unique
+store URL. Customers can browse products and place orders without creating an
+account, while owners manage their catalog, inventory, orders, payments, themes,
+and Telegram notifications from a private dashboard.
 
-## 📖 Overview
+## Current Status
 
-SellFlow is a modern digital product catalog that helps small businesses showcase their products online through a unique URL and QR code.
+SellFlow has reached the MVP stabilization stage. The main selling workflow is
+implemented end to end:
 
-Customers can browse products **without creating an account**, while business owners manage everything from a clean dashboard.
+`Create store -> Add catalog -> Publish storefront -> Customer checkout -> Manage order`
 
-## 🎯 Project Goals
+The current priority is to make this workflow release-ready before expanding the
+product with automated payments and advanced features.
 
-- Build a production-ready Laravel REST API
-- Learn modern Laravel architecture and best practices
-- Practice API-first development
-- Create a high-quality portfolio project
-- Deploy to production
+## Implemented
 
----
+### Platform and authentication
 
-## 🛣 Development Roadmap
+- [x] Laravel 12 REST API
+- [x] React and Vite frontend
+- [x] Sanctum registration, login, logout, and current-user session
+- [x] Protected dashboard and public customer routes
+- [x] Business ownership and tenant isolation
+- [x] Guided store-owner onboarding after registration
+- [x] Shared dashboard modules with business-type module presets
 
-### Phase 1 — Planning & Project Setup 🚧 *(Current Phase)*
+### Business and catalog
 
-- [x] Project Idea
-- [x] Project Name
-- [x] MVP Scope
-- [ ] Database Design
-- [ ] Laravel Setup
-- [ ] GitHub Repository
-- [ ] PostgreSQL Configuration
+- [x] Business profile, contact details, social links, logo, and banner
+- [x] Business-type selection and profile editing
+- [x] Category CRUD and storefront visibility
+- [x] Product CRUD, search, pagination, pricing, discounts, and inventory
+- [x] Product image upload with persistent Cloudinary storage support
+- [x] Low-stock and out-of-stock handling
 
-### Future Phases
+### Storefront and checkout
 
-- Phase 2 — Authentication
-- Phase 3 — Business Module
-- Phase 4 — Category Module
-- Phase 5 — Product Module
-- Phase 6 — Public Catalog
-- Phase 7 — Order System
-- Phase 8 — Dashboard
-- Phase 9 — Analytics
-- Phase 10 — Deployment
+- [x] Public storefront using a business slug
+- [x] Public categories and product detail pages
+- [x] Shopping cart and checkout
+- [x] Cash and Bakong payment-method selection
+- [x] Server-side price, stock, and tenant validation
+- [x] Responsive customer experience and Telegram Mini App routes
 
----
+### Orders and dashboard
 
-## 🎯 MVP Features
+- [x] Orders and order items
+- [x] Order search, filters, pagination, and details
+- [x] Controlled order-status and payment-status transitions
+- [x] Revenue, order, product, category, and low-stock summaries
+- [x] Dashboard charts and recent activity
 
-- User Authentication
-- Business Profile
-- Categories
-- Products
-- Public Catalog
-- Customer Orders
-- QR Code Generation
-- Dashboard
+### Themes and notifications
 
----
+- [x] Dashboard appearance customization
+- [x] Storefront theme, color, font, and layout customization
+- [x] Theme support on the storefront, product, cart, and checkout pages
+- [x] Telegram seller, staff-group, and customer-group connections
+- [x] New-order, receipt, order-status, and payment-status messages
+- [x] Secure Telegram order linking and customer updates
 
-## 🛠 Tech Stack
+### Deployment
+
+- [x] Dockerized Laravel API
+- [x] Render API and PostgreSQL configuration
+- [x] Vercel SPA and API proxy configuration
+- [x] Database migrations during deployment
+- [x] Basic GitHub Actions frontend workflow
+- [x] Production health-check route
+
+## Current Workflow
+
+### 1. Stabilize the MVP — Current
+
+- [ ] Add an ESLint 9 flat configuration and make linting pass
+- [ ] Enable PDO SQLite locally so the Laravel feature suite can run
+- [ ] Add Laravel tests to GitHub Actions
+- [ ] Add frontend tests for authentication, cart, and checkout
+- [ ] Add an end-to-end seller-to-customer checkout test
+- [ ] Verify migrations against PostgreSQL
+- [ ] Verify Cloudinary uploads, queues, CORS, and Telegram webhooks in production
+- [ ] Reconcile the feature branch with `main` and create a stable release
+
+### 2. Complete Bakong/KHQR payments — Next
+
+- [ ] Add per-business Bakong account configuration
+- [ ] Generate a dynamic KHQR for the exact order amount
+- [ ] Store a unique payment reference on each order
+- [ ] Verify payments through a secure callback or polling workflow
+- [ ] Protect against duplicate callbacks and duplicate payments
+- [ ] Automatically change payment status from `pending` to `paid`
+- [ ] Show a payment result and digital receipt to the customer
+- [ ] Send automatic payment confirmation through Telegram
+
+### 3. Customer order tracking
+
+- [ ] Add a secure public order-tracking URL
+- [ ] Show the order, payment, and fulfillment timeline
+- [ ] Let customers reopen or download their receipt
+- [ ] Connect website tracking links with Telegram order linking
+
+### 4. Store sharing and QR
+
+- [ ] Generate a QR code for each public storefront
+- [ ] Add copy-link, share, and QR-download actions
+- [ ] Add printable QR assets for counters, tables, and packaging
+- [ ] Add dynamic SEO and social-sharing metadata
+
+### 5. Account security and recovery
+
+- [ ] Email verification
+- [ ] Forgot-password and reset-password flow
+- [ ] Profile and password settings UI
+- [ ] Session/device management
+- [ ] Authentication rate-limit and security review
+
+### 6. Advanced analytics
+
+- [ ] Date-range filtering
+- [ ] Sales and order trends
+- [ ] Best-selling products and categories
+- [ ] Customer and repeat-order insights
+- [ ] CSV export and printable reports
+
+### 7. Product variants and inventory
+
+- [ ] Sizes, colors, and other product options
+- [ ] Variant-specific price, SKU, image, and stock
+- [ ] Stock adjustment history
+- [ ] Low-stock notification preferences
+
+### 8. Subscription module — Later
+
+- [ ] Plans and feature limits
+- [ ] Trials and expiration rules
+- [ ] Subscription checkout and billing history
+- [ ] Plan-aware middleware and upgrade prompts
+
+### Future improvements
+
+- [ ] Email notifications
+- [ ] Web push notifications
+- [ ] Custom domains
+- [ ] Localization and multi-currency support
+- [ ] Accessibility audit
+- [ ] Performance and SEO audit
+
+## Technology
 
 ### Backend
-- **Laravel 12**
-- **PHP 8.4+**
-- **PostgreSQL**
-- **Laravel Sanctum**
+
+- PHP 8.2+
+- Laravel 12
+- Laravel Sanctum
+- PostgreSQL
+- Cloudinary
 
 ### Frontend
-- **Next.js**
-- **React**
-- **Tailwind CSS**
 
-### Tools
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Router
+- Framer Motion
+
+### Operations
+
 - Docker
-- Git & GitHub
-- Postman
+- Render
+- Vercel
+- GitHub Actions
+- Telegram Bot API
 
----
+## Definition of MVP Release
 
-## 📅 Sprint Progress
+The MVP is ready to release when:
 
-**Sprint 1** ✅ **Authentication Module**  
-✓ Register  
-✓ Login  
-✓ Logout  
-✓ Current User (`/me`)  
-✓ Sanctum Authentication  
-✓ Form Requests, Resources & Service Layer  
-✓ Controller & Postman Testing
-
----
-
-**Sprint 2** ✅ **Business Module**  
-✓ Business Migration & Model  
-✓ Relationships  
-✓ Resource, Service & Controller  
-✓ Store/Update Requests  
-✓ Business API & Postman Testing
-
----
-
-**Sprint 3** 🚧 **Category Module**  
-✓ Category Migration & Model  
-✓ Relationships  
-✓ Store/Update Requests  
-✓ Resource, Service & Controller  
-✓ API Routes  
-
-- [ ] Authorization / Ownership Check  
-- [ ] Postman Testing  
-- [ ] Frontend Integration
-
----
-
-**Sprint 4** Product Module  
-- [ ] Product Migration & Model  
-- [ ] Product Images, Variants & Inventory  
-- [ ] Resource, Service & Controller  
-- [ ] CRUD API  
-- [ ] Image Upload  
-- [ ] Search & Pagination
-
----
-
-**Sprint 5** Theme Module  
-- [ ] Theme Model & Default Themes  
-- [ ] Business Theme Assignment  
-- [ ] Theme API  
-- [ ] Preview, Color, Font & Layout Customization
-
----
-
-**Sprint 6** Catalog Module  
-- [ ] Public Catalog  
-- [ ] Business Slug Routing  
-- [ ] Public Categories & Products  
-- [ ] Product Detail Page  
-- [ ] SEO Metadata  
-
-**Example:** `sellflow.app/coffee-house`
-
----
-
-**Sprint 7** QR Ordering Module  
-- [ ] QR Generator  
-- [ ] Scan QR → Customer Menu  
-- [ ] Shopping Cart  
-- [ ] Place Order  
-- [ ] Telegram Notification
-
----
-
-**Sprint 8** Order Management  
-- [ ] Order & Order Items Models  
-- [ ] Order Status Management  
-- [ ] Dashboard & Customer Order Views  
-- [ ] Order History
-
----
-
-**Sprint 9** Dashboard Analytics  
-- [ ] Revenue, Products, Orders & Customers  
-- [ ] Charts & Reports
-
----
-
-**Sprint 10** Subscription Module  
-- [ ] Plans, Subscriptions & Payments  
-- [ ] Trial & Expiration Logic  
-- [ ] Middleware Protection
-
----
-
-**Sprint 11** File Management  
-- [ ] Upload Logo, Banner & Product Images  
-- [ ] Storage (Cloudflare R2 / S3)
-
----
-
-**Sprint 12** Notifications  
-- [ ] Email  
-- [ ] Telegram Bot  
-- [ ] Push Notifications
-
----
-
-**Sprint 13** Deployment  
-- [ ] Docker  
-- [ ] CI/CD  
-- [ ] Render / Hosting  
-- [ ] PostgreSQL  
-- [ ] Nginx  
-- [ ] Domain & SSL
+- [ ] Frontend lint and production build pass in CI
+- [ ] Laravel feature tests pass in CI
+- [ ] A seller can complete onboarding without manual database changes
+- [ ] A customer can browse, add to cart, and place an order on mobile
+- [ ] Stock and totals remain correct during checkout
+- [ ] The seller receives and manages the order successfully
+- [ ] The customer receives order updates successfully
+- [ ] Production logging, queues, storage, and health checks are verified

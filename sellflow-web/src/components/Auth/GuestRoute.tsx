@@ -6,7 +6,7 @@ import { useAuth } from "./AuthContext";
 type SessionState = "checking" | "authenticated" | "guest";
 
 export function GuestRoute() {
-  const { setSession: setAuthSession, clearSession } = useAuth();
+  const { setSession: setAuthSession, clearSession, user } = useAuth();
   const [session, setSession] = useState<SessionState>("checking");
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function GuestRoute() {
   }
 
   return session === "authenticated" ? (
-    <Navigate to="/dashboard" replace />
+    <Navigate to={user?.has_business ? "/dashboard" : "/onboarding"} replace />
   ) : (
     <Outlet />
   );

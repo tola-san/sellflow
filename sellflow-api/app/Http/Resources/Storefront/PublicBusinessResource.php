@@ -11,6 +11,7 @@ class PublicBusinessResource extends JsonResource
     {
         return [
             'name' => $this->name,
+            'business_type' => $this->business_type,
             'slug' => $this->slug,
             'logo' => $this->logoUrl(),
             'banner' => $this->bannerUrl(),
