@@ -547,6 +547,11 @@ function OrderDrawer({
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-slate-800">{item.product_name}</p>
+                      {item.modifiers?.length > 0 && (
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          {item.modifiers.map((modifier) => modifier.option_name).join(", ")}
+                        </p>
+                      )}
                       <p className="text-sm text-slate-500">
                         {item.quantity} × ${Number(item.unit_price).toFixed(2)}
                       </p>

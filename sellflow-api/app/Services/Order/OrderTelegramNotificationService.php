@@ -115,9 +115,16 @@ class OrderTelegramNotificationService
 
     private function customerReceiptMessage(Order $order): string
     {
-        $lines = $order->items->take(8)->map(
-            fn ($item) => '- '.$this->escape($item->product_name).' x '.$item->quantity
-        )->implode("\n");
+        $lines = $order->items->take(8)->map(function ($item) {
+            $modifiers = collect($item->modifiers ?? [])
+                ->pluck('option_name')
+                ->filter()
+                ->map(fn ($name) => $this->escape($name))
+                ->implode(', ');
+
+            return '- '.$this->escape($item->product_name).' x '.$item->quantity
+                .($modifiers ? ' ('.$modifiers.')' : '');
+        })->implode("\n");
 
         return "<b>Order received</b>\n\n"
             .'<blockquote><b>'.$this->escape($order->business->name).'</b>'."\n"

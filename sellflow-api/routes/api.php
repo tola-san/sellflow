@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Business\BusinessThemeController;
 use App\Http\Controllers\Api\Business\TelegramNotificationController;
 use App\Http\Controllers\Api\Category\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
+use App\Http\Controllers\Api\ModifierGroup\ModifierGroupController;
 use App\Http\Controllers\Api\Order\OrderController;
 use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Storefront\CheckoutController;
@@ -61,6 +62,9 @@ Route::prefix('v1')->group(function () {
 
         // Products
         Route::apiResource('products', ProductController::class);
+
+        // Restaurant add-ons and modifiers
+        Route::apiResource('modifier-groups', ModifierGroupController::class)->except('show');
 
         // Orders
         Route::get('/orders', [OrderController::class, 'index']);

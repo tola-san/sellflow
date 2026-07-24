@@ -8,7 +8,7 @@ export interface CheckoutPayload {
   notes?: string;
   payment_method: "cash" | "bakong";
   telegram_init_data?: string;
-  items: { product_slug: string; quantity: number }[];
+  items: { product_slug: string; quantity: number; modifier_ids: number[] }[];
 }
 
 export interface PublicOrder {
@@ -21,7 +21,15 @@ export interface PublicOrder {
   status: string;
   telegram_receipt_sent: boolean;
   telegram_link_url: string | null;
-  items: { product_name: string; product_slug: string; thumbnail: string | null; unit_price: string; quantity: number; line_total: string }[];
+  items: {
+    product_name: string;
+    product_slug: string;
+    thumbnail: string | null;
+    modifiers: { group_name: string; option_name: string; price_adjustment: string }[];
+    unit_price: string;
+    quantity: number;
+    line_total: string;
+  }[];
   created_at: string;
 }
 

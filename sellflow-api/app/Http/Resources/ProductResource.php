@@ -14,7 +14,7 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-         return [
+        return [
             'id' => $this->id,
 
             'business_id' => $this->business_id,
@@ -42,6 +42,8 @@ class ProductResource extends JsonResource
             'is_active' => $this->is_active,
 
             'category' => $this->whenLoaded('category'),
+
+            'modifier_groups' => ModifierGroupResource::collection($this->whenLoaded('modifierGroups')),
 
             'created_at' => $this->created_at,
         ];

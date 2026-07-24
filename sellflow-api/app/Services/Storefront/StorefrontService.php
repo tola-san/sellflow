@@ -22,7 +22,12 @@ class StorefrontService
                     ->whereHas('category', fn ($category) => $category
                         ->whereColumn('categories.business_id', 'products.business_id')
                         ->where('is_active', true))
-                    ->with('category')
+                    ->with([
+                        'category',
+                        'modifierGroups' => fn ($groups) => $groups
+                            ->where('is_active', true)
+                            ->with(['options' => fn ($options) => $options->where('is_active', true)]),
+                    ])
                     ->orderByDesc('is_featured')
                     ->latest(),
             ])
@@ -43,7 +48,12 @@ class StorefrontService
             ->whereHas('category', fn ($category) => $category
                 ->where('business_id', $business->id)
                 ->where('is_active', true))
-            ->with('category')
+            ->with([
+                'category',
+                'modifierGroups' => fn ($groups) => $groups
+                    ->where('is_active', true)
+                    ->with(['options' => fn ($options) => $options->where('is_active', true)]),
+            ])
             ->firstOrFail();
 
         return compact('business', 'product');

@@ -28,13 +28,7 @@ export function CartDrawer({
   // Rename this if your CartContext uses another method.
   const items = cart.items(slug);
 
-  const subtotal = items.reduce((total, item) => {
-    const price = Number(
-      item.product.discount_price ?? item.product.price
-    );
-
-    return total + price * item.quantity;
-  }, 0);
+  const subtotal = items.reduce((total, item) => total + item.unit_price * item.quantity, 0);
 
   return (
     <AnimatePresence>
@@ -158,14 +152,11 @@ export function CartDrawer({
               ) : (
                 <div className="space-y-4">
                   {items.map((item) => {
-                    const unitPrice = Number(
-                      item.product.discount_price ??
-                        item.product.price
-                    );
+                    const unitPrice = item.unit_price;
 
                     return (
                       <article
-                        key={item.product.id}
+                        key={item.line_id}
                         className="flex gap-4 border-b pb-4"
                         style={{
                           borderColor: `${theme.muted_color}25`,
@@ -217,7 +208,7 @@ export function CartDrawer({
                               onClick={() =>
                                 cart.remove(
                                   slug,
-                                  item.product.id
+                                  item.line_id
                                 )
                               }
                               aria-label={`Remove ${item.product.name}`}
@@ -239,9 +230,9 @@ export function CartDrawer({
                               <button
                                 type="button"
                                 onClick={() =>
-                                  cart.updateQuantity(
+                                  cart.update(
                                     slug,
-                                    item.product.id,
+                                    item.line_id,
                                     item.quantity - 1
                                   )
                                 }
@@ -258,9 +249,9 @@ export function CartDrawer({
                               <button
                                 type="button"
                                 onClick={() =>
-                                  cart.updateQuantity(
+                                  cart.update(
                                     slug,
-                                    item.product.id,
+                                    item.line_id,
                                     item.quantity + 1
                                   )
                                 }

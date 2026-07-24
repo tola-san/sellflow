@@ -3,7 +3,7 @@ import { ArrowLeft, Check, Copy, Globe2, Minus, Plus, RefreshCw, Send, Share2, S
 import { FaFacebook } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
 import { storefrontService, type StorefrontProductDetail } from "../Services/storefront";
-import { useCart } from "../components/cart/CartContext";
+import { useCart, type SelectedModifier } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 import { resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
@@ -15,6 +15,7 @@ export function ProductDetailPage() {
   const [missing, setMissing] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
   const cart = useCart();
   const { showToast } = useToast();
   const { hapticImpact, storePath } = useTelegramMiniApp();
@@ -24,6 +25,7 @@ export function ProductDetailPage() {
     setMissing(false);
     setDetail(null);
     setImageLoaded(false);
+    setSelectedOptionIds([]);
     storefrontService.getProduct(slug, productSlug)
       .then((data) => {
         setDetail(data);
@@ -65,6 +67,14 @@ export function ProductDetailPage() {
   const theme = resolveCustomerTheme(business.theme, customerTheme);
   const currentPrice = Number(product.discount_price || product.price);
   const regularPrice = Number(product.price);
+  const modifierGroups = product.modifier_groups || [];
+  const selectedModifiers: SelectedModifier[] = modifierGroups.flatMap((group) =>
+    group.options
+      .filter((option) => selectedOptionIds.includes(option.id))
+      .map((option) => ({ ...option, group_id: group.id, group_name: group.name })),
+  );
+  const modifierPrice = selectedModifiers.reduce((sum, option) => sum + Number(option.price_adjustment), 0);
+  const configuredUnitPrice = currentPrice + modifierPrice;
   const discountPercent = product.discount_price 
     ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100)
     : 0;
@@ -85,9 +95,33 @@ export function ProductDetailPage() {
   } as CSSProperties;
 
   const addToCart = () => {
-    cart.add(slug, product, quantity);
+    const invalidGroup = modifierGroups.find((group) => {
+      const count = group.options.filter((option) => selectedOptionIds.includes(option.id)).length;
+      const minimum = group.is_required ? Math.max(1, group.min_select) : group.min_select;
+      return (group.is_required && count < minimum)
+        || (count > 0 && count < group.min_select)
+        || (group.max_select !== null && count > group.max_select);
+    });
+    if (invalidGroup) {
+      showToast(`Please complete the ${invalidGroup.name} choice.`, "error");
+      return;
+    }
+    cart.add(slug, product, quantity, selectedModifiers);
     hapticImpact();
     showToast(`${quantity} × ${product.name} added to cart.`, "success");
+  };
+
+  const toggleOption = (groupId: number, optionId: number, selectionType: "single" | "multiple", maxSelect: number | null) => {
+    const group = modifierGroups.find((item) => item.id === groupId);
+    if (!group) return;
+    const groupOptionIds = group.options.map((option) => option.id);
+    setSelectedOptionIds((current) => {
+      if (current.includes(optionId)) return current.filter((id) => id !== optionId);
+      if (selectionType === "single") return [...current.filter((id) => !groupOptionIds.includes(id)), optionId];
+      const selectedInGroup = current.filter((id) => groupOptionIds.includes(id));
+      if (maxSelect !== null && selectedInGroup.length >= maxSelect) return current;
+      return [...current, optionId];
+    });
   };
 
   const shareProduct = async () => {
@@ -304,6 +338,43 @@ export function ProductDetailPage() {
               </div>
             )}
 
+            {modifierGroups.length > 0 && (
+              <div className="mt-7 space-y-5">
+                {modifierGroups.map((group) => {
+                  const selectedCount = group.options.filter((option) => selectedOptionIds.includes(option.id)).length;
+                  return (
+                    <fieldset key={group.id} className="rounded-2xl border p-4" style={{ borderColor: `${theme.muted_color}25`, backgroundColor: `${theme.surface_color}CC` }}>
+                      <legend className="px-1 text-sm font-semibold">
+                        {group.name}
+                        {group.is_required && <span className="ml-2 text-xs font-medium text-rose-500">Required</span>}
+                      </legend>
+                      <p className="mb-3 text-xs" style={{ color: theme.muted_color }}>
+                        {group.selection_type === "single" ? "Choose one" : `Choose ${group.min_select || 0}${group.max_select ? `–${group.max_select}` : "+"}`} · {selectedCount} selected
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {group.options.map((option) => {
+                          const checked = selectedOptionIds.includes(option.id);
+                          return (
+                            <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-3 text-sm transition" style={{ borderColor: checked ? theme.primary_color : `${theme.muted_color}25`, backgroundColor: checked ? `${theme.primary_color}0D` : theme.surface_color }}>
+                              <input
+                                type={group.selection_type === "single" ? "radio" : "checkbox"}
+                                name={`modifier-${group.id}`}
+                                checked={checked}
+                                onChange={() => toggleOption(group.id, option.id, group.selection_type, group.max_select)}
+                                style={{ accentColor: theme.primary_color }}
+                              />
+                              <span className="flex-1 font-medium">{option.name}</span>
+                              {Number(option.price_adjustment) > 0 && <span style={{ color: theme.primary_color }}>+${Number(option.price_adjustment).toFixed(2)}</span>}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </fieldset>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Desktop Add to Cart */}
             <div className="hidden md:block mt-auto pt-8">
               <div className="flex items-center gap-4 rounded-2xl" style={{
@@ -322,7 +393,7 @@ export function ProductDetailPage() {
                 <div className="flex-1">
                   <p className="text-xs font-medium uppercase tracking-wider opacity-50">Total</p>
                   <p className="text-2xl font-bold tracking-tight" style={{ color: theme.primary_color }}>
-                    ${(currentPrice * quantity).toFixed(2)}
+                    ${(configuredUnitPrice * quantity).toFixed(2)}
                   </p>
                 </div>
 
@@ -377,7 +448,7 @@ export function ProductDetailPage() {
                 )}
               </div>
               <p className="text-2xl font-bold tracking-tight" style={{ color: theme.primary_color }}>
-                ${(currentPrice * quantity).toFixed(2)}
+                ${(configuredUnitPrice * quantity).toFixed(2)}
               </p>
             </div>
 

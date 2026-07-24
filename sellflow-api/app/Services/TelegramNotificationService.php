@@ -197,7 +197,17 @@ class TelegramNotificationService
 
         $items = $order->items
             ->take(10)
-            ->map(fn ($item) => '• <b>'.$item->quantity.'×</b> '.$this->escapeHtml($item->product_name).' — $'.$this->money($item->line_total))
+            ->map(function ($item) {
+                $modifiers = collect($item->modifiers ?? [])
+                    ->pluck('option_name')
+                    ->filter()
+                    ->map(fn ($name) => $this->escapeHtml($name))
+                    ->implode(', ');
+
+                return '• <b>'.$item->quantity.'×</b> '.$this->escapeHtml($item->product_name)
+                    .($modifiers ? ' <i>('.$modifiers.')</i>' : '')
+                    .' — $'.$this->money($item->line_total);
+            })
             ->all();
 
         if ($order->items->count() > 10) {
@@ -330,7 +340,10 @@ class TelegramNotificationService
 
     private function senderIsAdministrator(string $chatId, mixed $userId): bool
     {
-        if (! $userId) return false;
+        if (! $userId) {
+            return false;
+        }
+
         return $this->chatMemberIsAdministrator($chatId, (string) $userId);
     }
 
