@@ -340,19 +340,45 @@ class StorefrontApiTest extends TestCase
                 'data' => null,
             ]);
 
+        $this->getJson('/api/v1/me')
+            ->assertOk()
+            ->assertJsonPath('data.has_business', false)
+            ->assertJsonPath('data.onboarding_completed', false)
+            ->assertJsonPath('data.business_type', null);
+
         $this->postJson('/api/v1/business', [
             'name' => 'New Store',
+            'business_type' => 'food_beverage',
             'slug' => 'new-store',
             'is_active' => true,
         ])
             ->assertCreated()
             ->assertJsonPath('data.name', 'New Store')
+            ->assertJsonPath('data.business_type', 'food_beverage')
             ->assertJsonPath('data.slug', 'new-store');
 
         $this->assertDatabaseHas('businesses', [
             'user_id' => $user->id,
+            'business_type' => 'food_beverage',
             'slug' => 'new-store',
         ]);
+
+        $this->getJson('/api/v1/me')
+            ->assertOk()
+            ->assertJsonPath('data.has_business', true)
+            ->assertJsonPath('data.onboarding_completed', true)
+            ->assertJsonPath('data.business_type', 'food_beverage');
+
+        $anotherUser = User::factory()->create();
+        Sanctum::actingAs($anotherUser);
+
+        $this->postJson('/api/v1/business', [
+            'name' => 'Another Store',
+            'business_type' => 'unsupported',
+            'slug' => 'another-store',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('business_type');
     }
 
     public function test_seller_can_publish_a_valid_theme_to_the_public_storefront(): void

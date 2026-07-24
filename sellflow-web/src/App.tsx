@@ -20,6 +20,7 @@ import { ToastProvider } from "./components/ui/ToastContext";
 import { CartProvider } from "./components/cart/CartContext";
 import { TelegramMiniAppLayout } from "./components/telegram/TelegramMiniAppLayout";
 import { TelegramStoreEntryPage } from "./pages/TelegramStoreEntryPage";
+import { OnboardingPage } from "./pages/OnboardingPage";
 import { useTelegramMiniApp } from "./components/telegram/TelegramMiniAppContext";
 
 const OrdersPage = lazy(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
@@ -49,6 +50,7 @@ export function App() {
                         </Route>
 
                         <Route element={<ProtectedRoute />}>
+                            <Route path="/onboarding" element={<OnboardingPage />} />
                             <Route path="/dashboard" element={<DashboardLayout />}>
                                 <Route index element={<DashboardPage />} />
                                 <Route path="business" element={<BusinessPage />} />

@@ -16,6 +16,7 @@ class BusinessService
         $business = Business::create([
             'user_id' => $user->id,
             'name' => $data['name'],
+            'business_type' => $data['business_type'],
             'slug' => Str::slug($data['slug']),
             'description' => $data['description'] ?? null,
             'phone' => $data['phone'] ?? null,
@@ -80,6 +81,7 @@ class BusinessService
 
             $business->update([
                 'name' => $data['name'],
+                'business_type' => $data['business_type'] ?? $business->business_type,
                 'slug' => Str::slug($data['slug']),
                 'description' => $data['description'] ?? null,
                 'phone' => $data['phone'] ?? null,

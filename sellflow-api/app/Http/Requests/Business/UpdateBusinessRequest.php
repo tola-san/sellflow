@@ -22,6 +22,7 @@ class UpdateBusinessRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'business_type' => ['sometimes', 'required', 'string', Rule::in(array_keys(config('business_types', [])))],
             'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::notIn(StoreBusinessRequest::reservedSlugs()), Rule::unique('businesses', 'slug')->ignore($this->user()?->business?->id)],
             'description' => ['nullable', 'string'],
             'phone' => ['nullable', 'string'],

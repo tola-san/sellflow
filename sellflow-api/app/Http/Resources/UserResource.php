@@ -14,11 +14,17 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $business = $this->business()->first(['business_type']);
+        $hasBusiness = $business !== null;
+
         return [
 
             'id' => $this->id,
-            'name' =>$this->name,
-            'email' =>$this->email,
+            'name' => $this->name,
+            'email' => $this->email,
+            'has_business' => $hasBusiness,
+            'onboarding_completed' => $hasBusiness,
+            'business_type' => $business?->business_type,
         ];
     }
 }

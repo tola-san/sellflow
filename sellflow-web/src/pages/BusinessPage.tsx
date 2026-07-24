@@ -3,12 +3,15 @@ import { ImagePlus, Save, Store, Upload, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { businessService, type BusinessPayload } from "../Services/business";
 import type { Business } from "../types/business";
+import { BUSINESS_TYPES, type BusinessType } from "../types/businessTypes";
 import { ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../components/dashboard/DashboardUI";
 import { withHexOpacity } from "../lib/color";
+import { useAuth } from "../components/Auth/AuthContext";
 
 const emptyBusiness: Business = {
   id: 0,
   name: "",
+  business_type: "other",
   slug: "",
   logo: null,
   banner: null,
@@ -30,6 +33,7 @@ const emptyBusiness: Business = {
 };
 
 export function BusinessPage() {
+  const { user, setSession } = useAuth();
   const [exists, setExists] = useState(false);
   const [form, setForm] = useState<Business>(emptyBusiness);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -79,6 +83,10 @@ export function BusinessPage() {
       setRemoveLogo(false);
       setRemoveBanner(false);
       setBannerOverlayOpacity(saved.theme.banner_overlay_opacity ?? bannerOverlayOpacity);
+      const token = localStorage.getItem("token");
+      if (token && user) {
+        setSession(token, { ...user, business_type: saved.business_type });
+      }
       setSuccess("Business profile saved successfully.");
     } catch (exception) {
       setError(exception);
@@ -134,6 +142,21 @@ export function BusinessPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <SectionHeading title="Store identity" description="The basic information customers see on your storefront." />
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <label className="text-sm font-medium text-slate-700 sm:col-span-2">
+              Business type
+              <select
+                className={inputClass}
+                value={form.business_type}
+                onChange={(event) => setForm((current) => ({ ...current, business_type: event.target.value as BusinessType }))}
+              >
+                {BUSINESS_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
+              <span className="mt-1.5 block text-xs font-normal text-slate-500">
+                Used to personalize recommendations and future store features.
+              </span>
+            </label>
             <Field label="Business name" required value={form.name} onChange={(value) => {
               change("name", value);
               if (!exists) change("slug", value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""));

@@ -7,7 +7,7 @@ type SessionState = "checking" | "authenticated" | "guest";
 
 export function ProtectedRoute() {
   const location = useLocation();
-  const { setSession: setAuthSession, clearSession } = useAuth();
+  const { setSession: setAuthSession, clearSession, user } = useAuth();
   const [session, setSession] = useState<SessionState>("checking");
 
   useEffect(() => {
@@ -49,9 +49,21 @@ export function ProtectedRoute() {
     );
   }
 
-  return session === "authenticated" ? (
-    <Outlet />
-  ) : (
+  if (session === "authenticated") {
+    const isOnboarding = location.pathname === "/onboarding";
+
+    if (!user?.has_business && !isOnboarding) {
+      return <Navigate to="/onboarding" replace />;
+    }
+
+    if (user?.has_business && isOnboarding) {
+      return <Navigate to="/dashboard" replace />;
+    }
+
+    return <Outlet />;
+  }
+
+  return (
     <Navigate
       to="/"
       replace

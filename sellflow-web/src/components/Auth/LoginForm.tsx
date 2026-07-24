@@ -54,7 +54,7 @@ export function LoginForm({ onSwitch }: LoginFormProps) {
 
       closeAuth(); // Close the auth modal
       showToast("Welcome back! You have signed in successfully.");
-      navigate("/dashboard");
+      navigate(response.data.data.user?.has_business ? "/dashboard" : "/onboarding");
 
     } catch (error: any) {
       console.error(error);

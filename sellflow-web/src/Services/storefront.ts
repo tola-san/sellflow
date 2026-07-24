@@ -1,4 +1,5 @@
 import api from "../lib/Axios";
+import type { BusinessType } from "../types/businessTypes";
 import type { ThemeSettings } from "../types/theme";
 
 export interface PublicCategory {
@@ -23,6 +24,7 @@ export interface PublicProduct {
 
 export interface PublicBusiness {
   name: string;
+  business_type: BusinessType;
   slug: string;
   logo: string | null;
   banner: string | null;
