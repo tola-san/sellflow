@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import axios from "axios";
 import { Check, ChevronDown, ExternalLink, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -21,6 +22,7 @@ export function StorefrontPage() {
   const [search, setSearch] = useState("");
   const { selection: customerTheme, select: selectCustomerTheme } = useCustomerTheme(slug);
   const [missing, setMissing] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [restaurantTable, setRestaurantTable] = useState<PublicRestaurantTable | null>(null);
   const cart = useCart();
   const { showToast } = useToast();
@@ -31,11 +33,19 @@ export function StorefrontPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    setStorefront(null);
     setMissing(false);
+    setLoadFailed(false);
     storefrontService.getStore(slug).then((data) => {
       setStorefront(data);
       document.title = `${data.business.name} · SellFlow`;
-    }).catch(() => setMissing(true));
+    }).catch((error: unknown) => {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        setMissing(true);
+        return;
+      }
+      setLoadFailed(true);
+    });
     return () => { document.title = "SellFlow"; };
   }, [slug]);
 
@@ -135,6 +145,7 @@ export function StorefrontPage() {
   };
 
   if (missing) return <NotFound />;
+  if (loadFailed) return <StoreUnavailable />;
   if (!storefront) return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-purple-600" /></div>;
 
   const { business, categories } = storefront;
@@ -492,6 +503,10 @@ function ProductCard({ product, theme, onAdd }: { product: Storefront["products"
 function NotFound() {
   const { isMiniAppRoute } = useTelegramMiniApp();
   return <div className="grid min-h-screen place-items-center bg-slate-50 p-6 text-center"><div><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-slate-200 text-slate-500"><Store size={30} /></span><h1 className="mt-5 text-2xl font-bold">Store not found</h1><p className="mt-2 text-slate-500">This store does not exist or is currently unavailable.</p><Link to={isMiniAppRoute ? "/telegram/store" : "/"} className="mt-6 inline-block rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white">{isMiniAppRoute ? "Back" : "Go to SellFlow"}</Link></div></div>;
+}
+
+function StoreUnavailable() {
+  return <div className="grid min-h-screen place-items-center bg-slate-50 p-6 text-center"><div><span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-amber-100 text-amber-600"><Store size={30} /></span><h1 className="mt-5 text-2xl font-bold">Store temporarily unavailable</h1><p className="mt-2 text-slate-500">We could not load this store right now. Please try again.</p><button type="button" onClick={() => window.location.reload()} className="mt-6 rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white">Try again</button></div></div>;
 }
 
 
