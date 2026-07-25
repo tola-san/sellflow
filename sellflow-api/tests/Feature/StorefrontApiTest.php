@@ -489,7 +489,8 @@ class StorefrontApiTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.name', 'New Store')
             ->assertJsonPath('data.business_type', 'food_beverage')
-            ->assertJsonPath('data.slug', 'new-store');
+            ->assertJsonPath('data.slug', 'new-store')
+            ->assertJsonPath('data.show_map', true);
 
         $this->assertDatabaseHas('businesses', [
             'user_id' => $user->id,
@@ -692,6 +693,7 @@ class StorefrontApiTest extends TestCase
             'telegram_url' => 'https://t.me/socialstore',
             'tiktok_url' => 'https://tiktok.com/@socialstore',
             'banner_overlay_opacity' => 25,
+            'show_map' => 0,
             'is_active' => 1,
             'logo_image' => UploadedFile::fake()->image('logo.png', 600, 600),
             'banner_image' => UploadedFile::fake()->image('banner.jpg', 1600, 600),
@@ -699,6 +701,7 @@ class StorefrontApiTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('data.facebook_url', 'https://facebook.com/socialstore')
+            ->assertJsonPath('data.show_map', false)
             ->assertJsonMissingPath('data.email');
 
         $business->refresh();
@@ -708,6 +711,7 @@ class StorefrontApiTest extends TestCase
         $this->getJson('/api/v1/store/social-store')
             ->assertOk()
             ->assertJsonPath('data.business.telegram_url', 'https://t.me/socialstore')
+            ->assertJsonPath('data.business.show_map', false)
             ->assertJsonPath('data.business.theme.banner_overlay_opacity', 25)
             ->assertJsonMissingPath('data.business.email');
     }

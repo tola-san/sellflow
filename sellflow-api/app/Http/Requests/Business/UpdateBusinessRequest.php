@@ -39,6 +39,7 @@ class UpdateBusinessRequest extends FormRequest
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string'],
             'country' => ['nullable', 'string'],
+            'show_map' => ['nullable', 'boolean'],
             'primary_color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'secondary_color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'is_active' => ['nullable', 'boolean'],

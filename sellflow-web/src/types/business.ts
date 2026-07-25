@@ -18,6 +18,7 @@ export interface Business {
   address: string | null;
   city: string | null;
   country: string | null;
+  show_map: boolean;
   primary_color: string;
   secondary_color: string;
   theme: ThemeSettings;

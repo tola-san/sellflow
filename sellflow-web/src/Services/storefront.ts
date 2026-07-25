@@ -64,6 +64,7 @@ export interface PublicBusiness {
   address: string | null;
   city: string | null;
   country: string | null;
+  show_map: boolean;
   theme: ThemeSettings;
 }
 

@@ -12,6 +12,7 @@ import { useCart } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 import { withHexOpacity } from "../lib/color";
+import { StoreProfileDrawer } from "../components/ui/StoreProfileDrawer";
 
 export function StorefrontPage() {
   const { slug = "" } = useParams();
@@ -24,6 +25,7 @@ export function StorefrontPage() {
   const [missing, setMissing] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [restaurantTable, setRestaurantTable] = useState<PublicRestaurantTable | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const cart = useCart();
   const { showToast } = useToast();
   const { hapticImpact, isMiniAppRoute, storePath } = useTelegramMiniApp();
@@ -183,14 +185,34 @@ export function StorefrontPage() {
       {/* Header */}
       <header className="relative z-[60] border-b" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
-          {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 rounded-lg object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}><Store size={20} /></span>}
-          <div className="min-w-0"><p className="truncate font-bold leading-tight">{business.name}</p><p className="hidden text-xs sm:block" style={{ color: theme.muted_color }}>Powered by SellFlow</p></div>
-          <ThemePicker
+          <button
+            type="button"
+            onClick={() => setIsProfileOpen(true)}
+            aria-label={`View ${business.name} information`}
+            aria-haspopup="dialog"
+            className="flex min-w-0 items-center gap-3 rounded-xl text-left transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            style={{ color: theme.text_color }}
+          >
+            {business.logo ? (
+              <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+            ) : (
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}>
+                <Store size={20} />
+              </span>
+            )}
+            <span className="min-w-0">
+              <span className="block truncate font-bold leading-tight">{business.name}</span>
+              <span className="hidden text-xs sm:block" style={{ color: theme.muted_color }}>Powered by SellFlow</span>
+            </span>
+          </button>
+          <div className="ml-auto">
+            <ThemePicker
             value={customerTheme}
             storeTheme={business.theme}
             activeTheme={theme}
             onChange={selectCustomerTheme}
-          />
+            />
+          </div>
           <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
         </div>
       </header>
@@ -351,6 +373,13 @@ export function StorefrontPage() {
       <footer className="mt-16 border-t py-8 text-center text-sm" style={{ borderColor: `${theme.muted_color}35`, backgroundColor: theme.surface_color, color: theme.muted_color }}>
         © {new Date().getFullYear()} {business.name} · Built with SellFlow
       </footer>
+
+      <StoreProfileDrawer
+        business={business}
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        theme={theme}
+      />
     </div>
   );
 }

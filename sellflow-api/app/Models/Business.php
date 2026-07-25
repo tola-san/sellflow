@@ -32,6 +32,7 @@ class Business extends Model
         'address',
         'city',
         'country',
+        'show_map',
         'primary_color',
         'secondary_color',
         'theme_preset',
@@ -41,6 +42,7 @@ class Business extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'show_map' => 'boolean',
         'theme_settings' => 'array',
     ];
 
