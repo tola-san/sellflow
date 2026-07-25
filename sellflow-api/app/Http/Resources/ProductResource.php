@@ -41,6 +41,15 @@ class ProductResource extends JsonResource
 
             'is_active' => $this->is_active,
 
+            'availability_status' => $this->availability_status,
+
+            'is_available_now' => $this->when(
+                $this->relationLoaded('availabilitySchedules'),
+                fn () => $this->isAvailableNow()
+            ),
+
+            'availability_schedules' => $this->whenLoaded('availabilitySchedules'),
+
             'category' => $this->whenLoaded('category'),
 
             'modifier_groups' => ModifierGroupResource::collection($this->whenLoaded('modifierGroups')),

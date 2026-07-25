@@ -25,6 +25,7 @@ class Product extends Model
         'thumbnail',
         'is_featured',
         'is_active',
+        'availability_status',
     ];
 
     protected $casts = [
@@ -50,6 +51,28 @@ class Product extends Model
         return $this->belongsToMany(ModifierGroup::class)
             ->orderBy('modifier_groups.sort_order')
             ->orderBy('modifier_groups.id');
+    }
+
+    public function availabilitySchedules()
+    {
+        return $this->hasMany(ProductAvailabilitySchedule::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function isAvailableNow(): bool
+    {
+        if (! $this->is_active || $this->stock < 1 || in_array($this->availability_status, ['sold_out', 'hidden'], true)) {
+            return false;
+        }
+
+        if ($this->availability_status !== 'scheduled') {
+            return true;
+        }
+
+        $now = now();
+
+        return $this->availabilitySchedules->contains(
+            fn (ProductAvailabilitySchedule $schedule) => $schedule->isAvailableAt($now)
+        );
     }
 
     public function thumbnailUrl(): ?string

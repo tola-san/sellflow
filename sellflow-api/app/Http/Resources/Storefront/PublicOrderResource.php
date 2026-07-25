@@ -17,6 +17,11 @@ class PublicOrderResource extends JsonResource
             'payment_method' => $this->payment_method,
             'payment_status' => $this->payment_status,
             'status' => $this->status,
+            'order_type' => $this->order_type,
+            'restaurant_table' => $this->whenLoaded('restaurantTable', fn () => $this->restaurantTable ? [
+                'name' => $this->restaurantTable->name,
+                'area' => $this->restaurantTable->area,
+            ] : null),
             'telegram_receipt_sent' => $this->telegram_receipt_sent_at !== null,
             'items' => $this->items->map(fn ($item) => [
                 'product_name' => $item->product_name,

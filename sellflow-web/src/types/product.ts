@@ -1,5 +1,6 @@
 import type { Category } from "./category";
 import type { ModifierGroup } from "../Services/modifierGroups";
+import type { AvailabilitySchedule, AvailabilityStatus } from "../Services/menuAvailability";
 
 export interface Product {
   id: number;
@@ -17,5 +18,8 @@ export interface Product {
   is_active: boolean;
   category?: Category;
   modifier_groups?: ModifierGroup[];
+  availability_status: AvailabilityStatus;
+  is_available_now?: boolean;
+  availability_schedules?: AvailabilitySchedule[];
   created_at: string;
 }

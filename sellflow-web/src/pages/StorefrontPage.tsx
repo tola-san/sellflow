@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Check, ChevronDown, ExternalLink, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { storefrontService, type Storefront } from "../Services/storefront";
+import { storefrontService, type PublicRestaurantTable, type Storefront } from "../Services/storefront";
 import type { ThemeSettings } from "../types/theme";
 import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, type CustomerThemeId } from "../theme/customerThemes";
 import { resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
@@ -15,11 +15,13 @@ import { withHexOpacity } from "../lib/color";
 export function StorefrontPage() {
   const { slug = "" } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [storefront, setStorefront] = useState<Storefront | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
   const { selection: customerTheme, select: selectCustomerTheme } = useCustomerTheme(slug);
   const [missing, setMissing] = useState(false);
+  const [restaurantTable, setRestaurantTable] = useState<PublicRestaurantTable | null>(null);
   const cart = useCart();
   const { showToast } = useToast();
   const { hapticImpact, isMiniAppRoute, storePath } = useTelegramMiniApp();
@@ -36,6 +38,28 @@ export function StorefrontPage() {
     }).catch(() => setMissing(true));
     return () => { document.title = "SellFlow"; };
   }, [slug]);
+
+  useEffect(() => {
+    const token = searchParams.get("table");
+    if (!slug) return;
+    if (!token) {
+      try {
+        const stored = localStorage.getItem(`sellflow_restaurant_table_${slug}`);
+        setRestaurantTable(stored ? JSON.parse(stored) as PublicRestaurantTable : null);
+      } catch {
+        localStorage.removeItem(`sellflow_restaurant_table_${slug}`);
+      }
+      return;
+    }
+    storefrontService.getTable(slug, token).then((table) => {
+      setRestaurantTable(table);
+      localStorage.setItem(`sellflow_restaurant_table_${slug}`, JSON.stringify(table));
+      setSearchParams({}, { replace: true });
+    }).catch(() => {
+      localStorage.removeItem(`sellflow_restaurant_table_${slug}`);
+      showToast("This table QR code is invalid or inactive.", "error");
+    });
+  }, [slug, searchParams, setSearchParams, showToast]);
 
   const products = useMemo(() => {
     if (!storefront) return [];
@@ -160,6 +184,22 @@ export function StorefrontPage() {
         </div>
       </header>
 
+      {restaurantTable && (
+        <div className="border-b border-purple-100 bg-purple-50 px-4 py-3 text-center text-sm font-medium text-purple-800">
+          Dine-in ordering for <strong>{restaurantTable.name}</strong>
+          {restaurantTable.area ? ` · ${restaurantTable.area}` : ""}
+          <button
+            className="ml-3 text-xs font-semibold underline"
+            onClick={() => {
+              localStorage.removeItem(`sellflow_restaurant_table_${slug}`);
+              setRestaurantTable(null);
+            }}
+          >
+            Leave table
+          </button>
+        </div>
+      )}
+
       {/* Hero */}
       <section className="relative overflow-hidden" style={{ color: isMinimalHero ? theme.text_color : "white", background: isMinimalHero ? theme.surface_color : `linear-gradient(125deg, ${theme.secondary_color}, ${theme.primary_color})` }}>
         {hasBannerHero && <img src={business.banner!} alt={`${business.name} storefront banner`} className="absolute inset-0 h-full w-full object-cover" />}
@@ -265,6 +305,7 @@ export function StorefrontPage() {
                   </div>
                   <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${theme.grid_columns === 2 ? "lg:grid-cols-2" : theme.grid_columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
                     {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} onAdd={() => {
+                      if (!product.is_available_now) return;
                       if ((product.modifier_groups || []).length > 0) {
                         navigate(storePath(slug, `/products/${product.slug}`));
                         return;
@@ -442,7 +483,7 @@ function ProductCard({ product, theme, onAdd }: { product: Storefront["products"
           <strong className="text-xl">${Number(product.discount_price || product.price).toFixed(2)}</strong>
           {product.discount_price && <span className="text-xs text-slate-400 line-through">${Number(product.price).toFixed(2)}</span>}
         </div>
-        <button disabled={product.stock < 1} onClick={onAdd} className="mt-4 w-full px-3 py-2 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40" style={{ backgroundColor: theme.primary_color, borderRadius: "var(--store-radius)" }}>{product.stock > 0 ? "Add to cart" : "Out of stock"}</button>
+        <button disabled={product.stock < 1 || !product.is_available_now} onClick={onAdd} className="mt-4 w-full px-3 py-2 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40" style={{ backgroundColor: theme.primary_color, borderRadius: "var(--store-radius)" }}>{product.is_available_now && product.stock > 0 ? "Add to cart" : product.availability_status === "sold_out" ? "Sold out" : "Currently unavailable"}</button>
       </div>
     </article>
   );

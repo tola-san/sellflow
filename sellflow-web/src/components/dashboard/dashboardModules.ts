@@ -89,7 +89,7 @@ const businessSections: Record<SidebarProfile, DashboardModuleSection[]> = {
         available("menu-items", "Menu items", "Food and drink items available to customers", Package, "/dashboard/products"),
         available("menu-categories", "Menu categories", "Organize the customer-facing menu", FolderTree, "/dashboard/categories"),
         available("add-ons", "Add-ons", "Extras, sizes, and preparation options", ListPlus, "/dashboard/add-ons"),
-        planned("menu-availability", "Availability", "Schedule item and menu availability", CalendarDays),
+        available("menu-availability", "Menu availability", "Schedule item and menu availability", CalendarDays, "/dashboard/menu-availability"),
       ],
     },
     {
@@ -97,7 +97,7 @@ const businessSections: Record<SidebarProfile, DashboardModuleSection[]> = {
       label: "Restaurant operations",
       personalized: true,
       modules: [
-        planned("tables", "Tables & QR codes", "Table management and printable ordering QR codes", QrCode),
+        available("tables", "Tables & QR codes", "Table management and printable ordering QR codes", QrCode, "/dashboard/restaurant-tables"),
         planned("kitchen-orders", "Kitchen orders", "Live kitchen preparation queue", CookingPot),
         planned("reservations", "Reservations", "Customer table reservations", CalendarDays),
         planned("delivery-settings", "Delivery settings", "Pickup, delivery zones, and fees", Truck),

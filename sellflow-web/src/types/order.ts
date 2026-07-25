@@ -27,6 +27,8 @@ export interface Order {
   payment_method: "cash" | "bakong";
   payment_status: PaymentStatus;
   status: OrderStatus;
+  order_type: "delivery" | "dine_in";
+  restaurant_table: { id: number; name: string; area: string | null } | null;
   items_count: number;
   items?: OrderItem[];
   created_at: string;

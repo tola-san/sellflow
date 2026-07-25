@@ -5,6 +5,7 @@ namespace App\Services\Storefront;
 use App\Models\Business;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\RestaurantTable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +20,23 @@ class CheckoutService
                 ->where('is_active', true)
                 ->firstOrFail();
 
+            $restaurantTable = null;
+            if (! empty($data['table_token'])) {
+                $restaurantTable = RestaurantTable::query()
+                    ->where('business_id', $business->id)
+                    ->where('qr_token', $data['table_token'])
+                    ->where('is_active', true)
+                    ->where('status', '!=', 'inactive')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $restaurantTable) {
+                    throw ValidationException::withMessages([
+                        'table_token' => ['This table ordering link is invalid or inactive.'],
+                    ]);
+                }
+            }
+
             $requested = collect($data['items']);
             $requestedSlugs = $requested->pluck('product_slug')->unique()->values();
             $products = Product::query()
@@ -30,6 +48,7 @@ class CheckoutService
                     'modifierGroups' => fn ($groups) => $groups
                         ->where('is_active', true)
                         ->with(['options' => fn ($options) => $options->where('is_active', true)]),
+                    'availabilitySchedules',
                 ])
                 ->lockForUpdate()
                 ->get()
@@ -44,6 +63,12 @@ class CheckoutService
             foreach ($requested->groupBy('product_slug') as $slug => $lines) {
                 $product = $products->get($slug);
                 $totalQuantity = $lines->sum(fn ($line) => (int) $line['quantity']);
+
+                if (! $product->isAvailableNow()) {
+                    throw ValidationException::withMessages([
+                        'items' => ["{$product->name} is not currently available."],
+                    ]);
+                }
 
                 if ($totalQuantity > $product->stock) {
                     throw ValidationException::withMessages([
@@ -77,6 +102,8 @@ class CheckoutService
             }
 
             $order = $business->orders()->create([
+                'restaurant_table_id' => $restaurantTable?->id,
+                'order_type' => $restaurantTable ? 'dine_in' : 'delivery',
                 'order_number' => $this->orderNumber(),
                 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'],
@@ -84,7 +111,9 @@ class CheckoutService
                 'telegram_chat_id' => $data['telegram_chat_id'] ?? null,
                 'telegram_username' => $data['telegram_username'] ?? null,
                 'telegram_notifications_enabled' => $data['telegram_notifications_enabled'] ?? false,
-                'delivery_address' => $data['delivery_address'],
+                'delivery_address' => $restaurantTable
+                    ? 'Dine-in · '.$restaurantTable->name
+                    : $data['delivery_address'],
                 'city' => $data['city'] ?? null,
                 'notes' => $data['notes'] ?? null,
                 'subtotal' => $this->money($subtotalCents),
@@ -96,7 +125,11 @@ class CheckoutService
 
             $order->items()->createMany($items);
 
-            return $order->load('items');
+            if ($restaurantTable) {
+                $restaurantTable->update(['status' => 'occupied']);
+            }
+
+            return $order->load(['items', 'restaurantTable']);
         });
     }
 

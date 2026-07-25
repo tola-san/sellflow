@@ -221,7 +221,10 @@ class TelegramNotificationService
             '<blockquote><b>Customer</b>',
             $this->escapeHtml($order->customer_name),
             '📞 '.$this->escapeHtml($order->customer_phone),
-            '📍 '.$this->escapeHtml($order->delivery_address).'</blockquote>',
+            ($order->restaurantTable
+                ? '🍽 '.$this->escapeHtml($order->restaurantTable->name)
+                    .($order->restaurantTable->area ? ' · '.$this->escapeHtml($order->restaurantTable->area) : '')
+                : '📍 '.$this->escapeHtml($order->delivery_address)).'</blockquote>',
             '',
             '<b>Order items</b>',
             ...$items,

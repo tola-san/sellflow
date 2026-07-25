@@ -30,6 +30,7 @@ class OrderService
     public function paginate(Business $business, array $filters): LengthAwarePaginator
     {
         return $this->filteredQuery($business, $filters)
+            ->with('restaurantTable')
             ->withCount('items')
             ->latest()
             ->paginate(min((int) ($filters['per_page'] ?? 15), 50));
@@ -58,7 +59,7 @@ class OrderService
 
     public function show(Order $order): Order
     {
-        return $order->load('items');
+        return $order->load(['items', 'restaurantTable']);
     }
 
     public function updateStatus(Order $order, string $nextStatus): Order
@@ -66,7 +67,16 @@ class OrderService
         $this->validateTransition('status', $order->status, $nextStatus, self::STATUS_TRANSITIONS);
         $changed = $order->status !== $nextStatus;
         $order->update(['status' => $nextStatus]);
-        $updated = $order->fresh()->load('items');
+        if ($order->restaurant_table_id && in_array($nextStatus, ['completed', 'cancelled'], true)) {
+            $hasOtherActiveOrders = $order->restaurantTable->orders()
+                ->whereKeyNot($order->id)
+                ->whereNotIn('status', ['completed', 'cancelled'])
+                ->exists();
+            if (! $hasOtherActiveOrders) {
+                $order->restaurantTable->update(['status' => 'available']);
+            }
+        }
+        $updated = $order->fresh()->load(['items', 'restaurantTable']);
 
         if ($changed) {
             $this->notifications->orderStatusChanged($updated);
@@ -80,7 +90,7 @@ class OrderService
         $this->validateTransition('payment_status', $order->payment_status, $nextStatus, self::PAYMENT_TRANSITIONS);
         $changed = $order->payment_status !== $nextStatus;
         $order->update(['payment_status' => $nextStatus]);
-        $updated = $order->fresh()->load('items');
+        $updated = $order->fresh()->load(['items', 'restaurantTable']);
 
         if ($changed) {
             $this->notifications->paymentStatusChanged($updated);

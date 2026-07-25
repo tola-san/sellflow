@@ -22,6 +22,8 @@ import { TelegramMiniAppLayout } from "./components/telegram/TelegramMiniAppLayo
 import { TelegramStoreEntryPage } from "./pages/TelegramStoreEntryPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { AddOnsPage } from "./pages/AddOnsPage";
+import { MenuAvailabilityPage } from "./pages/MenuAvailabilityPage";
+import { RestaurantTablesPage } from "./pages/RestaurantTablesPage";
 import { useTelegramMiniApp } from "./components/telegram/TelegramMiniAppContext";
 
 const OrdersPage = lazy(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
@@ -58,6 +60,8 @@ export function App() {
                                 <Route path="categories" element={<CategoriesPage />} />
                                 <Route path="products" element={<ProductsPage />} />
                                 <Route path="add-ons" element={<AddOnsPage />} />
+                                <Route path="menu-availability" element={<MenuAvailabilityPage />} />
+                                <Route path="restaurant-tables" element={<RestaurantTablesPage />} />
                                 <Route path="theme" element={<ThemePage />} />
                                 <Route path="orders" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading orders...</div>}><OrdersPage /></Suspense>} />
                                 <Route path="notifications" element={<TelegramNotificationsPage />} />

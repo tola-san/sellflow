@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Storefront\PublicBusinessResource;
 use App\Http\Resources\Storefront\PublicCategoryResource;
 use App\Http\Resources\Storefront\PublicProductResource;
+use App\Models\Business;
+use App\Models\RestaurantTable;
 use App\Services\Storefront\StorefrontService;
 use Illuminate\Http\JsonResponse;
 
@@ -39,6 +41,31 @@ class StorefrontController extends Controller
             'data' => [
                 'business' => new PublicBusinessResource($business),
                 'product' => new PublicProductResource($product),
+            ],
+        ]);
+    }
+
+    public function table(string $slug, string $token): JsonResponse
+    {
+        $business = Business::query()
+            ->where('slug', $slug)
+            ->where('business_type', 'food_beverage')
+            ->where('is_active', true)
+            ->firstOrFail();
+        $table = RestaurantTable::query()
+            ->where('business_id', $business->id)
+            ->where('qr_token', $token)
+            ->where('is_active', true)
+            ->where('status', '!=', 'inactive')
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'name' => $table->name,
+                'area' => $table->area,
+                'capacity' => $table->capacity,
+                'token' => $table->qr_token,
             ],
         ]);
     }

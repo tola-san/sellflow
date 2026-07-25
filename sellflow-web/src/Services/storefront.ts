@@ -37,6 +37,15 @@ export interface PublicProduct {
   is_featured: boolean;
   category: PublicCategory;
   modifier_groups: PublicModifierGroup[];
+  availability_status: "always" | "scheduled" | "sold_out" | "hidden";
+  is_available_now: boolean;
+}
+
+export interface PublicRestaurantTable {
+  name: string;
+  area: string | null;
+  capacity: number;
+  token: string;
 }
 
 export interface PublicBusiness {
@@ -79,6 +88,13 @@ export const storefrontService = {
   async getProduct(slug: string, productSlug: string): Promise<StorefrontProductDetail> {
     const response = await api.get<{ success: boolean; data: StorefrontProductDetail }>(
       `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(productSlug)}`,
+    );
+    return response.data.data;
+  },
+
+  async getTable(slug: string, token: string): Promise<PublicRestaurantTable> {
+    const response = await api.get<{ success: boolean; data: PublicRestaurantTable }>(
+      `/store/${encodeURIComponent(slug)}/tables/${encodeURIComponent(token)}`,
     );
     return response.data.data;
   },

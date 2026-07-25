@@ -15,6 +15,7 @@ class StorefrontService
             ->with([
                 'categories' => fn ($query) => $query
                     ->where('is_active', true)
+                    ->where('availability_status', '!=', 'hidden')
                     ->orderBy('sort_order')
                     ->orderBy('name'),
                 'products' => fn ($query) => $query
@@ -27,6 +28,7 @@ class StorefrontService
                         'modifierGroups' => fn ($groups) => $groups
                             ->where('is_active', true)
                             ->with(['options' => fn ($options) => $options->where('is_active', true)]),
+                        'availabilitySchedules',
                     ])
                     ->orderByDesc('is_featured')
                     ->latest(),
@@ -39,6 +41,7 @@ class StorefrontService
         $business = Business::query()
             ->where('slug', $businessSlug)
             ->where('is_active', true)
+            ->where('availability_status', '!=', 'hidden')
             ->firstOrFail();
 
         $product = Product::query()
@@ -53,6 +56,7 @@ class StorefrontService
                 'modifierGroups' => fn ($groups) => $groups
                     ->where('is_active', true)
                     ->with(['options' => fn ($options) => $options->where('is_active', true)]),
+                'availabilitySchedules',
             ])
             ->firstOrFail();
 
