@@ -1,4 +1,4 @@
-export type OrderStatus = "pending" | "confirmed" | "preparing" | "completed" | "cancelled";
+export type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "completed" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
 export interface OrderItem {
@@ -40,6 +40,7 @@ export interface OrderSummary {
   pending: number;
   confirmed: number;
   preparing: number;
+  ready: number;
   completed: number;
   paid_revenue: string;
 }

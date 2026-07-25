@@ -22,10 +22,12 @@ import {
   XCircle,
   AlertCircle,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  BellRing
 } from "lucide-react";
 import { orderService } from "../Services/order";
 import { EmptyState, ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../components/dashboard/DashboardUI";
+import { useAuth } from "../components/Auth/AuthContext";
 import { useToast } from "../components/ui/ToastContext";
 import type { Order, OrderListResponse, OrderStatus, PaymentStatus } from "../types/order";
 
@@ -35,6 +37,7 @@ const emptySummary: OrderListResponse["summary"] = {
   pending: 0,
   confirmed: 0,
   preparing: 0,
+  ready: 0,
   completed: 0,
   paid_revenue: "0.00"
 };
@@ -47,12 +50,12 @@ const emptyMeta = {
 };
 
 // Status transition maps
-const nextStatuses: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["preparing", "cancelled"],
-  preparing: ["completed", "cancelled"],
-  completed: [],
-  cancelled: []
+const nextStatuses = (status: OrderStatus, supportsReady: boolean): OrderStatus[] => {
+  if (status === "pending") return ["confirmed", "cancelled"];
+  if (status === "confirmed") return ["preparing", "cancelled"];
+  if (status === "preparing") return supportsReady ? ["ready", "cancelled"] : ["completed", "cancelled"];
+  if (status === "ready") return ["completed", "cancelled"];
+  return [];
 };
 
 const nextPayments: Record<PaymentStatus, PaymentStatus[]> = {
@@ -77,6 +80,8 @@ export function OrdersPage() {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const supportsReady = user?.business?.business_type === "food_beverage";
 
   // Load orders with filters and pagination
   const load = useCallback(async () => {
@@ -179,7 +184,7 @@ export function OrdersPage() {
         <ErrorMessage error={error} />
 
         {/* Statistics cards */}
-        <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <div className={`mb-8 grid grid-cols-2 gap-4 ${supportsReady ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}>
           <Stat
             label="All orders"
             value={summary.total}
@@ -204,6 +209,14 @@ export function OrdersPage() {
             icon={<Truck size={20} />}
             tone="purple"
           />
+          {supportsReady && (
+            <Stat
+              label="Ready"
+              value={summary.ready}
+              icon={<BellRing size={20} />}
+              tone="cyan"
+            />
+          )}
           <Stat
             label="Paid revenue"
             value={`$${Number(summary.paid_revenue).toFixed(2)}`}
@@ -240,7 +253,7 @@ export function OrdersPage() {
             }}
           >
             <option value="">All order statuses</option>
-            {["pending", "confirmed", "preparing", "completed", "cancelled"].map(
+            {["pending", "confirmed", "preparing", ...(supportsReady ? ["ready"] : []), "completed", "cancelled"].map(
               (item) => (
                 <option key={item} value={item}>
                   {titleCase(item)}
@@ -431,6 +444,7 @@ export function OrdersPage() {
             close={() => setSelected(null)}
             onStatus={changeStatus}
             onPayment={changePayment}
+            supportsReady={supportsReady}
           />
         )}
       </div>
@@ -448,7 +462,8 @@ function OrderDrawer({
   updating,
   close,
   onStatus,
-  onPayment
+  onPayment,
+  supportsReady
 }: {
   order: Order;
   loading: boolean;
@@ -456,6 +471,7 @@ function OrderDrawer({
   close: () => void;
   onStatus: (value: OrderStatus) => void;
   onPayment: (value: PaymentStatus) => void;
+  supportsReady: boolean;
 }) {
   return (
     <>
@@ -491,8 +507,8 @@ function OrderDrawer({
               <Control
                 label="Fulfillment status"
                 value={order.status}
-                disabled={updating || !nextStatuses[order.status].length}
-                options={[order.status, ...nextStatuses[order.status]]}
+                disabled={updating || !nextStatuses(order.status, supportsReady).length}
+                options={[order.status, ...nextStatuses(order.status, supportsReady)]}
                 onChange={(value) => onStatus(value as OrderStatus)}
               />
               <Control
@@ -619,6 +635,7 @@ function Stat({
     amber: { bg: "bg-amber-50", icon: "text-amber-600", border: "border-amber-200" },
     blue: { bg: "bg-blue-50", icon: "text-blue-600", border: "border-blue-200" },
     purple: { bg: "bg-purple-50", icon: "text-purple-600", border: "border-purple-200" },
+    cyan: { bg: "bg-cyan-50", icon: "text-cyan-600", border: "border-cyan-200" },
     emerald: { bg: "bg-emerald-50", icon: "text-emerald-600", border: "border-emerald-200" }
   };
 
@@ -660,6 +677,11 @@ function StatusBadge({ value }: { value: string }) {
       bg: "bg-purple-50", 
       text: "text-purple-700",
       icon: <Truck size={12} className="text-purple-500" />
+    },
+    ready: {
+      bg: "bg-cyan-50",
+      text: "text-cyan-700",
+      icon: <BellRing size={12} className="text-cyan-500" />
     },
     completed: { 
       bg: "bg-emerald-50", 

@@ -33,6 +33,7 @@ import {
   Menu,
   X,
   ChevronRight,
+  BellRing,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { dashboardService, type DashboardOverview } from "../Services/dashboard";
@@ -45,6 +46,7 @@ const emptySummary: OrderListResponse["summary"] = {
   pending: 0,
   confirmed: 0,
   preparing: 0,
+  ready: 0,
   completed: 0,
   paid_revenue: "0",
 };
@@ -56,6 +58,7 @@ const orderTone: Record<string, string> = {
   pending: "bg-amber-50 text-amber-700 ring-amber-600/10",
   confirmed: "bg-blue-50 text-blue-700 ring-blue-600/10",
   preparing: "bg-violet-50 text-violet-700 ring-violet-600/10",
+  ready: "bg-cyan-50 text-cyan-700 ring-cyan-600/10",
   completed: "bg-emerald-50 text-emerald-700 ring-emerald-600/10",
   cancelled: "bg-rose-50 text-rose-700 ring-rose-600/10",
 };
@@ -167,6 +170,7 @@ function DonutChart({ orders }: { orders: Order[] }) {
       pending: { count: 0, color: '#f59e0b', label: 'Pending', icon: Clock },
       confirmed: { count: 0, color: '#3b82f6', label: 'Confirmed', icon: CheckCircle2 },
       preparing: { count: 0, color: '#8b5cf6', label: 'Preparing', icon: Package },
+      ready: { count: 0, color: '#06b6d4', label: 'Ready', icon: BellRing },
       completed: { count: 0, color: '#10b981', label: 'Completed', icon: Award },
       cancelled: { count: 0, color: '#ef4444', label: 'Cancelled', icon: XCircle },
     };

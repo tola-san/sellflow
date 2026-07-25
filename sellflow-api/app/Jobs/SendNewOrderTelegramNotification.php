@@ -23,7 +23,7 @@ class SendNewOrderTelegramNotification implements ShouldQueue
     public function handle(TelegramNotificationService $telegram): void
     {
         $order = Order::query()
-            ->with(['business.notificationSetting', 'items'])
+            ->with(['business.notificationSetting', 'items', 'restaurantTable'])
             ->find($this->orderId);
 
         if (! $order) {

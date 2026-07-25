@@ -4,6 +4,7 @@ namespace App\Services\Order;
 
 use App\Models\Order;
 use App\Services\TelegramNotificationService;
+use App\Support\OrderStatusWorkflow;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -141,13 +142,23 @@ class OrderTelegramNotificationService
             'pending' => 'Your order is pending review.',
             'confirmed' => 'The seller confirmed your order.',
             'preparing' => 'Your order is being prepared.',
+            'ready' => 'Your order is ready for pickup or serving.',
             'completed' => 'Your order is complete. Thank you!',
             'cancelled' => 'Your order was cancelled. Please contact the store if you need help.',
         ];
 
+        $timelineStatuses = OrderStatusWorkflow::supportsReady($order)
+            ? ['confirmed', 'preparing', 'ready', 'completed']
+            : ['confirmed', 'preparing', 'completed'];
+        $timeline = collect($timelineStatuses)
+            ->map(fn (string $status): string => ($status === $order->status ? '&#9654; ' : '')
+                .$this->escape(ucfirst($status)))
+            ->implode('  &#8250;  ');
+
         return "<b>Order update</b>\n\n"
             .'Order <code>'.$this->escape($order->order_number).'</code> - '.$this->escape($order->business->name)."\n"
-            .$this->escape($statuses[$order->status] ?? 'Your order status was updated.');
+            .$this->escape($statuses[$order->status] ?? 'Your order status was updated.')."\n\n"
+            .'<b>Status</b>: '.$timeline;
     }
 
     private function storeButton(Order $order): array

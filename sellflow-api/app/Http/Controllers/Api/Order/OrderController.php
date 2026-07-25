@@ -8,6 +8,7 @@ use App\Http\Requests\Order\UpdatePaymentStatusRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\Order\OrderService;
+use App\Support\OrderStatusWorkflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,7 +21,7 @@ class OrderController extends Controller
     {
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', Rule::in(['pending', 'confirmed', 'preparing', 'completed', 'cancelled'])],
+            'status' => ['nullable', Rule::in(OrderStatusWorkflow::STATUSES)],
             'payment_status' => ['nullable', Rule::in(['pending', 'paid', 'failed', 'refunded'])],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
             'page' => ['nullable', 'integer', 'min:1'],
@@ -74,7 +75,7 @@ class OrderController extends Controller
 
     private function emptySummary(): array
     {
-        return ['total' => 0, 'pending' => 0, 'confirmed' => 0, 'preparing' => 0, 'completed' => 0, 'paid_revenue' => '0.00'];
+        return ['total' => 0, 'pending' => 0, 'confirmed' => 0, 'preparing' => 0, 'ready' => 0, 'completed' => 0, 'paid_revenue' => '0.00'];
     }
 
     private function emptyMeta(): array
