@@ -7,7 +7,7 @@ import { ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../componen
 import { useToast } from "../components/ui/ToastContext";
 import type { Business } from "../types/business";
 import { THEME_PRESETS, type ThemeSettings } from "../types/theme";
-import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, type CustomerThemeId } from "../theme/customerThemes";
+import { CUSTOMER_THEMES, CUSTOMER_THEME_DESCRIPTIONS, CUSTOMER_THEME_LABELS, findCustomerTheme, KHMER_THEME_IDS, type CustomerThemeId } from "../theme/customerThemes";
 import { DASHBOARD_THEMES, getDashboardThemeId, saveDashboardTheme, type DashboardThemeId } from "../theme/dashboardThemes";
 import { withHexOpacity } from "../lib/color";
 
@@ -96,19 +96,35 @@ export function ThemePage() {
           </Panel>
 
           <Panel title="Theme gallery" description="Choose a ready-made theme, then customize every detail below before publishing.">
+            <div className="mb-4 overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-[#351A12] via-[#713D25] to-[#23345B] p-[1px]">
+              <div className="flex flex-col gap-3 rounded-[15px] bg-[#fffaf0] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-700">Khmer collection · New</p>
+                  <p className="mt-1 text-sm font-semibold text-stone-900">Two themes inspired by Cambodian stonework and handwoven krama.</p>
+                </div>
+                <div className="flex -space-x-1" aria-hidden="true">
+                  <span className="h-8 w-8 rounded-full border-2 border-[#fffaf0] bg-[#C88A2A]"/>
+                  <span className="h-8 w-8 rounded-full border-2 border-[#fffaf0] bg-[#A73832]"/>
+                  <span className="h-8 w-8 rounded-full border-2 border-[#fffaf0] bg-[#23345B]"/>
+                </div>
+              </div>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {(Object.keys(CUSTOMER_THEMES) as CustomerThemeId[]).map((template) => {
                 const item = CUSTOMER_THEMES[template];
                 const active = selectedTemplate === template;
                 return <button key={template} type="button" onClick={() => selectTemplate(template)} className={`group relative overflow-hidden rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${active ? "border-purple-500 ring-2 ring-purple-100" : "border-slate-200 hover:border-slate-300"}`}>
                   {active && <span className="absolute right-2 top-2 z-10 grid h-6 w-6 place-items-center rounded-full bg-purple-600 text-white shadow"><Check size={14}/></span>}
-                  <span className="relative flex h-20 overflow-hidden rounded-lg border border-black/5" style={{ background: `linear-gradient(135deg, ${item.background_color}, ${item.primary_color}45)` }}>
+                  <span className={`relative flex h-20 overflow-hidden rounded-lg border border-black/5 ${KHMER_THEME_IDS.includes(template as (typeof KHMER_THEME_IDS)[number]) ? `khmer-theme-card khmer-theme-card--${template}` : ""}`} style={{ background: `linear-gradient(135deg, ${item.background_color}, ${item.primary_color}45)` }}>
                     <span className="m-auto h-10 w-16 rounded-lg" style={{ backgroundColor: item.surface_color, boxShadow: item.card_style === "elevated" ? "0 8px 20px #0003" : "none", border: item.card_style === "bordered" ? `1px solid ${item.muted_color}55` : "none" }}>
                       <span className="mx-auto mt-3 block h-2 w-9 rounded-full" style={{ backgroundColor: item.primary_color }}/>
                     </span>
                   </span>
                   <span className="mt-3 flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold">{CUSTOMER_THEME_LABELS[template]}</span>
+                    <span>
+                      <span className="block text-sm font-semibold">{CUSTOMER_THEME_LABELS[template]}</span>
+                      {CUSTOMER_THEME_DESCRIPTIONS[template] && <span className="mt-1 block text-[10px] leading-4 text-slate-500">{CUSTOMER_THEME_DESCRIPTIONS[template]}</span>}
+                    </span>
                     <span className="flex gap-1" aria-hidden="true">
                       {[item.primary_color, item.secondary_color, item.surface_color].map((color) => <span key={color} className="h-3 w-3 rounded-full border border-black/10" style={{ backgroundColor: color }}/>) }
                     </span>
@@ -158,7 +174,7 @@ export function ThemePage() {
               <PreviewButton active={previewMode === "mobile"} onClick={() => setPreviewMode("mobile")} label="Mobile"><Smartphone size={15}/></PreviewButton>
             </div>
           </div>
-          <StorePreview business={business} theme={theme} mobile={previewMode === "mobile"}/>
+          <StorePreview business={business} theme={theme} mobile={previewMode === "mobile"} template={selectedTemplate}/>
         </div>
       </div>
     </>
@@ -166,10 +182,7 @@ export function ThemePage() {
 }
 
 function findMatchingTemplate(theme: ThemeSettings): CustomerThemeId | null {
-  const keys = Object.keys(theme) as Array<keyof ThemeSettings>;
-  return (Object.keys(CUSTOMER_THEMES) as CustomerThemeId[]).find((template) =>
-    keys.every((key) => CUSTOMER_THEMES[template][key] === theme[key])
-  ) ?? null;
+  return findCustomerTheme(theme);
 }
 
 function Panel({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
@@ -188,7 +201,7 @@ function PreviewButton({ active, onClick, label, children }: { active: boolean; 
   return <button type="button" onClick={onClick} aria-label={label} className={`rounded-md p-1.5 ${active ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-700"}`}>{children}</button>;
 }
 
-function StorePreview({ business, theme, mobile }: { business: Business; theme: ThemeSettings; mobile: boolean }) {
+function StorePreview({ business, theme, mobile, template }: { business: Business; theme: ThemeSettings; mobile: boolean; template: CustomerThemeId | null }) {
   const radius = theme.button_style === "pill" ? "999px" : theme.button_style === "square" ? "4px" : "12px";
   const cardShadow = theme.card_style === "elevated" ? "0 12px 28px rgba(15,23,42,.12)" : "none";
   const cardBorder = theme.card_style === "bordered" ? `1px solid ${theme.muted_color}45` : "1px solid transparent";
@@ -206,9 +219,11 @@ function StorePreview({ business, theme, mobile }: { business: Business; theme: 
         : theme.background_color;
   return <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-200 p-2 shadow-sm"><div className={`mx-auto overflow-hidden bg-white transition-all duration-300 ${mobile ? "max-w-[320px] rounded-[1.5rem]" : "w-full rounded-xl"}`} style={{ fontFamily: font, color: theme.text_color }}>
     <div className="flex h-12 items-center gap-2 border-b px-4" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>{business.logo ? <img src={business.logo} alt="" className="h-7 w-7 rounded-lg object-cover" /> : <span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ backgroundColor: theme.primary_color }}><Store size={14}/></span>}<strong className="text-xs">{business.name}</strong><span className="ml-auto h-7 w-16" style={{ borderRadius: radius, backgroundColor: `${theme.primary_color}18` }}/></div>
-    <div className="px-5 py-9" style={{ background: previewHeroBackground, color: theme.hero_style === "minimal" && !previewHasBanner ? theme.text_color : "white" }}><p className="text-[9px] font-bold uppercase tracking-widest opacity-75">Welcome to</p><h3 className="mt-1 text-xl font-bold">{business.name}</h3><p className="mt-2 max-w-xs text-[10px] opacity-75">Discover our latest products and collections.</p>{(business.facebook_url || business.instagram_url || business.telegram_url || business.tiktok_url) && <div className="mt-3 flex gap-1.5 text-[10px]"><PreviewSocial show={Boolean(business.facebook_url)}><FaFacebookF /></PreviewSocial><PreviewSocial show={Boolean(business.instagram_url)}><FaInstagram /></PreviewSocial><PreviewSocial show={Boolean(business.telegram_url)}><FaTelegramPlane /></PreviewSocial><PreviewSocial show={Boolean(business.tiktok_url)}><FaTiktok /></PreviewSocial></div>}</div>
+    <div className={`relative overflow-hidden px-5 py-9 ${template === "angkor" || template === "krama" ? `khmer-hero khmer-hero--${template}` : ""}`} style={{ background: previewHeroBackground, color: theme.hero_style === "minimal" && !previewHasBanner ? theme.text_color : "white" }}><div className="relative z-10"><p className="text-[9px] font-bold uppercase tracking-widest opacity-75">Welcome to</p><h3 className="mt-1 text-xl font-bold">{business.name}</h3><p className="mt-2 max-w-xs text-[10px] opacity-75">Discover our latest products and collections.</p>{(business.facebook_url || business.instagram_url || business.telegram_url || business.tiktok_url) && <div className="mt-3 flex gap-1.5 text-[10px]"><PreviewSocial show={Boolean(business.facebook_url)}><FaFacebookF /></PreviewSocial><PreviewSocial show={Boolean(business.instagram_url)}><FaInstagram /></PreviewSocial><PreviewSocial show={Boolean(business.telegram_url)}><FaTelegramPlane /></PreviewSocial><PreviewSocial show={Boolean(business.tiktok_url)}><FaTiktok /></PreviewSocial></div>}</div></div>
     <div className="flex gap-2 overflow-hidden border-b p-3" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}><span className="px-3 py-1.5 text-[9px] font-semibold text-white" style={{ borderRadius: radius, backgroundColor: theme.primary_color }}>All products</span>{["Featured","New"].map((item)=><span key={item} className="border px-3 py-1.5 text-[9px]" style={{ borderRadius: radius, borderColor: `${theme.muted_color}45` }}>{item}</span>)}</div>
-    <div className={`grid gap-3 p-4 ${mobile ? "grid-cols-2" : theme.grid_columns === 2 ? "grid-cols-2" : theme.grid_columns === 3 ? "grid-cols-3" : "grid-cols-4"}`} style={{ backgroundColor: theme.background_color }}>{[0,1,2,3].slice(0, mobile ? 4 : theme.grid_columns).map((item)=><div key={item} className="overflow-hidden" style={{ borderRadius: theme.button_style === "square" ? "6px" : "14px", backgroundColor: theme.surface_color, boxShadow: cardShadow, border: cardBorder }}><div className="aspect-square" style={{ background: `linear-gradient(135deg, ${theme.primary_color}20, ${theme.secondary_color}30)` }}/><div className="p-2"><p className="text-[8px] font-bold" style={{ color: theme.primary_color }}>CATEGORY</p><div className="mt-1 h-2 w-3/4 rounded bg-current opacity-70"/><div className="mt-2 h-2 w-1/3 rounded" style={{ backgroundColor: theme.primary_color }}/></div></div>)}</div>
+    <div className={`relative grid gap-3 overflow-hidden p-4 ${template === "angkor" || template === "krama" ? `khmer-body-preview khmer-body-preview--${template}` : ""} ${mobile ? "grid-cols-2" : theme.grid_columns === 2 ? "grid-cols-2" : theme.grid_columns === 3 ? "grid-cols-3" : "grid-cols-4"}`} style={{ backgroundColor: theme.background_color }}>
+      {[0,1,2,3].slice(0, mobile ? 4 : theme.grid_columns).map((item)=><div key={item} className="relative z-10 overflow-hidden" style={{ borderRadius: theme.button_style === "square" ? "6px" : "14px", backgroundColor: theme.surface_color, boxShadow: cardShadow, border: cardBorder }}><div className="aspect-square" style={{ background: `linear-gradient(135deg, ${theme.primary_color}20, ${theme.secondary_color}30)` }}/><div className="p-2"><p className="text-[8px] font-bold" style={{ color: theme.primary_color }}>CATEGORY</p><div className="mt-1 h-2 w-3/4 rounded bg-current opacity-70"/><div className="mt-2 h-2 w-1/3 rounded" style={{ backgroundColor: theme.primary_color }}/></div></div>)}
+    </div>
   </div></div>;
 }
 

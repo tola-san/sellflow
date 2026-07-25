@@ -240,27 +240,36 @@ export function DashboardLayout() {
         )}
       </div>
 
-      <nav className={`flex-1 space-y-5 overflow-y-auto ${isCollapsed ? "p-2.5" : "p-4"}`}>
+      <nav
+        aria-label="Dashboard navigation"
+        className={`dashboard-sidebar-scrollbar flex-1 overflow-y-auto ${
+          isCollapsed ? "space-y-3 p-2.5" : "space-y-4 px-3 py-4"
+        }`}
+      >
         {moduleSections.map((section) => (
           <div key={section.key}>
             {isCollapsed ? (
-              <div className="mx-2 mb-2 border-t border-slate-200" />
+              <div className="mx-2 mb-1.5 border-t border-slate-200" />
             ) : (
-              <div className="mb-1.5 flex items-center justify-between px-3">
-                <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
+              <div className="mb-1 flex min-h-6 items-center justify-between gap-2 px-2.5">
+                <p className={`min-w-0 truncate whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.14em] ${
                   section.personalized ? "text-purple-600" : "text-slate-400"
                 }`}>
                   {section.label}
                 </p>
                 {section.personalized && (
-                  <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-bold uppercase text-purple-700">
-                    Your type
+                  <span
+                    className="flex shrink-0 items-center gap-1.5 text-[9px] font-semibold text-purple-600"
+                    title="Modules tailored to your business type"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                    Tailored
                   </span>
                 )}
               </div>
             )}
 
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {section.modules.map((module) => {
                 const Icon = module.icon;
 
@@ -269,16 +278,17 @@ export function DashboardLayout() {
                     <div
                       key={module.key}
                       title={`${module.description} — planned module`}
-                      className={`flex cursor-not-allowed items-center rounded-xl py-2.5 text-sm text-slate-400 ${
+                      aria-disabled="true"
+                      className={`flex cursor-not-allowed items-center rounded-lg py-2 text-[13px] text-slate-400 ${
                         isCollapsed ? "justify-center px-2" : "justify-between px-3"
                       }`}
                     >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <Icon size={18} className="shrink-0" />
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <Icon size={17} strokeWidth={1.8} className="shrink-0" />
                         {!isCollapsed && <span className="truncate">{module.label}</span>}
                       </div>
                       {!isCollapsed && (
-                        <span className="ml-2 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-slate-400">
+                        <span className="ml-2 shrink-0 text-[9px] font-semibold uppercase tracking-wide text-slate-400">
                           Soon
                         </span>
                       )}
@@ -294,19 +304,19 @@ export function DashboardLayout() {
                     title={module.description}
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center rounded-xl py-2.5 text-sm font-medium transition ${
+                      `flex items-center rounded-lg py-2 text-[13px] font-medium transition-colors ${
                         isActive
-                          ? "bg-purple-50 text-purple-700"
+                          ? "bg-purple-50 text-purple-700 shadow-[inset_3px_0_0_var(--dashboard-accent)]"
                           : "text-slate-600 hover:bg-slate-100"
                       } ${isCollapsed ? "justify-center px-2" : "justify-between px-3"}`
                     }
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Icon size={18} className="shrink-0" />
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <Icon size={17} strokeWidth={1.8} className="shrink-0" />
                       {!isCollapsed && <span className="truncate">{module.label}</span>}
                     </div>
                     {!isCollapsed && module.badge && (
-                      <span className="ml-2 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-emerald-600">
+                      <span className="ml-2 shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-emerald-600">
                         {module.badge}
                       </span>
                     )}
@@ -339,7 +349,7 @@ export function DashboardLayout() {
   return (
     <div className="dashboard-theme min-h-screen bg-slate-50 text-slate-900" data-dashboard-theme={dashboardTheme} style={dashboardThemeVariables(DASHBOARD_THEMES[dashboardTheme])}>
       <aside className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-slate-200 bg-white transition-[width] duration-200 lg:flex ${
-        collapsed ? "w-[76px]" : "w-[260px]"
+        collapsed ? "w-[76px]" : "w-[272px]"
       }`}>
         {sidebar(collapsed)}
       </aside>
@@ -357,7 +367,7 @@ export function DashboardLayout() {
         </>
       )}
 
-      <div className={`transition-[padding] duration-200 ${collapsed ? "lg:pl-[76px]" : "lg:pl-[260px]"}`}>
+      <div className={`transition-[padding] duration-200 ${collapsed ? "lg:pl-[76px]" : "lg:pl-[272px]"}`}>
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
           <div className="flex items-center">
             <button
