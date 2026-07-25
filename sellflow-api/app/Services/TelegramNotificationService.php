@@ -7,6 +7,7 @@ use App\Models\BusinessNotificationSetting;
 use App\Models\BusinessTelegramDestination;
 use App\Models\Order;
 use App\Models\TelegramConnectionCode;
+use App\Support\OrderStatusWorkflow;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -186,7 +187,7 @@ class TelegramNotificationService
 
     public function sendNewOrder(Order $order): void
     {
-        $order->loadMissing(['business.notificationSetting', 'items']);
+        $order->loadMissing(['business.notificationSetting', 'items', 'restaurantTable']);
         $destination = $order->business?->telegramDestinations()->where('purpose', 'staff_group')->where('is_active', true)->first();
         $settings = $order->business?->notificationSetting;
 
@@ -214,8 +215,11 @@ class TelegramNotificationService
             $items[] = '• +'.($order->items->count() - 10).' more item(s)';
         }
 
+        $messageTitle = $order->business->business_type === 'food_beverage'
+            ? 'New restaurant order'
+            : 'New order received';
         $message = implode("\n", [
-            '🛍 <b>New order received</b>',
+            '🛍 <b>'.$messageTitle.'</b>',
             '<code>#'.$this->escapeHtml($order->order_number).'</code> · '.$this->escapeHtml($order->business->name),
             '',
             '<blockquote><b>Customer</b>',
@@ -233,7 +237,10 @@ class TelegramNotificationService
             '💳 '.$this->escapeHtml(Str::headline($order->payment_method)).' · '.$this->escapeHtml(Str::headline($order->status)),
         ]);
 
-        $this->sendMessage($chatId, $message, 'HTML');
+        $this->sendMessage($chatId, $message, [
+            'parse_mode' => 'HTML',
+            'reply_markup' => $this->staffOrderReplyMarkup($order),
+        ]);
     }
 
     public function disconnect(Business $business, ?string $purpose = null): BusinessNotificationSetting
@@ -275,6 +282,50 @@ class TelegramNotificationService
 
         Http::asJson()->timeout(10)->retry(2, 300)
             ->post("https://api.telegram.org/bot{$token}/sendMessage", $payload)
+            ->throw();
+    }
+
+    public function answerCallbackQuery(string $callbackQueryId, string $text, bool $showAlert = false): void
+    {
+        $this->telegramRequest('answerCallbackQuery', [
+            'callback_query_id' => $callbackQueryId,
+            'text' => $text,
+            'show_alert' => $showAlert,
+        ]);
+    }
+
+    public function clearInlineKeyboard(string $chatId, int $messageId): void
+    {
+        $this->telegramRequest('editMessageReplyMarkup', [
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+            'reply_markup' => ['inline_keyboard' => []],
+        ]);
+    }
+
+    public function staffOrderReplyMarkup(Order $order): array
+    {
+        $buttons = collect(OrderStatusWorkflow::next($order))
+            ->map(fn (string $status): array => [[
+                'text' => OrderStatusWorkflow::actionLabel($status),
+                'callback_data' => "sf:order:{$order->id}:{$status}",
+            ]])
+            ->values()
+            ->all();
+
+        return ['inline_keyboard' => $buttons];
+    }
+
+    private function telegramRequest(string $method, array $payload): void
+    {
+        $token = trim((string) config('services.telegram.bot_token'));
+
+        if ($token === '') {
+            throw new RuntimeException('Telegram bot is not configured. Add TELEGRAM_BOT_TOKEN to the API environment.');
+        }
+
+        Http::asJson()->timeout(10)->retry(2, 300)
+            ->post("https://api.telegram.org/bot{$token}/{$method}", $payload)
             ->throw();
     }
 

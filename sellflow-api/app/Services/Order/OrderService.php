@@ -4,21 +4,15 @@ namespace App\Services\Order;
 
 use App\Models\Business;
 use App\Models\Order;
+use App\Support\OrderStatusWorkflow;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
     public function __construct(private readonly OrderTelegramNotificationService $notifications) {}
-
-    private const STATUS_TRANSITIONS = [
-        'pending' => ['confirmed', 'cancelled'],
-        'confirmed' => ['preparing', 'cancelled'],
-        'preparing' => ['completed', 'cancelled'],
-        'completed' => [],
-        'cancelled' => [],
-    ];
 
     private const PAYMENT_TRANSITIONS = [
         'pending' => ['paid', 'failed'],
@@ -43,6 +37,7 @@ class OrderService
             ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending")
             ->selectRaw("SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed")
             ->selectRaw("SUM(CASE WHEN status = 'preparing' THEN 1 ELSE 0 END) as preparing")
+            ->selectRaw("SUM(CASE WHEN status = 'ready' THEN 1 ELSE 0 END) as ready")
             ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed")
             ->selectRaw("SUM(CASE WHEN payment_status = 'paid' THEN total ELSE 0 END) as paid_revenue")
             ->first();
@@ -52,6 +47,7 @@ class OrderService
             'pending' => (int) ($row?->pending ?? 0),
             'confirmed' => (int) ($row?->confirmed ?? 0),
             'preparing' => (int) ($row?->preparing ?? 0),
+            'ready' => (int) ($row?->ready ?? 0),
             'completed' => (int) ($row?->completed ?? 0),
             'paid_revenue' => number_format((float) ($row?->paid_revenue ?? 0), 2, '.', ''),
         ];
@@ -64,19 +60,32 @@ class OrderService
 
     public function updateStatus(Order $order, string $nextStatus): Order
     {
-        $this->validateTransition('status', $order->status, $nextStatus, self::STATUS_TRANSITIONS);
-        $changed = $order->status !== $nextStatus;
-        $order->update(['status' => $nextStatus]);
-        if ($order->restaurant_table_id && in_array($nextStatus, ['completed', 'cancelled'], true)) {
-            $hasOtherActiveOrders = $order->restaurantTable->orders()
-                ->whereKeyNot($order->id)
-                ->whereNotIn('status', ['completed', 'cancelled'])
-                ->exists();
-            if (! $hasOtherActiveOrders) {
-                $order->restaurantTable->update(['status' => 'available']);
+        [$updated, $changed] = DB::transaction(function () use ($order, $nextStatus): array {
+            $locked = Order::query()
+                ->with(['business', 'restaurantTable'])
+                ->lockForUpdate()
+                ->findOrFail($order->id);
+            $this->validateTransition(
+                'status',
+                $locked->status,
+                $nextStatus,
+                [$locked->status => OrderStatusWorkflow::next($locked)]
+            );
+            $changed = $locked->status !== $nextStatus;
+            $locked->update(['status' => $nextStatus]);
+
+            if ($locked->restaurant_table_id && in_array($nextStatus, ['completed', 'cancelled'], true)) {
+                $hasOtherActiveOrders = $locked->restaurantTable->orders()
+                    ->whereKeyNot($locked->id)
+                    ->whereNotIn('status', ['completed', 'cancelled'])
+                    ->exists();
+                if (! $hasOtherActiveOrders) {
+                    $locked->restaurantTable->update(['status' => 'available']);
+                }
             }
-        }
-        $updated = $order->fresh()->load(['items', 'restaurantTable']);
+
+            return [$locked->fresh()->load(['business', 'items', 'restaurantTable']), $changed];
+        });
 
         if ($changed) {
             $this->notifications->orderStatusChanged($updated);

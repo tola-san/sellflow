@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Business;
+use App\Models\BusinessTelegramDestination;
 use App\Models\Order;
 use App\Models\OrderTelegramLink;
 use App\Models\TelegramConnectionCode;
@@ -277,6 +278,75 @@ class TelegramNotificationApiTest extends TestCase
         ]);
         Http::assertSent(fn ($request) => $request['chat_id'] === '778899'
             && str_contains($request['text'], 'seller confirmed your order'));
+    }
+
+    public function test_restaurant_staff_can_advance_an_order_to_ready_from_telegram(): void
+    {
+        config([
+            'services.telegram.bot_token' => 'TEST_TOKEN',
+            'services.telegram.bot_username' => 'sellflow_test_bot',
+            'services.telegram.webhook_secret' => 'test-secret',
+        ]);
+        Http::fake(['https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true])]);
+        $business = $this->actingAsBusinessOwner('Telegram Restaurant');
+        $business->update(['business_type' => 'food_beverage']);
+        BusinessTelegramDestination::create([
+            'business_id' => $business->id,
+            'telegram_chat_id' => '-100123',
+            'telegram_chat_name' => 'Restaurant Staff',
+            'telegram_chat_type' => 'supergroup',
+            'purpose' => 'staff_group',
+            'is_active' => true,
+            'bot_is_admin' => true,
+            'connected_at' => now(),
+        ]);
+        $order = Order::create([
+            'business_id' => $business->id,
+            'order_number' => 'SF-TELEGRAM-ACTION',
+            'customer_name' => 'Telegram Customer',
+            'customer_phone' => '012345678',
+            'telegram_chat_id' => '778899',
+            'telegram_notifications_enabled' => true,
+            'telegram_last_notified_status' => 'pending',
+            'delivery_address' => 'Dine-in - Table A04',
+            'subtotal' => 12.50,
+            'total' => 12.50,
+            'payment_method' => 'cash',
+            'payment_status' => 'pending',
+            'status' => 'pending',
+        ]);
+
+        $press = function (string $status, int $messageId) use ($order) {
+            return $this->withHeader('X-Telegram-Bot-Api-Secret-Token', 'test-secret')
+                ->postJson('/api/v1/integrations/telegram/webhook', [
+                    'callback_query' => [
+                        'id' => "callback-{$status}",
+                        'data' => "sf:order:{$order->id}:{$status}",
+                        'from' => ['id' => 777, 'first_name' => 'Sokha'],
+                        'message' => [
+                            'message_id' => $messageId,
+                            'chat' => ['id' => -100123, 'type' => 'supergroup'],
+                        ],
+                    ],
+                ]);
+        };
+
+        $press('confirmed', 10)->assertOk();
+        $press('preparing', 11)->assertOk();
+        $press('ready', 12)->assertOk();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => 'ready',
+            'telegram_last_notified_status' => 'ready',
+        ]);
+        Http::assertSent(fn ($request) => $request['chat_id'] === '778899'
+            && str_contains($request['text'], 'ready for pickup or serving'));
+        Http::assertSent(fn ($request) => str_ends_with($request->url(), '/answerCallbackQuery')
+            && $request['callback_query_id'] === 'callback-ready');
+        Http::assertSent(fn ($request) => $request['chat_id'] === '-100123'
+            && str_contains((string) $request['text'], 'Updated by Sokha')
+            && data_get($request->data(), 'reply_markup.inline_keyboard.0.0.callback_data') === "sf:order:{$order->id}:completed");
     }
 
     public function test_website_customer_can_claim_an_order_and_receive_the_receipt_once(): void
