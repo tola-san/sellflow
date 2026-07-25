@@ -15,11 +15,11 @@ class StorefrontService
             ->with([
                 'categories' => fn ($query) => $query
                     ->where('is_active', true)
-                    ->where('availability_status', '!=', 'hidden')
                     ->orderBy('sort_order')
                     ->orderBy('name'),
                 'products' => fn ($query) => $query
                     ->where('is_active', true)
+                    ->where('availability_status', '!=', 'hidden')
                     ->whereHas('category', fn ($category) => $category
                         ->whereColumn('categories.business_id', 'products.business_id')
                         ->where('is_active', true))
@@ -41,13 +41,13 @@ class StorefrontService
         $business = Business::query()
             ->where('slug', $businessSlug)
             ->where('is_active', true)
-            ->where('availability_status', '!=', 'hidden')
             ->firstOrFail();
 
         $product = Product::query()
             ->where('business_id', $business->id)
             ->where('slug', $productSlug)
             ->where('is_active', true)
+            ->where('availability_status', '!=', 'hidden')
             ->whereHas('category', fn ($category) => $category
                 ->where('business_id', $business->id)
                 ->where('is_active', true))
