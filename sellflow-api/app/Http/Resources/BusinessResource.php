@@ -45,6 +45,8 @@ class BusinessResource extends JsonResource
 
             'country' => $this->country,
 
+            'show_map' => $this->show_map,
+
             'primary_color' => $this->primary_color,
 
             'secondary_color' => $this->secondary_color,

@@ -25,6 +25,7 @@ class PublicBusinessResource extends JsonResource
             'address' => $this->address,
             'city' => $this->city,
             'country' => $this->country,
+            'show_map' => $this->show_map,
             'theme' => $this->resolvedTheme(),
         ];
     }

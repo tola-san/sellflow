@@ -6,12 +6,13 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion";
 import { storefrontService, type PublicRestaurantTable, type Storefront } from "../Services/storefront";
 import type { ThemeSettings } from "../types/theme";
-import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, type CustomerThemeId } from "../theme/customerThemes";
+import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, findCustomerTheme, type CustomerThemeId } from "../theme/customerThemes";
 import { resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
 import { useCart } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 import { withHexOpacity } from "../lib/color";
+import { StoreProfileDrawer } from "../components/ui/StoreProfileDrawer";
 
 export function StorefrontPage() {
   const { slug = "" } = useParams();
@@ -24,6 +25,7 @@ export function StorefrontPage() {
   const [missing, setMissing] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [restaurantTable, setRestaurantTable] = useState<PublicRestaurantTable | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const cart = useCart();
   const { showToast } = useToast();
   const { hapticImpact, isMiniAppRoute, storePath } = useTelegramMiniApp();
@@ -150,6 +152,8 @@ export function StorefrontPage() {
 
   const { business, categories } = storefront;
   const theme = resolveCustomerTheme(business.theme, customerTheme);
+  const resolvedThemeId = customerTheme === "store" ? findCustomerTheme(business.theme) : customerTheme;
+  const isKhmerTheme = resolvedThemeId === "angkor" || resolvedThemeId === "krama";
   const primary = theme.primary_color;
   const cartItems = cart.items(slug);
   const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0);
@@ -179,18 +183,38 @@ export function StorefrontPage() {
   } as CSSProperties;
 
   return (
-    <div className={`min-h-screen ${isMiniAppRoute && cartItems.length ? "pb-24" : ""}`} style={themeVariables}>
+    <div className={`min-h-screen ${isMiniAppRoute && cartItems.length ? "pb-24" : ""}`} data-customer-theme={resolvedThemeId || undefined} style={themeVariables}>
       {/* Header */}
       <header className="relative z-[60] border-b" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
-          {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 rounded-lg object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}><Store size={20} /></span>}
-          <div className="min-w-0"><p className="truncate font-bold leading-tight">{business.name}</p><p className="hidden text-xs sm:block" style={{ color: theme.muted_color }}>Powered by SellFlow</p></div>
-          <ThemePicker
+          <button
+            type="button"
+            onClick={() => setIsProfileOpen(true)}
+            aria-label={`View ${business.name} information`}
+            aria-haspopup="dialog"
+            className="flex min-w-0 items-center gap-3 rounded-xl text-left transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            style={{ color: theme.text_color }}
+          >
+            {business.logo ? (
+              <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+            ) : (
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}>
+                <Store size={20} />
+              </span>
+            )}
+            <span className="min-w-0">
+              <span className="block truncate font-bold leading-tight">{business.name}</span>
+              <span className="hidden text-xs sm:block" style={{ color: theme.muted_color }}>Powered by SellFlow</span>
+            </span>
+          </button>
+          <div className="ml-auto">
+            <ThemePicker
             value={customerTheme}
             storeTheme={business.theme}
             activeTheme={theme}
             onChange={selectCustomerTheme}
-          />
+            />
+          </div>
           <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
         </div>
       </header>
@@ -212,18 +236,18 @@ export function StorefrontPage() {
       )}
 
       {/* Hero */}
-      <section className="relative overflow-hidden" style={{ color: isMinimalHero ? theme.text_color : "white", background: isMinimalHero ? theme.surface_color : `linear-gradient(125deg, ${theme.secondary_color}, ${theme.primary_color})` }}>
+      <section className={`relative overflow-hidden ${hasBannerHero ? "storefront-banner-hero" : ""} ${isKhmerTheme ? `khmer-hero khmer-hero--${resolvedThemeId}` : ""}`} style={{ color: isMinimalHero ? theme.text_color : "white", background: isMinimalHero ? theme.surface_color : `linear-gradient(125deg, ${theme.secondary_color}, ${theme.primary_color})` }}>
         {hasBannerHero && <img src={business.banner!} alt={`${business.name} storefront banner`} className="absolute inset-0 h-full w-full object-cover" />}
         {hasBannerHero && (
           <div
-            className="absolute inset-0"
+            className="storefront-banner-overlay absolute inset-0"
             style={{
               background: `linear-gradient(90deg, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity)} 0%, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity * 0.66)} 45%, ${withHexOpacity(theme.primary_color, bannerOverlayOpacity * 0.36)} 100%), linear-gradient(0deg, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity * 0.28)} 0%, transparent 55%)`,
             }}
           />
         )}
         {!hasBannerHero && theme.hero_style === "gradient" && <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 80% 10%, white 0, transparent 35%)" }} />}
-        <div className={`relative mx-auto max-w-7xl px-4 drop-shadow-sm sm:px-6 ${isMiniAppRoute ? "py-9" : "py-16 sm:py-24"}`}>
+        <div className={`storefront-banner-content relative mx-auto max-w-7xl px-4 drop-shadow-sm sm:px-6 ${isMiniAppRoute ? "py-9" : "py-16 sm:py-24"}`}>
           <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: isMinimalHero ? primary : "currentColor", opacity: isMinimalHero ? 1 : 0.8 }}>Welcome to</p>
           <h1 className={`mt-3 max-w-3xl font-bold ${isMiniAppRoute ? "text-3xl" : "text-4xl sm:text-6xl"}`}>{business.name}</h1>
           {business.description && <p className="mt-5 max-w-2xl text-base leading-7 opacity-80 sm:text-lg">{business.description}</p>}
@@ -246,7 +270,7 @@ export function StorefrontPage() {
       {/* FIXED STICKY NAVIGATION */}
       <div 
         ref={categoryNav} 
-        className="sticky top-0 z-50 mb-8 border-b shadow-sm backdrop-blur-md"
+        className={`sticky top-0 z-50 border-b shadow-sm backdrop-blur-md ${isKhmerTheme ? "mb-0" : "mb-8"}`}
         style={{ backgroundColor: `${theme.surface_color}F2`, borderColor: `${theme.muted_color}35` }}
       >
         <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-5">
@@ -299,14 +323,18 @@ export function StorefrontPage() {
 
       <div id="catalog-start" className="h-0" />
 
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <main className={`khmer-storefront-body relative mx-auto max-w-7xl px-4 pb-10 sm:px-6 ${isKhmerTheme ? "pt-5 sm:pt-6" : "pt-10"}`}>
         {products.length > 0 ? (
-          <div className="space-y-16">
-            {categories.map((item) => {
+          <div className="relative z-10 space-y-16">
+            {categories.map((item, categoryIndex) => {
               const categoryProducts = products.filter((product) => product.category.slug === item.slug);
               if (!categoryProducts.length) return null;
               return (
-                <section id={`category-${item.slug}`} key={item.slug} className="scroll-mt-28">
+                <section
+                  id={`category-${item.slug}`}
+                  key={item.slug}
+                  className={`scroll-mt-28 ${isKhmerTheme ? `khmer-catalog-section ${categoryIndex % 2 === 0 ? "khmer-catalog-section--art" : ""}` : ""}`}
+                >
                   <div className="mb-6 flex items-end justify-between border-b border-slate-200 pb-4">
                     <div>
                       <h2 className="text-2xl font-bold">{item.name}</h2>
@@ -351,6 +379,13 @@ export function StorefrontPage() {
       <footer className="mt-16 border-t py-8 text-center text-sm" style={{ borderColor: `${theme.muted_color}35`, backgroundColor: theme.surface_color, color: theme.muted_color }}>
         © {new Date().getFullYear()} {business.name} · Built with SellFlow
       </footer>
+
+      <StoreProfileDrawer
+        business={business}
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        theme={theme}
+      />
     </div>
   );
 }

@@ -25,6 +25,7 @@ const emptyBusiness: Business = {
   address: "",
   city: "",
   country: "",
+  show_map: true,
   primary_color: "#7c3aed",
   secondary_color: "#0f172a",
   is_active: true,
@@ -192,6 +193,26 @@ export function BusinessPage() {
             <Field label="Address" value={form.address} onChange={(value) => change("address", value)} />
             <Field label="City" value={form.city} onChange={(value) => change("city", value)} />
             <Field label="Country" value={form.country} onChange={(value) => change("country", value)} />
+            <label className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
+              <span>
+                <strong className="block text-sm text-slate-800">Show map on storefront</strong>
+                <span className="mt-0.5 block text-xs font-normal text-slate-500">
+                  Display an interactive map in the store profile using the address above.
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                aria-label="Show map on storefront"
+                checked={form.show_map}
+                onChange={(event) => setForm((current) => ({ ...current, show_map: event.target.checked }))}
+                className="peer sr-only"
+              />
+              <span
+                aria-hidden="true"
+                className="relative h-7 w-12 shrink-0 rounded-full bg-slate-300 transition peer-checked:bg-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-500 peer-focus-visible:ring-offset-2 after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform peer-checked:after:translate-x-5"
+              />
+            </label>
           </div>
         </section>
 

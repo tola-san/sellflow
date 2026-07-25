@@ -28,6 +28,7 @@ class BusinessService
             'address' => $data['address'] ?? null,
             'city' => $data['city'] ?? null,
             'country' => $data['country'] ?? null,
+            'show_map' => $data['show_map'] ?? true,
             'primary_color' => $data['primary_color'] ?? '#10B981',
             'secondary_color' => $data['secondary_color'] ?? '#0F172A',
             'theme_settings' => isset($data['banner_overlay_opacity'])
@@ -95,6 +96,7 @@ class BusinessService
                 'address' => $data['address'] ?? null,
                 'city' => $data['city'] ?? null,
                 'country' => $data['country'] ?? null,
+                'show_map' => $data['show_map'] ?? $business->show_map,
                 'primary_color' => $data['primary_color'] ?? '#10B981',
                 'secondary_color' => $data['secondary_color'] ?? '#0F172A',
                 'theme_settings' => $themeSettings,
