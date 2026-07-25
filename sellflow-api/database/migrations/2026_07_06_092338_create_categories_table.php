@@ -36,7 +36,7 @@ return new class extends Migration
 
             $table->unique([
                 'business_id',
-                'slug'
+                'slug',
             ]);
 
         });

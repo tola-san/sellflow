@@ -8,6 +8,7 @@ export interface CheckoutPayload {
   notes?: string;
   payment_method: "cash" | "bakong";
   telegram_init_data?: string;
+  table_token?: string;
   items: { product_slug: string; quantity: number; modifier_ids: number[] }[];
 }
 
@@ -19,6 +20,8 @@ export interface PublicOrder {
   payment_method: "cash" | "bakong";
   payment_status: string;
   status: string;
+  order_type: "delivery" | "dine_in";
+  restaurant_table: { name: string; area: string | null } | null;
   telegram_receipt_sent: boolean;
   telegram_link_url: string | null;
   items: {

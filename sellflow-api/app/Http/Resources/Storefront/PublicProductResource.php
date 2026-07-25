@@ -18,6 +18,8 @@ class PublicProductResource extends JsonResource
             'stock' => $this->stock,
             'thumbnail' => $this->thumbnailUrl(),
             'is_featured' => $this->is_featured,
+            'availability_status' => $this->availability_status,
+            'is_available_now' => $this->isAvailableNow(),
             'category' => new PublicCategoryResource($this->whenLoaded('category')),
             'modifier_groups' => $this->whenLoaded('modifierGroups', fn () => $this->modifierGroups->map(fn ($group) => [
                 'id' => $group->id,

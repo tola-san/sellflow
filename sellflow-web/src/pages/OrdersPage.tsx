@@ -469,6 +469,7 @@ function OrderDrawer({
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Order details</p>
             <h2 className="font-mono text-xl font-bold text-slate-800">{order.order_number}</h2>
+            {order.restaurant_table && <p className="mt-1 text-sm font-semibold text-purple-600">Dine-in · {order.restaurant_table.name}{order.restaurant_table.area ? ` · ${order.restaurant_table.area}` : ""}</p>}
           </div>
           <button
             onClick={close}

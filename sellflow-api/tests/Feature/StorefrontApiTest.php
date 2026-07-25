@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\ModifierGroup;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\RestaurantTable;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -178,6 +179,76 @@ class StorefrontApiTest extends TestCase
             ->assertJsonPath('data.items.0.unit_price', '5.75')
             ->assertJsonPath('data.items.0.modifiers.0.option_name', 'Large')
             ->assertJsonPath('data.total', '11.50');
+    }
+
+    public function test_restaurant_item_availability_is_published_and_enforced_at_checkout(): void
+    {
+        Bus::fake([SendNewOrderTelegramNotification::class]);
+        $store = $this->business('Availability Cafe', 'availability-cafe');
+        $store->update(['business_type' => 'food_beverage']);
+        $category = $this->category($store, 'Meals', true);
+        $product = $this->product($store, $category, 'Breakfast Bowl', 'breakfast-bowl', true);
+        $product->update(['availability_status' => 'sold_out']);
+
+        $this->getJson('/api/v1/store/availability-cafe/products/breakfast-bowl')
+            ->assertOk()
+            ->assertJsonPath('data.product.availability_status', 'sold_out')
+            ->assertJsonPath('data.product.is_available_now', false);
+
+        $this->postJson('/api/v1/store/availability-cafe/checkout', [
+            'customer_name' => 'Test Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'items' => [['product_slug' => 'breakfast-bowl', 'quantity' => 1]],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('items');
+    }
+
+    public function test_table_qr_checkout_creates_a_dine_in_order_and_updates_table_status(): void
+    {
+        Bus::fake([SendNewOrderTelegramNotification::class]);
+        $user = User::factory()->create();
+        $store = $this->business('Table Cafe', 'table-cafe', true, $user);
+        $store->update(['business_type' => 'food_beverage']);
+        $category = $this->category($store, 'Meals', true);
+        $this->product($store, $category, 'Noodle Soup', 'noodle-soup', true);
+        $table = RestaurantTable::create([
+            'business_id' => $store->id,
+            'name' => 'Table 03',
+            'area' => 'Main floor',
+            'capacity' => 4,
+            'status' => 'available',
+            'qr_token' => str_repeat('a', 40),
+            'is_active' => true,
+        ]);
+
+        $this->getJson('/api/v1/store/table-cafe/tables/'.$table->qr_token)
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Table 03');
+
+        $response = $this->postJson('/api/v1/store/table-cafe/checkout', [
+            'customer_name' => 'Dine-in Customer',
+            'customer_phone' => '012345678',
+            'payment_method' => 'cash',
+            'table_token' => $table->qr_token,
+            'items' => [['product_slug' => 'noodle-soup', 'quantity' => 1]],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.order_type', 'dine_in')
+            ->assertJsonPath('data.restaurant_table.name', 'Table 03');
+        $this->assertDatabaseHas('orders', [
+            'restaurant_table_id' => $table->id,
+            'order_type' => 'dine_in',
+            'delivery_address' => 'Dine-in · Table 03',
+        ]);
+        $this->assertDatabaseHas('restaurant_tables', ['id' => $table->id, 'status' => 'occupied']);
+
+        Sanctum::actingAs($user);
+        $orderId = Order::query()->where('restaurant_table_id', $table->id)->value('id');
+        $this->patchJson("/api/v1/orders/{$orderId}/status", ['status' => 'cancelled'])->assertOk();
+        $this->assertDatabaseHas('restaurant_tables', ['id' => $table->id, 'status' => 'available']);
     }
 
     public function test_modifier_management_is_restricted_to_restaurant_businesses(): void

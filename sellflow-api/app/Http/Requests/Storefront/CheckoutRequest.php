@@ -17,7 +17,8 @@ class CheckoutRequest extends FormRequest
         return [
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_phone' => ['required', 'string', 'max:50'],
-            'delivery_address' => ['required', 'string', 'max:1000'],
+            'delivery_address' => ['required_without:table_token', 'nullable', 'string', 'max:1000'],
+            'table_token' => ['nullable', 'string', 'size:40'],
             'city' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'payment_method' => ['required', Rule::in(['cash', 'bakong'])],

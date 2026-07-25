@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, BadgeCheck, Banknote, Landmark, Send, ShoppingBag } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { checkoutService, type CheckoutPayload, type PublicOrder } from "../Services/checkout";
-import { storefrontService, type Storefront } from "../Services/storefront";
+import { storefrontService, type PublicRestaurantTable, type Storefront } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
 import { ErrorMessage, inputClass } from "../components/dashboard/DashboardUI";
 import { useTelegramMainButton, useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
@@ -26,6 +26,7 @@ export function CheckoutPage() {
   const [order, setOrder] = useState<PublicOrder | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [restaurantTable, setRestaurantTable] = useState<PublicRestaurantTable | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   const cart = useCart();
@@ -41,6 +42,17 @@ export function CheckoutPage() {
   useEffect(() => {
     if (!slug) return;
     storefrontService.getStore(slug).then(setStore).catch(setError);
+    try {
+      const stored = localStorage.getItem(`sellflow_restaurant_table_${slug}`);
+      const table = stored ? JSON.parse(stored) as PublicRestaurantTable : null;
+      if (table?.token) {
+        storefrontService.getTable(slug, table.token).then(setRestaurantTable).catch(() => {
+          localStorage.removeItem(`sellflow_restaurant_table_${slug}`);
+        });
+      }
+    } catch {
+      localStorage.removeItem(`sellflow_restaurant_table_${slug}`);
+    }
   }, [slug]);
 
   useEffect(() => {
@@ -75,6 +87,7 @@ export function CheckoutPage() {
       const payload: CheckoutPayload = {
         ...form,
         ...(isTelegramClient && webApp?.initData ? { telegram_init_data: webApp.initData } : {}),
+        ...(restaurantTable ? { table_token: restaurantTable.token, delivery_address: "" } : {}),
         items: items.map(item => ({
           product_slug: item.product.slug,
           quantity: item.quantity,
@@ -230,16 +243,16 @@ export function CheckoutPage() {
                     value={form.customer_phone}
                     onChange={(v) => change("customer_phone", v)}
                   />
-                  <Field
-                    name="city"
-                    label="City"
-                    autoComplete="address-level2"
-                    maxLength={255}
-                    value={form.city}
-                    onChange={(v) => change("city", v)}
-                  />
+                  {!restaurantTable && <Field
+                      name="city"
+                      label="City"
+                      autoComplete="address-level2"
+                      maxLength={255}
+                      value={form.city}
+                      onChange={(v) => change("city", v)}
+                    />}
                   
-                  <div className="sm:col-span-2">
+                  {!restaurantTable && <div className="sm:col-span-2">
                     <label htmlFor="delivery_address" className="block text-sm font-medium mb-2">Delivery Address <span className="text-red-500">*</span></label>
                     <textarea
                       id="delivery_address"
@@ -253,7 +266,13 @@ export function CheckoutPage() {
                       onChange={(e) => change("delivery_address", e.target.value)}
                       placeholder="Street address, building, etc."
                     />
-                  </div>
+                  </div>}
+
+                  {restaurantTable && <div className="sm:col-span-2 rounded-2xl border border-purple-200 bg-purple-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">Dine-in order</p>
+                    <p className="mt-1 text-lg font-bold text-purple-950">{restaurantTable.name}</p>
+                    <p className="text-sm text-purple-700">{restaurantTable.area || "Restaurant"} · {restaurantTable.capacity} seats</p>
+                  </div>}
 
                   <div className="sm:col-span-2">
                     <label htmlFor="notes" className="block text-sm font-medium mb-2">Order Notes (Optional)</label>

@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowLeft, Check, Copy, Globe2, Minus, Plus, RefreshCw, Send, Share2, Shield, ShoppingCart, Store, Truck, X } from "lucide-react";
+import { ArrowLeft, Check, Copy, Minus, Plus, RefreshCw, Send, Share2, Shield, ShoppingCart, Store, Truck, X } from "lucide-react";
 import { FaFacebook } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
 import { storefrontService, type StorefrontProductDetail } from "../Services/storefront";
@@ -170,7 +170,7 @@ export function ProductDetailPage() {
     setShareOpen(false);
   };
 
-  const isOutOfStock = product.stock < 1;
+  const isOutOfStock = product.stock < 1 || !product.is_available_now;
   const isLowStock = product.stock > 0 && product.stock <= 5;
 
   return (
@@ -313,7 +313,7 @@ export function ProductDetailPage() {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
                   </span>
-                  Out of stock
+                  {product.availability_status === "sold_out" ? "Sold out" : product.stock < 1 ? "Out of stock" : "Currently unavailable"}
                 </span>
               ) : isLowStock ? (
                 <span className="flex items-center gap-1.5 text-amber-500">
@@ -407,7 +407,7 @@ export function ProductDetailPage() {
                   }}
                 >
                   <ShoppingCart size={20} className="transition-transform group-hover:scale-110" />
-                  <span>{isOutOfStock ? "Out of stock" : "Add to cart"}</span>
+                  <span>{isOutOfStock ? "Unavailable" : "Add to cart"}</span>
                 </button>
               </div>
             </div>
@@ -497,7 +497,7 @@ export function ProductDetailPage() {
               className="shrink-0"
             />
             <span className="text-sm sm:text-base">
-              {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+              {isOutOfStock ? "Unavailable" : "Add to Cart"}
             </span>
           </span>
         </button>
@@ -527,7 +527,7 @@ export function ProductDetailPage() {
             <div className="mt-5 grid grid-cols-2 gap-3">
               <ShareOption label="Facebook" color="#1877F2" icon={<FaFacebook size={20} />} onClick={() => openSocialShare("facebook")} />
               <ShareOption label="Telegram" color="#229ED9" icon={<Send size={20} />} onClick={() => openSocialShare("telegram")} />
-              {typeof navigator !== "undefined" && navigator.share && <ShareOption label="More apps" color={theme.primary_color} icon={<Share2 size={20} />} onClick={shareProduct} />}
+              {typeof navigator !== "undefined" && <ShareOption label="More apps" color={theme.primary_color} icon={<Share2 size={20} />} onClick={shareProduct} />}
             </div>
 
             <button type="button" onClick={copyProductLink} className="mt-4 flex w-full items-center justify-center gap-2 border px-4 py-3 text-sm font-semibold transition hover:bg-black/[0.03]" style={{ borderRadius: "var(--store-radius-sm)", borderColor: `${theme.muted_color}30` }}>

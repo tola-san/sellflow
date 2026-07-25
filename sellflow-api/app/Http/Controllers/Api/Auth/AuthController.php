@@ -26,7 +26,7 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Registration successful.',
             'data' => [
-                'user'  => new UserResource($result['user']),
+                'user' => new UserResource($result['user']),
                 'token' => $result['token'],
             ],
         ], 201);
@@ -42,7 +42,7 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Login successful.',
             'data' => [
-                'user'  => new UserResource($result['user']),
+                'user' => new UserResource($result['user']),
                 'token' => $result['token'],
             ],
         ]);

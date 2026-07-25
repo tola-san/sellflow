@@ -23,6 +23,12 @@ class OrderResource extends JsonResource
             'payment_method' => $this->payment_method,
             'payment_status' => $this->payment_status,
             'status' => $this->status,
+            'order_type' => $this->order_type,
+            'restaurant_table' => $this->whenLoaded('restaurantTable', fn () => $this->restaurantTable ? [
+                'id' => $this->restaurantTable->id,
+                'name' => $this->restaurantTable->name,
+                'area' => $this->restaurantTable->area,
+            ] : null),
             'items_count' => $this->whenCounted('items'),
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($item) => [
                 'id' => $item->id,

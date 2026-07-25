@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\ModifierGroup\ModifierGroupController;
 use App\Http\Controllers\Api\Order\OrderController;
 use App\Http\Controllers\Api\Product\ProductController;
+use App\Http\Controllers\Api\Restaurant\MenuAvailabilityController;
+use App\Http\Controllers\Api\Restaurant\RestaurantTableController;
 use App\Http\Controllers\Api\Storefront\CheckoutController;
 use App\Http\Controllers\Api\Storefront\StorefrontController;
 use App\Http\Controllers\Api\TelegramWebhookController;
@@ -18,6 +20,7 @@ Route::prefix('v1')->group(function () {
     // Public customer storefront. Authentication is intentionally not required.
     Route::get('/store/{slug}', [StorefrontController::class, 'show']);
     Route::get('/store/{slug}/products/{productSlug}', [StorefrontController::class, 'product']);
+    Route::get('/store/{slug}/tables/{token}', [StorefrontController::class, 'table']);
     Route::post('/store/{slug}/checkout', [CheckoutController::class, 'store'])->middleware('throttle:20,1');
     /*
     |--------------------------------------------------------------------------
@@ -65,6 +68,10 @@ Route::prefix('v1')->group(function () {
 
         // Restaurant add-ons and modifiers
         Route::apiResource('modifier-groups', ModifierGroupController::class)->except('show');
+        Route::get('/menu-availability', [MenuAvailabilityController::class, 'index']);
+        Route::patch('/menu-availability/{product}', [MenuAvailabilityController::class, 'update']);
+        Route::apiResource('restaurant-tables', RestaurantTableController::class)->except('show');
+        Route::post('/restaurant-tables/{restaurantTable}/regenerate-qr', [RestaurantTableController::class, 'regenerateQr']);
 
         // Orders
         Route::get('/orders', [OrderController::class, 'index']);
