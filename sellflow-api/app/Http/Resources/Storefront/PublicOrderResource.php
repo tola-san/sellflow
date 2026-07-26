@@ -27,6 +27,7 @@ class PublicOrderResource extends JsonResource
                 'product_name' => $item->product_name,
                 'product_slug' => $item->product_slug,
                 'thumbnail' => $item->thumbnail,
+                'variant' => $item->variant,
                 'modifiers' => $item->modifiers ?? [],
                 'unit_price' => $item->unit_price,
                 'quantity' => $item->quantity,

@@ -326,15 +326,11 @@ export function StorefrontPage() {
       <main className={`khmer-storefront-body relative mx-auto max-w-7xl px-4 pb-10 sm:px-6 ${isKhmerTheme ? "pt-5 sm:pt-6" : "pt-10"}`}>
         {products.length > 0 ? (
           <div className="relative z-10 space-y-16">
-            {categories.map((item, categoryIndex) => {
+            {categories.map((item) => {
               const categoryProducts = products.filter((product) => product.category.slug === item.slug);
               if (!categoryProducts.length) return null;
               return (
-                <section
-                  id={`category-${item.slug}`}
-                  key={item.slug}
-                  className={`scroll-mt-28 ${isKhmerTheme ? `khmer-catalog-section ${categoryIndex % 2 === 0 ? "khmer-catalog-section--art" : ""}` : ""}`}
-                >
+                <section id={`category-${item.slug}`} key={item.slug} className="scroll-mt-28">
                   <div className="mb-6 flex items-end justify-between border-b border-slate-200 pb-4">
                     <div>
                       <h2 className="text-2xl font-bold">{item.name}</h2>
@@ -345,7 +341,7 @@ export function StorefrontPage() {
                   <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${theme.grid_columns === 2 ? "lg:grid-cols-2" : theme.grid_columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
                     {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} onAdd={() => {
                       if (!product.is_available_now) return;
-                      if ((product.modifier_groups || []).length > 0) {
+                      if ((product.modifier_groups || []).length > 0 || (product.variants || []).length > 0) {
                         navigate(storePath(slug, `/products/${product.slug}`));
                         return;
                       }
@@ -377,7 +373,9 @@ export function StorefrontPage() {
       )}
 
       <footer className="mt-16 border-t py-8 text-center text-sm" style={{ borderColor: `${theme.muted_color}35`, backgroundColor: theme.surface_color, color: theme.muted_color }}>
-        © {new Date().getFullYear()} {business.name} · Built with SellFlow
+        <span className={isKhmerTheme ? "khmer-footer-signature" : undefined}>
+          © {new Date().getFullYear()} {business.name} · Built with SellFlow
+        </span>
       </footer>
 
       <StoreProfileDrawer

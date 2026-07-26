@@ -87,6 +87,8 @@ export function ProductsPage() {
   const activeCount = items.filter((product) => product.is_active).length;
   const lowStockCount = items.filter((product) => product.stock <= 5).length;
   const featuredCount = items.filter((product) => product.is_featured).length;
+  const editingProduct = editing ? items.find((product) => product.id === editing) : null;
+  const stockManagedByVariants = Boolean(editingProduct?.variants?.length);
 
   const show = (product?: Product) => {
     setError(null);
@@ -407,13 +409,21 @@ export function ProductsPage() {
                       value={form.discount_price} 
                       onChange={(discount_price) => setForm((current) => ({ ...current, discount_price }))}
                     />
-                    <Field 
-                      label="Stock quantity" 
-                      required 
-                      type="number" 
-                      value={String(form.stock)} 
-                      onChange={(stock) => setForm((current) => ({ ...current, stock: Number(stock) }))}
-                    />
+                    {stockManagedByVariants ? (
+                      <label className="text-sm font-medium text-slate-700">
+                        Stock quantity
+                        <input disabled className={`${inputClass} cursor-not-allowed bg-slate-100 text-slate-500`} value={form.stock} />
+                        <span className="mt-1 block text-xs font-normal text-slate-500">Calculated from active variants. Adjust it from Inventory.</span>
+                      </label>
+                    ) : (
+                      <Field
+                        label="Stock quantity"
+                        required
+                        type="number"
+                        value={String(form.stock)}
+                        onChange={(stock) => setForm((current) => ({ ...current, stock: Number(stock) }))}
+                      />
+                    )}
                   </div>
                 </FormSection>
 

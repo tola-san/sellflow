@@ -5,6 +5,7 @@ namespace App\Services\Storefront;
 use App\Models\Business;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\RestaurantTable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -49,6 +50,7 @@ class CheckoutService
                         ->where('is_active', true)
                         ->with(['options' => fn ($options) => $options->where('is_active', true)]),
                     'availabilitySchedules',
+                    'variants',
                 ])
                 ->lockForUpdate()
                 ->get()
@@ -60,19 +62,61 @@ class CheckoutService
                 ]);
             }
 
-            foreach ($requested->groupBy('product_slug') as $slug => $lines) {
-                $product = $products->get($slug);
-                $totalQuantity = $lines->sum(fn ($line) => (int) $line['quantity']);
+            $requestedVariantIds = $requested->pluck('variant_id')->filter()->map(fn ($id) => (int) $id)->unique();
+            $lockedVariants = ProductVariant::query()
+                ->where('business_id', $business->id)
+                ->whereIn('id', $requestedVariantIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
 
+            foreach ($products as $product) {
                 if (! $product->isAvailableNow()) {
                     throw ValidationException::withMessages([
                         'items' => ["{$product->name} is not currently available."],
                     ]);
                 }
+            }
 
-                if ($totalQuantity > $product->stock) {
+            $resolved = $requested->map(function (array $line) use ($products, $lockedVariants) {
+                $product = $products->get($line['product_slug']);
+                $variantId = isset($line['variant_id']) ? (int) $line['variant_id'] : null;
+                $variant = $variantId
+                    ? $lockedVariants->get($variantId)
+                    : null;
+
+                if (($variantId && ! $variant)
+                    || ($variant && $variant->product_id !== $product->id)
+                    || ($product->variants->isNotEmpty() && ! $variant)) {
                     throw ValidationException::withMessages([
-                        'items' => ["Only {$product->stock} unit(s) of {$product->name} are available."],
+                        'items' => ["Choose an available variant for {$product->name}."],
+                    ]);
+                }
+
+                if ($variant && ! $variant->is_active) {
+                    throw ValidationException::withMessages([
+                        'items' => ["The selected {$product->name} variant is unavailable."],
+                    ]);
+                }
+
+                return [
+                    ...$line,
+                    '_product' => $product,
+                    '_variant' => $variant,
+                    '_stock_key' => $product->id.':'.($variant?->id ?? 'base'),
+                ];
+            });
+
+            foreach ($resolved->groupBy('_stock_key') as $lines) {
+                $product = $lines->first()['_product'];
+                $variant = $lines->first()['_variant'];
+                $available = $variant?->stock ?? $product->stock;
+                $totalQuantity = $lines->sum(fn ($line) => (int) $line['quantity']);
+
+                if ($totalQuantity > $available) {
+                    $label = $variant ? "{$product->name} ({$variant->name})" : $product->name;
+                    throw ValidationException::withMessages([
+                        'items' => ["Only {$available} unit(s) of {$label} are available."],
                     ]);
                 }
             }
@@ -80,20 +124,28 @@ class CheckoutService
             $items = [];
             $subtotalCents = 0;
 
-            foreach ($requested as $requestedItem) {
-                $product = $products->get($requestedItem['product_slug']);
+            foreach ($resolved as $requestedItem) {
+                $product = $requestedItem['_product'];
+                $variant = $requestedItem['_variant'];
                 $quantity = (int) $requestedItem['quantity'];
                 $modifiers = $this->resolveModifiers($product, $requestedItem['modifier_ids'] ?? []);
-                $price = (float) ($product->discount_price ?? $product->price);
+                $price = (float) ($variant?->effectivePrice() ?? $product->discount_price ?? $product->price);
                 $modifierTotal = collect($modifiers)->sum(fn ($modifier) => (float) $modifier['price_adjustment']);
                 $unitCents = (int) round(($price + $modifierTotal) * 100);
                 $lineCents = $unitCents * $quantity;
                 $subtotalCents += $lineCents;
                 $items[] = [
                     'product_id' => $product->id,
+                    'product_variant_id' => $variant?->id,
                     'product_name' => $product->name,
                     'product_slug' => $product->slug,
                     'thumbnail' => $product->thumbnailUrl(),
+                    'variant' => $variant ? [
+                        'id' => $variant->id,
+                        'name' => $variant->name,
+                        'attributes' => $variant->attributes ?? [],
+                        'sku' => $variant->sku,
+                    ] : null,
                     'modifiers' => $modifiers,
                     'unit_price' => $this->money($unitCents),
                     'quantity' => $quantity,
@@ -124,6 +176,32 @@ class CheckoutService
             ]);
 
             $order->items()->createMany($items);
+
+            foreach ($resolved->groupBy('_stock_key') as $lines) {
+                /** @var Product $product */
+                $product = $lines->first()['_product'];
+                /** @var ProductVariant|null $variant */
+                $variant = $lines->first()['_variant'];
+                $quantity = $lines->sum(fn ($line) => (int) $line['quantity']);
+                $target = $variant ?? $product;
+                $before = $target->stock;
+                $target->decrement('stock', $quantity);
+
+                $business->inventoryMovements()->create([
+                    'product_id' => $product->id,
+                    'product_variant_id' => $variant?->id,
+                    'type' => 'sale',
+                    'quantity_delta' => -$quantity,
+                    'quantity_before' => $before,
+                    'quantity_after' => $before - $quantity,
+                    'reason' => 'Customer order',
+                    'reference' => $order->order_number,
+                ]);
+
+                if ($variant) {
+                    $product->syncVariantStock();
+                }
+            }
 
             if ($restaurantTable) {
                 $restaurantTable->update(['status' => 'occupied']);

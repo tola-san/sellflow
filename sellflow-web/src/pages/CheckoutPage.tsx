@@ -90,6 +90,7 @@ export function CheckoutPage() {
         ...(restaurantTable ? { table_token: restaurantTable.token, delivery_address: "" } : {}),
         items: items.map(item => ({
           product_slug: item.product.slug,
+          ...(item.variant ? { variant_id: item.variant.id } : {}),
           quantity: item.quantity,
           modifier_ids: item.modifiers.map((modifier) => modifier.id),
         }))
@@ -330,7 +331,7 @@ export function CheckoutPage() {
               <h2 className="font-semibold text-lg mb-6">Order Summary</h2>
 
               <div className="space-y-5">
-                {items.map(({ line_id, product, quantity, modifiers, unit_price }) => (
+                {items.map(({ line_id, product, quantity, modifiers, variant, unit_price }) => (
                   <div key={line_id} className="flex gap-4">
                     <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
                       {product.thumbnail && (
@@ -339,6 +340,7 @@ export function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="line-clamp-2 font-medium">{product.name}</p>
+                      {variant && <p className="mt-0.5 text-xs font-medium text-slate-600">{variant.name}</p>}
                       {modifiers.length > 0 && <p className="mt-0.5 text-xs leading-5 text-slate-500">{modifiers.map((option) => option.name).join(", ")}</p>}
                       <p className="text-sm text-slate-500 mt-0.5">Qty: {quantity}</p>
                     </div>

@@ -4,6 +4,8 @@ namespace App\Services\Order;
 
 use App\Models\Business;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Support\OrderStatusWorkflow;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -62,7 +64,7 @@ class OrderService
     {
         [$updated, $changed] = DB::transaction(function () use ($order, $nextStatus): array {
             $locked = Order::query()
-                ->with(['business', 'restaurantTable'])
+                ->with(['business', 'restaurantTable', 'items'])
                 ->lockForUpdate()
                 ->findOrFail($order->id);
             $this->validateTransition(
@@ -73,6 +75,10 @@ class OrderService
             );
             $changed = $locked->status !== $nextStatus;
             $locked->update(['status' => $nextStatus]);
+
+            if ($changed && $nextStatus === 'cancelled') {
+                $this->restoreCancelledOrderStock($locked);
+            }
 
             if ($locked->restaurant_table_id && in_array($nextStatus, ['completed', 'cancelled'], true)) {
                 $hasOtherActiveOrders = $locked->restaurantTable->orders()
@@ -134,6 +140,50 @@ class OrderService
             throw ValidationException::withMessages([
                 $field => ["Cannot change {$field} from {$current} to {$next}."],
             ]);
+        }
+    }
+
+    private function restoreCancelledOrderStock(Order $order): void
+    {
+        foreach ($order->items as $item) {
+            if (! $item->product_id) {
+                continue;
+            }
+
+            $product = Product::query()
+                ->where('business_id', $order->business_id)
+                ->lockForUpdate()
+                ->find($item->product_id);
+
+            if (! $product) {
+                continue;
+            }
+
+            $variant = $item->product_variant_id
+                ? ProductVariant::query()
+                    ->where('business_id', $order->business_id)
+                    ->where('product_id', $product->id)
+                    ->lockForUpdate()
+                    ->find($item->product_variant_id)
+                : null;
+            $target = $variant ?? $product;
+            $before = $target->stock;
+            $target->increment('stock', $item->quantity);
+
+            $order->business->inventoryMovements()->create([
+                'product_id' => $product->id,
+                'product_variant_id' => $variant?->id,
+                'type' => 'restock',
+                'quantity_delta' => $item->quantity,
+                'quantity_before' => $before,
+                'quantity_after' => $before + $item->quantity,
+                'reason' => 'Order cancelled',
+                'reference' => $order->order_number,
+            ]);
+
+            if ($variant) {
+                $product->syncVariantStock();
+            }
         }
     }
 }

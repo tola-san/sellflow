@@ -24,6 +24,8 @@ import { OnboardingPage } from "./pages/OnboardingPage";
 import { AddOnsPage } from "./pages/AddOnsPage";
 import { MenuAvailabilityPage } from "./pages/MenuAvailabilityPage";
 import { RestaurantTablesPage } from "./pages/RestaurantTablesPage";
+import { InventoryPage } from "./pages/InventoryPage";
+import { ProductVariantsPage } from "./pages/ProductVariantsPage";
 import { useTelegramMiniApp } from "./components/telegram/TelegramMiniAppContext";
 
 const OrdersPage = lazy(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
@@ -60,6 +62,8 @@ export function App() {
                                 <Route path="business" element={<BusinessPage />} />
                                 <Route path="categories" element={<CategoriesPage />} />
                                 <Route path="products" element={<ProductsPage />} />
+                                <Route path="inventory" element={<InventoryPage />} />
+                                <Route path="product-variants" element={<ProductVariantsPage />} />
                                 <Route path="add-ons" element={<AddOnsPage />} />
                                 <Route path="menu-availability" element={<MenuAvailabilityPage />} />
                                 <Route path="restaurant-tables" element={<RestaurantTablesPage />} />

@@ -124,7 +124,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                                     </button>
                                 </div>
                             ) : (
-                                items.map(({ line_id, product, quantity, modifiers, unit_price }) => (
+                                items.map(({ line_id, product, quantity, modifiers, variant, unit_price }) => (
                                     <div key={line_id} className="flex gap-4 rounded-2xl border border-slate-100 p-4 bg-white">
                                         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100">
                                             {product.thumbnail ? (
@@ -141,6 +141,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                                                 {product.category.name}
                                             </p>
                                             <p className="mt-1 text-[15px] font-medium leading-tight line-clamp-2">{product.name}</p>
+                                            {variant && <p className="mt-1 text-xs font-medium text-slate-600">{variant.name}</p>}
                                             {modifiers.length > 0 && <p className="mt-1 text-xs leading-5 text-slate-500">{modifiers.map((option) => option.name).join(", ")}</p>}
                                             <p className="mt-1.5 font-semibold">
                                                 ${unit_price.toFixed(2)}

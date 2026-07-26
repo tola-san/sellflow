@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import type { PublicModifierOption, PublicProduct } from "../../Services/storefront";
+import type { PublicModifierOption, PublicProduct, PublicProductVariant } from "../../Services/storefront";
 
 export interface SelectedModifier extends PublicModifierOption {
   group_id: number;
@@ -11,6 +11,7 @@ export interface CartItem {
   product: PublicProduct;
   quantity: number;
   modifiers: SelectedModifier[];
+  variant: PublicProductVariant | null;
   unit_price: number;
 }
 
@@ -19,7 +20,7 @@ type Carts = Record<string, CartItem[]>;
 interface CartContextValue {
   items: (slug: string) => CartItem[];
   count: (slug: string) => number;
-  add: (slug: string, product: PublicProduct, quantity?: number, modifiers?: SelectedModifier[]) => void;
+  add: (slug: string, product: PublicProduct, quantity?: number, modifiers?: SelectedModifier[], variant?: PublicProductVariant | null) => void;
   update: (slug: string, lineId: string, quantity: number) => void;
   remove: (slug: string, lineId: string) => void;
   clear: (slug: string) => void;
@@ -38,12 +39,14 @@ function loadCarts(): Carts {
       items.map((item) => {
         const product = item.product as PublicProduct;
         const modifiers = item.modifiers || [];
+        const variant = item.variant || null;
         return {
           product,
           quantity: item.quantity || 1,
           modifiers,
-          line_id: item.line_id || lineId(product.slug, modifiers),
-          unit_price: item.unit_price ?? basePrice(product) + modifiers.reduce((sum, option) => sum + Number(option.price_adjustment), 0),
+          variant,
+          line_id: item.line_id || lineId(product.slug, modifiers, variant),
+          unit_price: item.unit_price ?? basePrice(product, variant) + modifiers.reduce((sum, option) => sum + Number(option.price_adjustment), 0),
         };
       }),
     ]));
@@ -63,21 +66,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartContextValue>(() => ({
     items: (slug) => carts[slug] || [],
     count: (slug) => (carts[slug] || []).reduce((sum, item) => sum + item.quantity, 0),
-    add: (slug, product, quantity = 1, modifiers = []) => {
+    add: (slug, product, quantity = 1, modifiers = [], variant = null) => {
       const current = carts[slug] || [];
-      const id = lineId(product.slug, modifiers);
+      const id = lineId(product.slug, modifiers, variant);
       const existing = current.find((item) => item.line_id === id);
-      const unitPrice = basePrice(product) + modifiers.reduce((sum, option) => sum + Number(option.price_adjustment), 0);
+      const unitPrice = basePrice(product, variant) + modifiers.reduce((sum, option) => sum + Number(option.price_adjustment), 0);
+      const availableStock = variant?.stock ?? product.stock;
       const nextItems = existing
         ? current.map((item) => item.line_id === id
-          ? { ...item, product, modifiers, unit_price: unitPrice, quantity: Math.min(product.stock, item.quantity + quantity) }
+          ? { ...item, product, modifiers, variant, unit_price: unitPrice, quantity: Math.min(availableStock, item.quantity + quantity) }
           : item)
-        : [...current, { line_id: id, product, modifiers, unit_price: unitPrice, quantity: Math.min(product.stock, quantity) }];
+        : [...current, { line_id: id, product, modifiers, variant, unit_price: unitPrice, quantity: Math.min(availableStock, quantity) }];
       commit({ ...carts, [slug]: nextItems });
     },
     update: (slug, id, quantity) => {
       const nextItems = (carts[slug] || []).map((item) => item.line_id === id
-        ? { ...item, quantity: Math.max(1, Math.min(item.product.stock, quantity)) }
+        ? { ...item, quantity: Math.max(1, Math.min(item.variant?.stock ?? item.product.stock, quantity)) }
         : item);
       commit({ ...carts, [slug]: nextItems });
     },
@@ -88,13 +92,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-function basePrice(product: PublicProduct): number {
-  return Number(product.discount_price || product.price);
+function basePrice(product: PublicProduct, variant: PublicProductVariant | null): number {
+  return Number(variant?.effective_price ?? product.discount_price ?? product.price);
 }
 
-function lineId(productSlug: string, modifiers: SelectedModifier[]): string {
+function lineId(productSlug: string, modifiers: SelectedModifier[], variant: PublicProductVariant | null): string {
   const optionIds = modifiers.map((modifier) => modifier.id).sort((a, b) => a - b).join("-");
-  return `${productSlug}:${optionIds || "base"}`;
+  return `${productSlug}:${variant?.id ?? "base"}:${optionIds || "base"}`;
 }
 
 export function useCart() {

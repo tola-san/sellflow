@@ -29,6 +29,7 @@ class StorefrontService
                             ->where('is_active', true)
                             ->with(['options' => fn ($options) => $options->where('is_active', true)]),
                         'availabilitySchedules',
+                        'variants' => fn ($variants) => $variants->where('is_active', true),
                     ])
                     ->orderByDesc('is_featured')
                     ->latest(),
@@ -57,6 +58,7 @@ class StorefrontService
                     ->where('is_active', true)
                     ->with(['options' => fn ($options) => $options->where('is_active', true)]),
                 'availabilitySchedules',
+                'variants' => fn ($variants) => $variants->where('is_active', true),
             ])
             ->firstOrFail();
 

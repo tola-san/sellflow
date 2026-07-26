@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -22,6 +23,7 @@ class Product extends Model
         'price',
         'discount_price',
         'stock',
+        'low_stock_threshold',
         'thumbnail',
         'is_featured',
         'is_active',
@@ -32,6 +34,7 @@ class Product extends Model
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
         'stock' => 'integer',
+        'low_stock_threshold' => 'integer',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
     ];
@@ -56,6 +59,25 @@ class Product extends Model
     public function availabilitySchedules()
     {
         return $this->hasMany(ProductAvailabilitySchedule::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class)
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
+    public function inventoryMovements(): HasMany
+    {
+        return $this->hasMany(InventoryMovement::class);
+    }
+
+    public function syncVariantStock(): void
+    {
+        $this->update([
+            'stock' => (int) $this->variants()->where('is_active', true)->sum('stock'),
+        ]);
     }
 
     public function isAvailableNow(): bool
