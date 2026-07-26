@@ -27,6 +27,7 @@ import { RestaurantTablesPage } from "./pages/RestaurantTablesPage";
 import { InventoryPage } from "./pages/InventoryPage";
 import { ProductVariantsPage } from "./pages/ProductVariantsPage";
 import { useTelegramMiniApp } from "./components/telegram/TelegramMiniAppContext";
+import { NotificationsPage } from "./pages/NotificationsPage";
 
 const OrdersPage = lazy(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage").then((module) => ({ default: module.AnalyticsPage })));
@@ -71,6 +72,7 @@ export function App() {
                                 <Route path="orders" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading orders...</div>}><OrdersPage /></Suspense>} />
                                 <Route path="analytics" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading analytics...</div>}><AnalyticsPage /></Suspense>} />
                                 <Route path="notifications" element={<TelegramNotificationsPage />} />
+                                <Route path="activity" element={<NotificationsPage />} />
                             </Route>
                         </Route>
 

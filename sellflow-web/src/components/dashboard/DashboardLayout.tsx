@@ -11,6 +11,10 @@ import {
   Calendar,
   Clock,
   Bell,
+  CheckCheck,
+  CircleAlert,
+  Package,
+  ShoppingBag,
   AlertTriangle,
   ChevronsUpDown,
   PanelLeftClose,
@@ -23,13 +27,21 @@ import { useAuth } from "../../components/Auth/AuthContext";
 import { DASHBOARD_THEMES, DASHBOARD_THEME_EVENT, dashboardThemeVariables, getDashboardThemeId, type DashboardThemeId } from "../../theme/dashboardThemes";
 import { businessTypeLabel } from "../../types/businessTypes";
 import { dashboardModuleSections } from "./dashboardModules";
+import {
+  notificationService,
+  NOTIFICATIONS_CHANGED_EVENT,
+  type BusinessNotification,
+  type NotificationType,
+} from "../../Services/notifications";
 
-// Date/Time Component with Click Handler and Date Picker
 function DateTimeDisplay() {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
-  const [hasNotifications, setHasNotifications] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [notifications, setNotifications] = useState<BusinessNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -37,6 +49,33 @@ function DateTimeDisplay() {
     }, 60000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadNotifications = async () => {
+      try {
+        const response = await notificationService.list({ per_page: 5 });
+        if (active) {
+          setNotifications(response.notifications);
+          setUnreadCount(response.unread_count);
+        }
+      } catch {
+        // The bell should never interrupt the rest of the dashboard.
+      }
+    };
+
+    void loadNotifications();
+    const interval = window.setInterval(loadNotifications, 60000);
+    const refresh = () => void loadNotifications();
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, refresh);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, refresh);
+    };
   }, []);
 
   const formatDate = (date: Date) => {
@@ -55,42 +94,124 @@ function DateTimeDisplay() {
     });
   };
 
-  const handleNotificationClick = () => {
-    console.log("Notifications clicked");
-    setHasNotifications(false);
-  };
-
   const handleDateClick = () => {
     setShowDatePicker(!showDatePicker);
+    setShowNotifications(false);
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = new Date(e.target.value);
     setSelectedDate(newDate);
     setShowDatePicker(false);
-    console.log("Date selected:", newDate);
-  };
-
-  const handleTimeClick = () => {
-    console.log("Time clicked");
-    // Add your time-related logic here
   };
 
   return (
     <div className="hidden md:flex items-center gap-3 text-sm">
-      {/* Notification Bell */}
-      <button
-        onClick={handleNotificationClick}
-        className="relative p-2 rounded-lg hover:bg-slate-100 transition-colors"
-        aria-label="Notifications"
-      >
-        <Bell size={18} className="text-slate-500" />
-        {hasNotifications && (
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-xl border-2 border-white"></span>
-        )}
-      </button>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => {
+            setShowNotifications((current) => !current);
+            setShowDatePicker(false);
+          }}
+          className="relative rounded-lg p-2 transition-colors hover:bg-slate-100"
+          aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
+          aria-expanded={showNotifications}
+        >
+          <Bell size={18} className="text-slate-500" />
+          {unreadCount > 0 && (
+            <span className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white ring-2 ring-white">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </button>
 
-      {/* Clickable Date with Picker */}
+        {showNotifications && (
+          <>
+            <button
+              type="button"
+              className="fixed inset-0 z-40 cursor-default"
+              onClick={() => setShowNotifications(false)}
+              aria-label="Close notifications"
+            />
+            <div className="absolute right-0 z-50 mt-2 w-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Notifications</p>
+                  <p className="text-[10px] text-slate-400">
+                    {unreadCount ? `${unreadCount} unread` : "You’re all caught up"}
+                  </p>
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await notificationService.markAllRead();
+                      setUnreadCount(0);
+                      setNotifications((current) => current.map((item) => ({ ...item, is_read: true })));
+                    }}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-600 hover:text-purple-700"
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                  </button>
+                )}
+              </div>
+              {notifications.length ? (
+                <div className="max-h-[360px] divide-y divide-slate-100 overflow-y-auto">
+                  {notifications.map((notification) => {
+                    const Icon = notificationIcon(notification.type);
+                    return (
+                      <button
+                        type="button"
+                        key={notification.id}
+                        onClick={async () => {
+                          if (!notification.is_read) await notificationService.markRead(notification.id);
+                          setShowNotifications(false);
+                          navigate(notification.action_url || "/dashboard/activity");
+                        }}
+                        className={`flex w-full gap-3 px-4 py-3 text-left transition hover:bg-slate-50 ${
+                          notification.is_read ? "bg-white" : "bg-purple-50/50"
+                        }`}
+                      >
+                        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${notificationTone(notification.type)}`}>
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className={`truncate text-xs ${notification.is_read ? "font-semibold text-slate-700" : "font-bold text-slate-950"}`}>
+                              {notification.title}
+                            </span>
+                            {!notification.is_read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-purple-500" />}
+                          </span>
+                          <span className="mt-0.5 line-clamp-2 block text-[10px] leading-4 text-slate-500">
+                            {notification.message}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="px-5 py-10 text-center">
+                  <Bell className="mx-auto h-6 w-6 text-slate-300" />
+                  <p className="mt-2 text-xs font-semibold text-slate-600">No notifications yet</p>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNotifications(false);
+                  navigate("/dashboard/activity");
+                }}
+                className="w-full border-t border-slate-100 px-4 py-3 text-center text-xs font-bold text-purple-600 transition hover:bg-purple-50"
+              >
+                View notification center
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
       <div className="relative">
         <button
           onClick={handleDateClick}
@@ -100,7 +221,6 @@ function DateTimeDisplay() {
           <span>{formatDate(selectedDate)}</span>
         </button>
 
-        {/* Date Picker Popup */}
         {showDatePicker && (
           <>
             <div
@@ -136,16 +256,24 @@ function DateTimeDisplay() {
         )}
       </div>
 
-      {/* Clickable Time */}
-      <button
-        onClick={handleTimeClick}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors cursor-pointer"
-      >
+      <div className="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5 text-purple-700">
         <Clock size={15} className="text-purple-400" />
         <span className="font-medium">{formatTime(currentDateTime)}</span>
-      </button>
+      </div>
     </div>
   );
+}
+
+function notificationIcon(type: NotificationType) {
+  if (type === "order") return ShoppingBag;
+  if (type === "inventory") return Package;
+  return CircleAlert;
+}
+
+function notificationTone(type: NotificationType): string {
+  if (type === "order") return "bg-purple-100 text-purple-700";
+  if (type === "inventory") return "bg-amber-100 text-amber-700";
+  return "bg-blue-100 text-blue-700";
 }
 
 export function DashboardLayout() {

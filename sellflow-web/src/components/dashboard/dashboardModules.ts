@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bell,
   Boxes,
   Briefcase,
   CalendarDays,
@@ -241,7 +242,7 @@ function growthSection(): DashboardModuleSection {
         ...available("telegram", "Telegram", "Telegram destinations and order alerts", Send, "/dashboard/notifications"),
         badge: "New",
       },
-      planned("notifications", "Notifications", "Email and push notification preferences", Send),
+      available("activity", "Notifications", "Orders, inventory alerts, and important activity", Bell, "/dashboard/activity"),
     ],
   };
 }

@@ -9,6 +9,7 @@ use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductVariantResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\BusinessNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,8 @@ use Illuminate\Validation\ValidationException;
 class InventoryController extends Controller
 {
     private const RETAIL_TYPES = ['fashion', 'beauty', 'electronics', 'grocery_retail'];
+
+    public function __construct(private readonly BusinessNotificationService $notifications) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -136,6 +139,8 @@ class InventoryController extends Controller
                 'movement' => $movement->load(['product', 'variant']),
             ];
         });
+
+        $this->notifications->stockChanged($result['product'], $result['variant']);
 
         return response()->json([
             'success' => true,
