@@ -1,8 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "installCommand": "cd sellflow-web && npm ci",
+  "buildCommand": "cd sellflow-web && npm run build",
+  "outputDirectory": "sellflow-web/dist",
   "rewrites": [
     {
       "source": "/api/:path*",
