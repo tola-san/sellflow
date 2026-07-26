@@ -169,6 +169,43 @@ body {
   -webkit-mask-size: 14px 14px;
   opacity: 0.38;
 }
+[data-customer-theme="angkor"] > footer::after,
+[data-customer-theme="krama"] > footer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    url("/theme-backgrounds/khmer-footer-motif-v1.webp"),
+    url("/theme-backgrounds/khmer-footer-motif-v1.webp");
+  background-position:
+    left -1.5rem center,
+    right -1.5rem center;
+  background-repeat: no-repeat;
+  background-size: 7.5rem 7.5rem;
+  opacity: 0.085;
+  pointer-events: none;
+}
+.khmer-footer-signature {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+.khmer-footer-signature::before,
+.khmer-footer-signature::after {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  flex: 0 0 auto;
+  transform: rotate(45deg);
+  border: 1px solid color-mix(in srgb, var(--store-primary) 72%, transparent);
+  box-shadow:
+    0.28rem -0.28rem 0 -0.16rem color-mix(in srgb, var(--store-primary) 46%, transparent),
+    -0.28rem 0.28rem 0 -0.16rem color-mix(in srgb, var(--store-primary) 46%, transparent);
+}
 .khmer-storefront-body::before {
   content: "";
   position: absolute;
@@ -205,39 +242,6 @@ body {
 .khmer-body-preview--krama {
   background-image: linear-gradient(rgb(250 244 232 / 0.5), rgb(250 244 232 / 0.82)), url("/theme-backgrounds/krama-indigo-clean-v2-desktop.webp");
 }
-.khmer-catalog-section {
-  position: relative;
-  isolation: isolate;
-  margin-inline: -0.75rem;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--store-primary) 10%, transparent);
-  border-radius: 1.75rem;
-  padding: clamp(1rem, 2.2vw, 1.5rem);
-  background: color-mix(in srgb, var(--store-surface) 82%, transparent);
-  box-shadow: 0 18px 50px rgb(53 26 18 / 0.045);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-}
-.khmer-catalog-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-[data-customer-theme="angkor"] .khmer-catalog-section--art::before {
-  background:
-    linear-gradient(110deg, rgb(255 253 247 / 0.66), rgb(245 233 211 / 0.82)),
-    url("/theme-backgrounds/angkor-gold-clean-v2-desktop.webp") center 38% / cover no-repeat;
-}
-[data-customer-theme="krama"] .khmer-catalog-section--art::before {
-  background:
-    linear-gradient(110deg, rgb(255 253 248 / 0.66), rgb(250 244 232 / 0.82)),
-    url("/theme-backgrounds/krama-indigo-clean-v2-desktop.webp") center 38% / cover no-repeat;
-}
-
-
-
 @media (max-width: 640px) {
   .storefront-banner-hero {
     aspect-ratio: 8 / 5;
@@ -273,21 +277,6 @@ body {
     background-image:
       linear-gradient(to bottom, color-mix(in srgb, var(--store-background) 8%, transparent), color-mix(in srgb, var(--store-background) 54%, transparent)),
       url("/theme-backgrounds/krama-indigo-clean-v3-mobile.webp");
-  }
-  .khmer-catalog-section {
-    margin-inline: -0.5rem;
-    border-radius: 1.25rem;
-    padding: 0.875rem;
-  }
-  [data-customer-theme="angkor"] .khmer-catalog-section--art::before {
-    background:
-      linear-gradient(110deg, rgb(255 253 247 / 0.7), rgb(245 233 211 / 0.84)),
-      url("/theme-backgrounds/angkor-gold-clean-v3-mobile.webp") center top / cover no-repeat;
-  }
-  [data-customer-theme="krama"] .khmer-catalog-section--art::before {
-    background:
-      linear-gradient(110deg, rgb(255 253 248 / 0.7), rgb(250 244 232 / 0.84)),
-      url("/theme-backgrounds/krama-indigo-clean-v3-mobile.webp") center top / cover no-repeat;
   }
 }
 
@@ -355,5 +344,3 @@ body {
   /* For stronger gradient effect */
   filter: drop-shadow(0 25px 25px rgb(139 92 246));
 }
-
-

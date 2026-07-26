@@ -25,6 +25,7 @@ class CheckoutRequest extends FormRequest
             'telegram_init_data' => ['nullable', 'string', 'max:8192'],
             'items' => ['required', 'array', 'min:1', 'max:50'],
             'items.*.product_slug' => ['required', 'string', 'max:255'],
+            'items.*.variant_id' => ['nullable', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
             'items.*.modifier_ids' => ['sometimes', 'array', 'max:50'],
             'items.*.modifier_ids.*' => ['integer', 'distinct'],

@@ -26,6 +26,17 @@ export interface PublicModifierGroup {
   options: PublicModifierOption[];
 }
 
+export interface PublicProductVariant {
+  id: number;
+  name: string;
+  attributes: Record<string, string>;
+  sku: string | null;
+  price: string | null;
+  discount_price: string | null;
+  effective_price: string;
+  stock: number;
+}
+
 export interface PublicProduct {
   name: string;
   slug: string;
@@ -37,6 +48,7 @@ export interface PublicProduct {
   is_featured: boolean;
   category: PublicCategory;
   modifier_groups: PublicModifierGroup[];
+  variants: PublicProductVariant[];
   availability_status: "always" | "scheduled" | "sold_out" | "hidden";
   is_available_now: boolean;
 }

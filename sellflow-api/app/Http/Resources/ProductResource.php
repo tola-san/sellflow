@@ -35,6 +35,8 @@ class ProductResource extends JsonResource
 
             'stock' => $this->stock,
 
+            'low_stock_threshold' => $this->low_stock_threshold,
+
             'thumbnail' => $this->thumbnailUrl(),
 
             'is_featured' => $this->is_featured,
@@ -53,6 +55,8 @@ class ProductResource extends JsonResource
             'category' => $this->whenLoaded('category'),
 
             'modifier_groups' => ModifierGroupResource::collection($this->whenLoaded('modifierGroups')),
+
+            'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
 
             'created_at' => $this->created_at,
         ];

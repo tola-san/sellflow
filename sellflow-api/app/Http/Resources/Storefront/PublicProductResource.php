@@ -34,6 +34,23 @@ class PublicProductResource extends JsonResource
                     'price_adjustment' => $option->price_adjustment,
                 ])->values(),
             ])->values()),
+            'variants' => $this->whenLoaded('variants', fn () => $this->variants
+                ->where('is_active', true)
+                ->map(fn ($variant) => [
+                    'id' => $variant->id,
+                    'name' => $variant->name,
+                    'attributes' => $variant->attributes ?? [],
+                    'sku' => $variant->sku,
+                    'price' => $variant->price,
+                    'discount_price' => $variant->discount_price,
+                    'effective_price' => (string) (
+                        $variant->discount_price
+                        ?? $variant->price
+                        ?? $this->discount_price
+                        ?? $this->price
+                    ),
+                    'stock' => $variant->stock,
+                ])->values()),
         ];
     }
 }

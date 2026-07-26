@@ -7,9 +7,11 @@ use App\Http\Controllers\Api\Business\TelegramNotificationController;
 use App\Http\Controllers\Api\Category\CategoryController;
 use App\Http\Controllers\Api\Dashboard\AnalyticsController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
+use App\Http\Controllers\Api\Inventory\InventoryController;
 use App\Http\Controllers\Api\ModifierGroup\ModifierGroupController;
 use App\Http\Controllers\Api\Order\OrderController;
 use App\Http\Controllers\Api\Product\ProductController;
+use App\Http\Controllers\Api\ProductVariant\ProductVariantController;
 use App\Http\Controllers\Api\Restaurant\MenuAvailabilityController;
 use App\Http\Controllers\Api\Restaurant\RestaurantTableController;
 use App\Http\Controllers\Api\Storefront\CheckoutController;
@@ -67,6 +69,9 @@ Route::prefix('v1')->group(function () {
 
         // Products
         Route::apiResource('products', ProductController::class);
+        Route::apiResource('product-variants', ProductVariantController::class)->except('show');
+        Route::get('/inventory', [InventoryController::class, 'index']);
+        Route::patch('/inventory/stock', [InventoryController::class, 'adjust']);
 
         // Restaurant add-ons and modifiers
         Route::apiResource('modifier-groups', ModifierGroupController::class)->except('show');

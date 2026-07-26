@@ -16,6 +16,7 @@ export function ProductDetailPage() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
   const cart = useCart();
   const { showToast } = useToast();
   const { hapticImpact, storePath } = useTelegramMiniApp();
@@ -26,6 +27,7 @@ export function ProductDetailPage() {
     setDetail(null);
     setImageLoaded(false);
     setSelectedOptionIds([]);
+    setSelectedVariantId(null);
     storefrontService.getProduct(slug, productSlug)
       .then((data) => {
         setDetail(data);
@@ -65,8 +67,11 @@ export function ProductDetailPage() {
 
   const { business, product } = detail;
   const theme = resolveCustomerTheme(business.theme, customerTheme);
-  const currentPrice = Number(product.discount_price || product.price);
-  const regularPrice = Number(product.price);
+  const variants = product.variants || [];
+  const selectedVariant = variants.find((variant) => variant.id === selectedVariantId) ?? null;
+  const currentPrice = Number(selectedVariant?.effective_price ?? product.discount_price ?? product.price);
+  const regularPrice = Number(selectedVariant?.price ?? product.price);
+  const availableStock = selectedVariant?.stock ?? product.stock;
   const modifierGroups = product.modifier_groups || [];
   const selectedModifiers: SelectedModifier[] = modifierGroups.flatMap((group) =>
     group.options
@@ -75,7 +80,7 @@ export function ProductDetailPage() {
   );
   const modifierPrice = selectedModifiers.reduce((sum, option) => sum + Number(option.price_adjustment), 0);
   const configuredUnitPrice = currentPrice + modifierPrice;
-  const discountPercent = product.discount_price 
+  const discountPercent = regularPrice > currentPrice
     ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100)
     : 0;
   
@@ -95,6 +100,10 @@ export function ProductDetailPage() {
   } as CSSProperties;
 
   const addToCart = () => {
+    if (variants.length > 0 && !selectedVariant) {
+      showToast("Please choose a product variant.", "error");
+      return;
+    }
     const invalidGroup = modifierGroups.find((group) => {
       const count = group.options.filter((option) => selectedOptionIds.includes(option.id)).length;
       const minimum = group.is_required ? Math.max(1, group.min_select) : group.min_select;
@@ -106,7 +115,7 @@ export function ProductDetailPage() {
       showToast(`Please complete the ${invalidGroup.name} choice.`, "error");
       return;
     }
-    cart.add(slug, product, quantity, selectedModifiers);
+    cart.add(slug, product, quantity, selectedModifiers, selectedVariant);
     hapticImpact();
     showToast(`${quantity} × ${product.name} added to cart.`, "success");
   };
@@ -170,8 +179,8 @@ export function ProductDetailPage() {
     setShareOpen(false);
   };
 
-  const isOutOfStock = product.stock < 1 || !product.is_available_now;
-  const isLowStock = product.stock > 0 && product.stock <= 5;
+  const isOutOfStock = availableStock < 1 || !product.is_available_now;
+  const isLowStock = availableStock > 0 && availableStock <= 5;
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={variables}>
@@ -300,7 +309,7 @@ export function ProductDetailPage() {
               <div className="text-4xl font-bold tracking-tight" style={{ color: theme.primary_color }}>
                 ${currentPrice.toFixed(2)}
               </div>
-              {product.discount_price && (
+              {discountPercent > 0 && (
                 <div className="text-xl line-through opacity-50">${regularPrice.toFixed(2)}</div>
               )}
             </div>
@@ -313,7 +322,7 @@ export function ProductDetailPage() {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
                   </span>
-                  {product.availability_status === "sold_out" ? "Sold out" : product.stock < 1 ? "Out of stock" : "Currently unavailable"}
+                  {product.availability_status === "sold_out" ? "Sold out" : availableStock < 1 ? "Out of stock" : "Currently unavailable"}
                 </span>
               ) : isLowStock ? (
                 <span className="flex items-center gap-1.5 text-amber-500">
@@ -321,12 +330,12 @@ export function ProductDetailPage() {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
                   </span>
-                  Only {product.stock} left in stock
+                  Only {availableStock} left in stock
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5 text-emerald-500">
                   <Check size={18} className="text-emerald-500" />
-                  In stock • {product.stock} available
+                  In stock • {availableStock} available
                 </span>
               )}
             </div>
@@ -336,6 +345,50 @@ export function ProductDetailPage() {
               <div className="mt-6 text-[15px] leading-relaxed" style={{ color: theme.muted_color }}>
                 {product.description}
               </div>
+            )}
+
+            {variants.length > 0 && (
+              <fieldset className="mt-7 rounded-2xl border p-4" style={{ borderColor: `${theme.muted_color}25`, backgroundColor: `${theme.surface_color}CC` }}>
+                <legend className="px-1 text-sm font-semibold">
+                  Choose an option
+                  <span className="ml-2 text-xs font-medium text-rose-500">Required</span>
+                </legend>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {variants.map((variant) => {
+                    const checked = selectedVariantId === variant.id;
+                    const unavailable = variant.stock < 1;
+                    return (
+                      <label
+                        key={variant.id}
+                        className={`flex items-center gap-3 rounded-xl border px-3 py-3 text-sm transition ${unavailable ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                        style={{ borderColor: checked ? theme.primary_color : `${theme.muted_color}25`, backgroundColor: checked ? `${theme.primary_color}0D` : theme.surface_color }}
+                      >
+                        <input
+                          type="radio"
+                          name="product-variant"
+                          checked={checked}
+                          disabled={unavailable}
+                          onChange={() => {
+                            setSelectedVariantId(variant.id);
+                            setQuantity(1);
+                          }}
+                          style={{ accentColor: theme.primary_color }}
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-medium">{variant.name}</span>
+                          <span className="mt-0.5 block text-xs" style={{ color: theme.muted_color }}>
+                            {Object.entries(variant.attributes).map(([key, value]) => `${key}: ${value}`).join(" · ") || variant.sku || "Variant"}
+                          </span>
+                        </span>
+                        <span className="text-right">
+                          <span className="block font-semibold" style={{ color: theme.primary_color }}>${Number(variant.effective_price).toFixed(2)}</span>
+                          <span className="text-[11px]" style={{ color: theme.muted_color }}>{unavailable ? "Out of stock" : `${variant.stock} left`}</span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
             )}
 
             {modifierGroups.length > 0 && (
@@ -383,7 +436,7 @@ export function ProductDetailPage() {
               }}>
                 <QuantityControl
                   quantity={quantity}
-                  stock={product.stock}
+                  stock={availableStock}
                   setQuantity={setQuantity}
                   color={theme.primary_color}
                   muted={theme.muted_color}
@@ -444,7 +497,7 @@ export function ProductDetailPage() {
               <div className="flex items-center gap-2 text-xs font-medium opacity-60">
                 <span>{quantity} item{quantity > 1 ? 's' : ''}</span>
                 {isLowStock && !isOutOfStock && (
-                  <span className="text-amber-500">• Only {product.stock} left</span>
+                  <span className="text-amber-500">• Only {availableStock} left</span>
                 )}
               </div>
               <p className="text-2xl font-bold tracking-tight" style={{ color: theme.primary_color }}>
@@ -454,7 +507,7 @@ export function ProductDetailPage() {
 
             <QuantityControl
               quantity={quantity}
-              stock={product.stock}
+              stock={availableStock}
               setQuantity={setQuantity}
               color={theme.primary_color}
               muted={theme.muted_color}

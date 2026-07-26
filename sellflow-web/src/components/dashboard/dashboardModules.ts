@@ -74,8 +74,8 @@ const businessSections: Record<SidebarProfile, DashboardModuleSection[]> = {
       modules: [
         available("products", "Products", "Pricing, media, and product visibility", Package, "/dashboard/products"),
         available("categories", "Categories", "Organize the storefront catalog", FolderTree, "/dashboard/categories"),
-        planned("inventory", "Inventory", "Stock movements and low-stock management", Boxes),
-        planned("product-variants", "Product variants", "Sizes, colors, SKUs, and variant stock", ListPlus),
+        available("inventory", "Inventory", "Stock movements and low-stock management", Boxes, "/dashboard/inventory"),
+        available("product-variants", "Product variants", "Sizes, colors, SKUs, and variant stock", ListPlus, "/dashboard/product-variants"),
         planned("discounts", "Discounts", "Promotions and scheduled price rules", Tags),
       ],
     },
