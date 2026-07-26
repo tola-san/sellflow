@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Dashboard\AnalyticsController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Inventory\InventoryController;
 use App\Http\Controllers\Api\ModifierGroup\ModifierGroupController;
+use App\Http\Controllers\Api\Notification\NotificationController;
 use App\Http\Controllers\Api\Order\OrderController;
 use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\ProductVariant\ProductVariantController;
@@ -51,6 +52,10 @@ Route::prefix('v1')->group(function () {
         // Dashboard summary
         Route::get('/dashboard/overview', [DashboardController::class, 'overview']);
         Route::get('/dashboard/analytics', AnalyticsController::class);
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+        Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+        Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy']);
 
         // Business
         Route::get('/business', [BusinessController::class, 'show']);

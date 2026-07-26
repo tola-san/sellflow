@@ -141,6 +141,11 @@ class Business extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(BusinessNotification::class);
+    }
+
     public function notificationSetting(): HasOne
     {
         return $this->hasOne(BusinessNotificationSetting::class);
