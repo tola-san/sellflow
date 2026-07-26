@@ -236,7 +236,7 @@ function growthSection(): DashboardModuleSection {
     key: "growth",
     label: "Growth",
     modules: [
-      planned("analytics", "Analytics", "Sales trends, best sellers, and reports", BarChart3),
+      available("analytics", "Analytics", "Sales trends, best sellers, and reports", BarChart3, "/dashboard/analytics"),
       {
         ...available("telegram", "Telegram", "Telegram destinations and order alerts", Send, "/dashboard/notifications"),
         badge: "New",

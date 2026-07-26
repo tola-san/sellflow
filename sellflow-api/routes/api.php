@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Business\BusinessController;
 use App\Http\Controllers\Api\Business\BusinessThemeController;
 use App\Http\Controllers\Api\Business\TelegramNotificationController;
 use App\Http\Controllers\Api\Category\CategoryController;
+use App\Http\Controllers\Api\Dashboard\AnalyticsController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\ModifierGroup\ModifierGroupController;
 use App\Http\Controllers\Api\Order\OrderController;
@@ -47,6 +48,7 @@ Route::prefix('v1')->group(function () {
 
         // Dashboard summary
         Route::get('/dashboard/overview', [DashboardController::class, 'overview']);
+        Route::get('/dashboard/analytics', AnalyticsController::class);
 
         // Business
         Route::get('/business', [BusinessController::class, 'show']);
