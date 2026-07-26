@@ -188,4 +188,4 @@ The MVP is ready to release when:
 - [ ] Stock and totals remain correct during checkout
 - [ ] The seller receives and manages the order successfully
 - [ ] The customer receives order updates successfully
-- [ ] Production logging, queues, storage, and health checks are verified
+
