@@ -5,10 +5,8 @@ import {
   Trash2, 
   X, 
   FolderTree, 
-  Package, 
   Tag,
   ChevronRight,
-  Eye,
   EyeOff,
   Calendar,
   Image as ImageIcon
@@ -285,7 +283,7 @@ export function CategoriesPage() {
           title={editing ? "Edit category" : "New category"}
           close={() => setOpen(false)}
         >
-          <form onSubmit={submit} className="space-y-5">
+          <form onSubmit={submit} className="space-y-4 sm:space-y-5">
             {/* Name & Slug Row */}
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-medium text-slate-700">
@@ -393,7 +391,7 @@ export function CategoriesPage() {
             <ErrorMessage error={error} />
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 border-t border-slate-200 pt-5">
+            <div className="sticky -bottom-4 -mx-4 flex justify-end gap-3 border-t border-slate-200 bg-white px-4 pb-4 pt-4 sm:-bottom-6 sm:-mx-6 sm:px-6 sm:pb-6 sm:pt-5">
               <button
                 type="button"
                 className={`${buttonSecondary} px-6`}
@@ -441,21 +439,31 @@ function Modal({
 
   // Close on Escape key
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
     };
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [close]);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4 backdrop-blur-sm transition-opacity duration-300"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-slate-950/50 p-2 backdrop-blur-sm transition-opacity duration-300 sm:p-4"
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl shadow-slate-950/20 transition-all duration-300 animate-in slide-in-from-bottom-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="category-modal-title"
+        className="flex max-h-[calc(100dvh-1rem)] w-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-2xl shadow-slate-950/20 transition-all duration-300 animate-in slide-in-from-bottom-4 sm:max-h-[calc(100dvh-2rem)]"
+      >
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-6 sm:py-5">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white">
               {title.includes('Edit') ? (
@@ -464,10 +472,12 @@ function Modal({
                 <Plus className="h-4 w-4" />
               )}
             </div>
-            <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+            <h2 id="category-modal-title" className="text-lg font-semibold text-slate-900">{title}</h2>
           </div>
           <button
+            type="button"
             onClick={close}
+            aria-label="Close category modal"
             className="rounded-xl p-2 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-600"
           >
             <X size={18} />
@@ -475,7 +485,7 @@ function Modal({
         </div>
 
         {/* Modal Content */}
-        <div className="p-6">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">{children}</div>
       </div>
     </div>
   );
