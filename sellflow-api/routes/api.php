@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Storefront\CheckoutController;
 use App\Http\Controllers\Api\Storefront\StorefrontController;
 use App\Http\Controllers\Api\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Broadcasting\BroadcastController;
 
 Route::prefix('v1')->group(function () {
     // Public customer storefront. Authentication is intentionally not required.
@@ -48,6 +49,7 @@ Route::prefix('v1')->group(function () {
         // Authentication
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
 
         // Dashboard summary
         Route::get('/dashboard/overview', [DashboardController::class, 'overview']);

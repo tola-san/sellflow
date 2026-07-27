@@ -49,8 +49,5 @@ COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf.temp
 
 EXPOSE 10000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl --fail "http://127.0.0.1:${PORT:-10000}/up" || exit 1
-
 ENTRYPOINT ["/var/www/docker/render-entrypoint.sh"]
 CMD ["apache2-foreground"]
