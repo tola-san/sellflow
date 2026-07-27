@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\BusinessNotificationCreated;
 use App\Models\BusinessNotification;
 use App\Models\Order;
 use App\Models\Product;
@@ -88,7 +89,7 @@ class BusinessNotificationService
         ?string $actionUrl,
         array $data
     ): BusinessNotification {
-        return BusinessNotification::query()->updateOrCreate(
+        $notification = BusinessNotification::query()->updateOrCreate(
             ['business_id' => $businessId, 'key' => $key],
             [
                 'type' => $type,
@@ -100,5 +101,9 @@ class BusinessNotificationService
                 'dismissed_at' => null,
             ]
         );
+
+        BusinessNotificationCreated::dispatch($notification);
+
+        return $notification;
     }
 }
