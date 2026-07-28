@@ -254,7 +254,7 @@ function systemSection(): DashboardModuleSection {
     modules: [
       available("business-profile", "Business profile", "Identity, contact details, and business type", Store, "/dashboard/business"),
       available("billing", "Billing & plan", "Subscription, invoices, and plan features", CreditCard, "/dashboard/billing"),
-      planned("settings", "Settings", "Account and workspace preferences", Settings),
+      available("settings", "Settings", "Account and workspace preferences", Settings, "/dashboard/settings"),
     ],
   };
 }

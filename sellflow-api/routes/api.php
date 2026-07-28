@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Business\BusinessController;
 use App\Http\Controllers\Api\Business\BusinessThemeController;
 use App\Http\Controllers\Api\Business\TelegramNotificationController;
@@ -53,6 +54,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
+        Route::patch('/profile', [ProfileController::class, 'update']);
+        Route::patch('/profile/password', [ProfileController::class, 'updatePassword']);
 
         // Subscription and billing
         Route::get('/billing', [BillingController::class, 'overview']);
