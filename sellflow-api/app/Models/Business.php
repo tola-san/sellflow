@@ -151,6 +151,11 @@ class Business extends Model
         return $this->hasOne(BusinessNotificationSetting::class);
     }
 
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(BusinessSubscription::class);
+    }
+
     public function telegramConnectionCodes(): HasMany
     {
         return $this->hasMany(TelegramConnectionCode::class);

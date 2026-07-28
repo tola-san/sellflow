@@ -28,8 +28,10 @@ export interface NotificationListResponse {
 
 export const NOTIFICATIONS_CHANGED_EVENT = "sellflow:notifications-changed";
 
-function changed(): void {
-  window.dispatchEvent(new CustomEvent(NOTIFICATIONS_CHANGED_EVENT));
+export function notifyNotificationsChanged(notification?: BusinessNotification): void {
+  window.dispatchEvent(new CustomEvent(NOTIFICATIONS_CHANGED_EVENT, {
+    detail: notification,
+  }));
 }
 
 export const notificationService = {
@@ -55,17 +57,17 @@ export const notificationService = {
 
   async markRead(id: number): Promise<BusinessNotification> {
     const response = await api.patch<{ success: boolean; data: BusinessNotification }>(`/notifications/${id}/read`);
-    changed();
+    notifyNotificationsChanged();
     return response.data.data;
   },
 
   async markAllRead(): Promise<void> {
     await api.patch("/notifications/read-all");
-    changed();
+    notifyNotificationsChanged();
   },
 
   async dismiss(id: number): Promise<void> {
     await api.delete(`/notifications/${id}`);
-    changed();
+    notifyNotificationsChanged();
   },
 };

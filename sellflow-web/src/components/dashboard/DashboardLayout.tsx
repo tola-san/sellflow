@@ -33,6 +33,7 @@ import {
   type BusinessNotification,
   type NotificationType,
 } from "../../Services/notifications";
+import { subscribeToBusinessNotifications } from "../../lib/realtime";
 
 function DateTimeDisplay() {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -296,6 +297,11 @@ export function DashboardLayout() {
     window.addEventListener(DASHBOARD_THEME_EVENT, syncTheme);
     return () => window.removeEventListener(DASHBOARD_THEME_EVENT, syncTheme);
   }, []);
+
+  useEffect(() => {
+    if (!business?.id) return;
+    return subscribeToBusinessNotifications(business.id);
+  }, [business?.id]);
 
   const getInitials = (name: string) => {
     if (!name) return "U";
