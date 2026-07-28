@@ -8,13 +8,15 @@ use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\Product\ProductService;
+use App\Services\Billing\BillingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     public function __construct(
-        protected ProductService $productService
+        protected ProductService $productService,
+        protected BillingService $billing,
     ) {}
 
     /**
@@ -38,6 +40,17 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request): JsonResponse
     {
+        if ($request->user()->business
+            && $this->billing->productLimitReached($request->user()->business)) {
+            return response()->json([
+                'success' => false,
+                'code' => 'SUBSCRIPTION_LIMIT_REACHED',
+                'message' => 'Your current plan product limit has been reached.',
+                'upgrade_required' => true,
+                'billing_url' => '/dashboard/billing',
+            ], 422);
+        }
+
         $product = $this->productService->store(
             $request->user(),
             $request->validated()

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Business\BusinessController;
 use App\Http\Controllers\Api\Business\BusinessThemeController;
 use App\Http\Controllers\Api\Business\TelegramNotificationController;
+use App\Http\Controllers\Api\Billing\BillingController;
 use App\Http\Controllers\Api\Category\CategoryController;
 use App\Http\Controllers\Api\Dashboard\AnalyticsController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
@@ -26,7 +27,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/store/{slug}', [StorefrontController::class, 'show']);
     Route::get('/store/{slug}/products/{productSlug}', [StorefrontController::class, 'product']);
     Route::get('/store/{slug}/tables/{token}', [StorefrontController::class, 'table']);
-    Route::post('/store/{slug}/checkout', [CheckoutController::class, 'store'])->middleware('throttle:20,1');
+    Route::post('/store/{slug}/checkout', [CheckoutController::class, 'store'])
+        ->middleware(['throttle:20,1', 'subscription.access']);
     /*
     |--------------------------------------------------------------------------
     | Public authentication routes
@@ -35,6 +37,7 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/billing/plans', [BillingController::class, 'plans']);
     Route::post('/integrations/telegram/webhook', TelegramWebhookController::class)
         ->middleware('throttle:60,1')
         ->name('telegram.webhook');
@@ -51,6 +54,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
 
+        // Subscription and billing
+        Route::get('/billing', [BillingController::class, 'overview']);
+        Route::get('/billing/payments', [BillingController::class, 'payments']);
+
         // Dashboard summary
         Route::get('/dashboard/overview', [DashboardController::class, 'overview']);
         Route::get('/dashboard/analytics', AnalyticsController::class);
@@ -62,35 +69,40 @@ Route::prefix('v1')->group(function () {
         // Business
         Route::get('/business', [BusinessController::class, 'show']);
         Route::post('/business', [BusinessController::class, 'store']);
-        Route::put('/business', [BusinessController::class, 'update']);
+        Route::put('/business', [BusinessController::class, 'update'])->middleware('subscription.access');
         Route::get('/business/theme', [BusinessThemeController::class, 'show']);
-        Route::put('/business/theme', [BusinessThemeController::class, 'update']);
+        Route::put('/business/theme', [BusinessThemeController::class, 'update'])->middleware('subscription.access');
         Route::get('/business/notifications/telegram', [TelegramNotificationController::class, 'show']);
-        Route::post('/business/notifications/telegram/connect-code', [TelegramNotificationController::class, 'createCode']);
-        Route::patch('/business/notifications/telegram', [TelegramNotificationController::class, 'update']);
-        Route::post('/business/notifications/telegram/test', [TelegramNotificationController::class, 'test']);
-        Route::delete('/business/notifications/telegram', [TelegramNotificationController::class, 'destroy']);
+        Route::post('/business/notifications/telegram/connect-code', [TelegramNotificationController::class, 'createCode'])->middleware('subscription.access');
+        Route::patch('/business/notifications/telegram', [TelegramNotificationController::class, 'update'])->middleware('subscription.access');
+        Route::post('/business/notifications/telegram/test', [TelegramNotificationController::class, 'test'])->middleware('subscription.access');
+        Route::delete('/business/notifications/telegram', [TelegramNotificationController::class, 'destroy'])->middleware('subscription.access');
 
         // Categories
-        Route::apiResource('categories', CategoryController::class);
+        Route::apiResource('categories', CategoryController::class)
+            ->middlewareFor(['store', 'update', 'destroy'], 'subscription.access');
 
         // Products
-        Route::apiResource('products', ProductController::class);
-        Route::apiResource('product-variants', ProductVariantController::class)->except('show');
+        Route::apiResource('products', ProductController::class)
+            ->middlewareFor(['store', 'update', 'destroy'], 'subscription.access');
+        Route::apiResource('product-variants', ProductVariantController::class)->except('show')
+            ->middlewareFor(['store', 'update', 'destroy'], 'subscription.access');
         Route::get('/inventory', [InventoryController::class, 'index']);
-        Route::patch('/inventory/stock', [InventoryController::class, 'adjust']);
+        Route::patch('/inventory/stock', [InventoryController::class, 'adjust'])->middleware('subscription.access');
 
         // Restaurant add-ons and modifiers
-        Route::apiResource('modifier-groups', ModifierGroupController::class)->except('show');
+        Route::apiResource('modifier-groups', ModifierGroupController::class)->except('show')
+            ->middlewareFor(['store', 'update', 'destroy'], 'subscription.access');
         Route::get('/menu-availability', [MenuAvailabilityController::class, 'index']);
-        Route::patch('/menu-availability/{product}', [MenuAvailabilityController::class, 'update']);
-        Route::apiResource('restaurant-tables', RestaurantTableController::class)->except('show');
-        Route::post('/restaurant-tables/{restaurantTable}/regenerate-qr', [RestaurantTableController::class, 'regenerateQr']);
+        Route::patch('/menu-availability/{product}', [MenuAvailabilityController::class, 'update'])->middleware('subscription.access');
+        Route::apiResource('restaurant-tables', RestaurantTableController::class)->except('show')
+            ->middlewareFor(['store', 'update', 'destroy'], 'subscription.access');
+        Route::post('/restaurant-tables/{restaurantTable}/regenerate-qr', [RestaurantTableController::class, 'regenerateQr'])->middleware('subscription.access');
 
         // Orders
         Route::get('/orders', [OrderController::class, 'index']);
         Route::get('/orders/{order}', [OrderController::class, 'show']);
-        Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
-        Route::patch('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus']);
+        Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->middleware('subscription.access');
+        Route::patch('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->middleware('subscription.access');
     });
 });

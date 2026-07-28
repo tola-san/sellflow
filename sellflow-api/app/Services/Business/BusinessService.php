@@ -4,12 +4,16 @@ namespace App\Services\Business;
 
 use App\Models\Business;
 use App\Models\User;
+use App\Services\Billing\BillingService;
 use Illuminate\Support\Str;
 use Throwable;
 
 class BusinessService
 {
-    public function __construct(private readonly BusinessMediaService $media) {}
+    public function __construct(
+        private readonly BusinessMediaService $media,
+        private readonly BillingService $billing,
+    ) {}
 
     public function create(User $user, array $data): Business
     {
@@ -47,6 +51,7 @@ class BusinessService
                 'logo' => $logo,
                 'banner' => $banner,
             ]);
+            $this->billing->startTrial($business);
         } catch (Throwable $exception) {
             $this->media->delete($logo);
             $this->media->delete($banner);

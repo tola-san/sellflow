@@ -253,7 +253,7 @@ function systemSection(): DashboardModuleSection {
     label: "System",
     modules: [
       available("business-profile", "Business profile", "Identity, contact details, and business type", Store, "/dashboard/business"),
-      planned("billing", "Billing & plan", "Subscription, invoices, and plan features", CreditCard),
+      available("billing", "Billing & plan", "Subscription, invoices, and plan features", CreditCard, "/dashboard/billing"),
       planned("settings", "Settings", "Account and workspace preferences", Settings),
     ],
   };
