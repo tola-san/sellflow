@@ -19,11 +19,13 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import { dashboardService, type DashboardOverview } from "../Services/dashboard";
 import { orderService } from "../Services/order";
 import type { Order, OrderListResponse } from "../types/order";
 import { ErrorMessage } from "../components/dashboard/DashboardUI";
 import { DashboardLoading } from "../components/dashboard/DashboardLoading";
+import { NOTIFICATIONS_CHANGED_EVENT, type BusinessNotification } from "../Services/notifications";
 
 const emptySummary: OrderListResponse["summary"] = {
   total: 0,
@@ -82,6 +84,7 @@ export function DashboardPage() {
   const [summary, setSummary] = useState(emptySummary);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
+  const [newOrderUuid, setNewOrderUuid] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.allSettled([
@@ -103,6 +106,31 @@ export function DashboardPage() {
         }
       })
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    let highlightTimer = 0;
+    const receiveOrder = (event: Event) => {
+      const notification = (event as CustomEvent<BusinessNotification | undefined>).detail;
+      if (!notification || notification.type !== "order" || !notification.title.startsWith("New order")) return;
+
+      void orderService.getOrders({ per_page: 50 }).then((result) => {
+        setOrders(result.orders);
+        setSummary(result.summary);
+        const orderNumber = String(notification.data.order_number || "");
+        const arrived = result.orders.find((order) => order.order_number === orderNumber) ?? result.orders[0];
+        if (!arrived) return;
+        setNewOrderUuid(arrived.uuid);
+        window.clearTimeout(highlightTimer);
+        highlightTimer = window.setTimeout(() => setNewOrderUuid(null), 5000);
+      }).catch(setError);
+    };
+
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, receiveOrder);
+    return () => {
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, receiveOrder);
+      window.clearTimeout(highlightTimer);
+    };
   }, []);
 
   const dailySales = useMemo(() => buildDailySales(orders), [orders]);
@@ -184,10 +212,12 @@ export function DashboardPage() {
       <section aria-label="Business metrics" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <MetricCard
           label="Paid revenue"
-          value={money(revenue)}
+          value={revenue}
+          formatValue={(value) => money(value)}
           helper={`${summary.total} total orders`}
           icon={CircleDollarSign}
           accent="violet"
+          index={0}
         />
         <MetricCard
           label="Active orders"
@@ -196,13 +226,16 @@ export function DashboardPage() {
           icon={Clock3}
           accent="amber"
           attention={activeOrders > 0}
+          index={1}
         />
         <MetricCard
           label="Average order"
-          value={money(averageOrder)}
+          value={averageOrder}
+          formatValue={(value) => money(value)}
           helper="Across all orders"
           icon={TrendingUp}
           accent="blue"
+          index={2}
         />
         <MetricCard
           label="Live products"
@@ -210,6 +243,7 @@ export function DashboardPage() {
           helper={`${counts.products} total in catalog`}
           icon={Package}
           accent="emerald"
+          index={3}
         />
       </section>
 
@@ -221,6 +255,7 @@ export function DashboardPage() {
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.65fr)]">
         <RecentOrders
           orders={orders}
+          newOrderUuid={newOrderUuid}
           businessLogo={business?.logo}
           businessName={business?.name}
         />
@@ -293,6 +328,7 @@ function OverviewHeader({
 }
 
 function SetupCard({ steps, completed }: { steps: LaunchStep[]; completed: number }) {
+  const reduceMotion = useReducedMotion();
   const nextStep = steps.find((step) => !step.complete);
   const percent = Math.round((completed / steps.length) * 100);
 
@@ -311,9 +347,11 @@ function SetupCard({ steps, completed }: { steps: LaunchStep[]; completed: numbe
             Finish these essentials to make your storefront customer-ready.
           </p>
           <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-violet-100">
-            <div
+            <motion.div
               className="h-full rounded-full bg-violet-600 transition-all"
-              style={{ width: `${percent}%` }}
+              initial={reduceMotion ? false : { width: 0 }}
+              animate={{ width: `${percent}%` }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
           <div className="mt-2 flex items-center justify-between text-[11px] font-medium text-slate-500">
@@ -376,14 +414,19 @@ function MetricCard({
   icon: Icon,
   accent,
   attention = false,
+  index,
+  formatValue = (number) => Math.round(number).toLocaleString(),
 }: {
   label: string;
-  value: string | number;
+  value: number;
   helper: string;
   icon: ComponentType<{ className?: string }>;
   accent: "violet" | "amber" | "blue" | "emerald";
   attention?: boolean;
+  index: number;
+  formatValue?: (value: number) => string;
 }) {
+  const reduceMotion = useReducedMotion();
   const accents = {
     violet: "bg-violet-50 text-violet-700",
     amber: "bg-amber-50 text-amber-700",
@@ -392,7 +435,13 @@ function MetricCard({
   };
 
   return (
-    <article className="min-w-0 rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-950/[0.025] sm:p-5">
+    <motion.article
+      initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.42, delay: reduceMotion ? 0 : index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={reduceMotion ? undefined : { y: -3 }}
+      className="min-w-0 rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-950/[0.025] sm:p-5"
+    >
       <div className="flex items-center justify-between gap-3">
         <span className={`grid h-8 w-8 place-items-center rounded-lg sm:h-9 sm:w-9 sm:rounded-xl ${accents[accent]}`}>
           <Icon className="h-[18px] w-[18px]" />
@@ -405,13 +454,43 @@ function MetricCard({
         )}
       </div>
       <p className="mt-4 truncate text-[11px] font-medium text-slate-500 sm:mt-5 sm:text-xs">{label}</p>
-      <p className="mt-1.5 truncate text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-3xl">{value}</p>
+      <p className="mt-1.5 truncate text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-3xl">
+        <AnimatedNumber value={value} formatter={formatValue} />
+      </p>
       <p className="mt-2 truncate text-[11px] text-slate-400">{helper}</p>
-    </article>
+    </motion.article>
   );
 }
 
+function AnimatedNumber({ value, formatter }: { value: number; formatter: (value: number) => string }) {
+  const reduceMotion = useReducedMotion();
+  const [displayValue, setDisplayValue] = useState(reduceMotion ? value : 0);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setDisplayValue(value);
+      return;
+    }
+
+    const startedAt = performance.now();
+    const duration = 720;
+    let frame = 0;
+    const update = (now: number) => {
+      const progress = Math.min((now - startedAt) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(value * eased);
+      if (progress < 1) frame = requestAnimationFrame(update);
+    };
+    frame = requestAnimationFrame(update);
+
+    return () => cancelAnimationFrame(frame);
+  }, [reduceMotion, value]);
+
+  return <>{formatter(displayValue)}</>;
+}
+
 function SalesPulse({ data }: { data: DailySales[] }) {
+  const reduceMotion = useReducedMotion();
   const totalRevenue = data.reduce((sum, item) => sum + item.revenue, 0);
   const totalOrders = data.reduce((sum, item) => sum + item.orders, 0);
   const chartMetric = totalRevenue > 0 || totalOrders === 0 ? "revenue" : "orders";
@@ -437,7 +516,12 @@ function SalesPulse({ data }: { data: DailySales[] }) {
   }, null);
 
   return (
-    <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-950/[0.025]">
+    <motion.article
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.46, delay: reduceMotion ? 0 : 0.18, ease: [0.16, 1, 0.3, 1] }}
+      className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-950/[0.025]"
+    >
       <SectionHeader
         title="Sales pulse"
         description="Daily performance from recent orders"
@@ -455,7 +539,10 @@ function SalesPulse({ data }: { data: DailySales[] }) {
               {showingOrderVolume ? "Order activity" : "Paid revenue"} · Last 7 days
             </p>
             <p className="mt-1 text-2xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-3xl">
-              {showingOrderVolume ? `${totalOrders} orders` : money(totalRevenue)}
+              <AnimatedNumber
+                value={showingOrderVolume ? totalOrders : totalRevenue}
+                formatter={(value) => showingOrderVolume ? `${Math.round(value)} orders` : money(value)}
+              />
             </p>
             {showingOrderVolume && (
               <p className="mt-1.5 text-[10px] text-amber-700">
@@ -482,8 +569,26 @@ function SalesPulse({ data }: { data: DailySales[] }) {
               </linearGradient>
             </defs>
             {[73, 124, 175, 226].map((y) => <line key={y} x1="44" x2="856" y1={y} y2={y} stroke="#e8e9ee" strokeDasharray="3 7" />)}
-            {points.length > 1 && <polygon points={`44,227 ${line} 856,227`} fill="url(#overview-sales-area)" />}
-            <polyline points={line} fill="none" stroke="#6d4aff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            {points.length > 1 && (
+              <motion.polygon
+                points={`44,227 ${line} 856,227`}
+                fill="url(#overview-sales-area)"
+                initial={reduceMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.45, delay: reduceMotion ? 0 : 0.65 }}
+              />
+            )}
+            <motion.polyline
+              points={line}
+              fill="none"
+              stroke="#6d4aff"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={reduceMotion ? false : { pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.9, delay: reduceMotion ? 0 : 0.25, ease: "easeOut" }}
+            />
             {peak && <circle cx={peak.x} cy={peak.y} r="7" fill="#6d4aff" stroke="white" strokeWidth="4"><title>{`${peak.item.label}: ${peak.item.orders} orders · ${money(peak.item.revenue)}`}</title></circle>}
           </svg>
           <div className="grid grid-cols-7 px-1 text-center text-[10px] font-medium text-slate-400 sm:text-[11px]">
@@ -495,11 +600,12 @@ function SalesPulse({ data }: { data: DailySales[] }) {
           </div>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
 function OrderDistribution({ summary }: { summary: OrderListResponse["summary"] }) {
+  const reduceMotion = useReducedMotion();
   const groups = [
     { label: "Pending", value: summary.pending, color: "bg-amber-400" },
     { label: "Preparing", value: summary.confirmed + summary.preparing + summary.ready, color: "bg-violet-500" },
@@ -509,7 +615,12 @@ function OrderDistribution({ summary }: { summary: OrderListResponse["summary"] 
   const tracked = groups.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-950/[0.025]">
+    <motion.article
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.46, delay: reduceMotion ? 0 : 0.24, ease: [0.16, 1, 0.3, 1] }}
+      className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-950/[0.025]"
+    >
       <SectionHeader
         title="Order distribution"
         description="All orders by fulfillment status"
@@ -526,18 +637,24 @@ function OrderDistribution({ summary }: { summary: OrderListResponse["summary"] 
 
         <div className="mt-6 space-y-4">
           {groups.map((item) => (
-            <div className="flex items-center gap-3" key={item.label}>
+            <motion.div
+              className="flex items-center gap-3"
+              key={item.label}
+              initial={reduceMotion ? false : { opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: reduceMotion ? 0 : 0.5 + groups.indexOf(item) * 0.06 }}
+            >
               <span className={`h-2 w-2 shrink-0 rounded-full ${item.color}`} />
               <span className="min-w-0 flex-1 text-xs text-slate-500">{item.label}</span>
               <span className="text-sm font-semibold tabular-nums text-slate-900">{item.value}</span>
               <span className="w-9 text-right text-[10px] tabular-nums text-slate-400">
                 {tracked ? Math.round((item.value / tracked) * 100) : 0}%
               </span>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -545,6 +662,7 @@ function OrderDonut({ groups, total }: {
   groups: Array<{ label: string; value: number; color: string }>;
   total: number;
 }) {
+  const reduceMotion = useReducedMotion();
   const palette: Record<string, string> = {
     "bg-amber-400": "#f59e0b",
     "bg-violet-500": "#8b5cf6",
@@ -562,31 +680,39 @@ function OrderDonut({ groups, total }: {
   };
 
   return (
-    <div
+    <motion.div
       className="relative grid h-40 w-40 place-items-center rounded-full"
       style={style}
       role="img"
       aria-label={`Order distribution: ${groups.map((group) => `${group.label} ${group.value}`).join(", ")}`}
+      initial={reduceMotion ? false : { opacity: 0, scale: 0.82, rotate: -70 }}
+      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+      transition={{ duration: 0.72, delay: reduceMotion ? 0 : 0.28, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="grid h-[112px] w-[112px] place-items-center rounded-full bg-white text-center">
         <div>
-          <p className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">{total}</p>
+          <p className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+            <AnimatedNumber value={total} formatter={(value) => Math.round(value).toLocaleString()} />
+          </p>
           <p className="mt-1 text-[10px] font-medium text-slate-400">Total orders</p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function RecentOrders({
   orders,
+  newOrderUuid,
   businessLogo,
   businessName,
 }: {
   orders: Order[];
+  newOrderUuid: string | null;
   businessLogo?: string | null;
   businessName?: string;
 }) {
+  const reduceMotion = useReducedMotion();
   const recent = orders.slice(0, 6);
 
   return (
@@ -617,7 +743,14 @@ function RecentOrders({
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {recent.map((order) => (
-                  <tr className="group transition hover:bg-slate-50/70" key={order.id}>
+                  <motion.tr
+                    layout={!reduceMotion}
+                    initial={order.uuid === newOrderUuid && !reduceMotion ? { opacity: 0, y: -14 } : false}
+                    animate={{ opacity: 1, y: 0, backgroundColor: order.uuid === newOrderUuid ? "rgba(245,243,255,.8)" : "rgba(255,255,255,0)" }}
+                    transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                    className="group transition-colors hover:bg-slate-50/70"
+                    key={order.uuid}
+                  >
                     <td className="whitespace-nowrap px-6 py-3.5">
                       <div className="flex items-center gap-3">
                         <BusinessAvatar
@@ -626,7 +759,10 @@ function RecentOrders({
                           className="h-9 w-9 rounded-xl"
                         />
                         <div>
-                          <p className="text-xs font-semibold text-slate-900">{order.order_number}</p>
+                          <p className="flex items-center gap-2 text-xs font-semibold text-slate-900">
+                            {order.order_number}
+                            {order.uuid === newOrderUuid && <motion.span initial={reduceMotion ? false : { scale: 0 }} animate={{ scale: 1 }} className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-700">New</motion.span>}
+                          </p>
                           <p className="mt-0.5 text-[10px] text-slate-400">{formatOrderTime(order.created_at)}</p>
                         </div>
                       </div>
@@ -651,7 +787,7 @@ function RecentOrders({
                         <MoreHorizontal className="h-4 w-4" />
                       </Link>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
@@ -659,7 +795,13 @@ function RecentOrders({
 
           <div className="divide-y divide-slate-100 md:hidden">
             {recent.map((order) => (
-              <Link to={`/dashboard/orders/${order.uuid}`} className="block p-4 transition active:bg-slate-50" key={order.id}>
+              <motion.div
+                layout={!reduceMotion}
+                initial={order.uuid === newOrderUuid && !reduceMotion ? { opacity: 0, y: -12 } : false}
+                animate={{ opacity: 1, y: 0, backgroundColor: order.uuid === newOrderUuid ? "rgba(245,243,255,.8)" : "rgba(255,255,255,0)" }}
+                key={order.uuid}
+              >
+              <Link to={`/dashboard/orders/${order.uuid}`} className="block p-4 transition active:bg-slate-50">
                 <div className="flex items-start gap-3">
                   <BusinessAvatar
                     logo={businessLogo}
@@ -669,7 +811,10 @@ function RecentOrders({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-900">{order.customer_name || "Customer"}</p>
+                        <p className="flex items-center gap-2 truncate text-sm font-semibold text-slate-900">
+                          {order.customer_name || "Customer"}
+                          {order.uuid === newOrderUuid && <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-700">New</span>}
+                        </p>
                         <p className="mt-0.5 text-[10px] text-slate-400">
                           {order.order_number} · {formatOrderTime(order.created_at)}
                         </p>
@@ -683,6 +828,7 @@ function RecentOrders({
                   </div>
                 </div>
               </Link>
+              </motion.div>
             ))}
           </div>
         </>

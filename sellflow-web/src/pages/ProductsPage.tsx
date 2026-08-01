@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type DragEvent, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { 
   AlertTriangle, 
   ImagePlus, 
@@ -34,6 +35,7 @@ import {
   buttonSecondary, 
   inputClass 
 } from "../components/dashboard/DashboardUI";
+import { ProgressiveImage } from "../components/ui/ProgressiveImage";
 
 type ProductForm = {
   category_id: number;
@@ -54,6 +56,7 @@ const blank: ProductForm = {
 };
 
 export function ProductsPage() {
+  const reduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { productUuid } = useParams<{ productUuid?: string }>();
   const [items, setItems] = useState<Product[]>([]);
@@ -65,6 +68,7 @@ export function ProductsPage() {
   const [removeImage, setRemoveImage] = useState(false);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [search, setSearch] = useState("");
@@ -77,6 +81,11 @@ export function ProductsPage() {
     })
     .catch(setError)
     .finally(() => setLoading(false));
+
+  const refresh = () => {
+    setRefreshing(true);
+    load().finally(() => setRefreshing(false));
+  };
 
   useEffect(() => { load(); }, []);
   useEffect(() => () => {
@@ -305,11 +314,19 @@ export function ProductsPage() {
               <List size={18} />
             </button>
           </div>
-          <button 
-            onClick={load}
+          <button
+            onClick={refresh}
+            disabled={refreshing}
+            aria-label="Refresh products"
             className="rounded-xl border border-slate-200 bg-white p-2 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
           >
-            <RefreshCw size={18} />
+            <motion.span
+              className="block"
+              animate={refreshing && !reduceMotion ? { rotate: 360 } : { rotate: 0 }}
+              transition={refreshing ? { duration: 0.75, repeat: Infinity, ease: "linear" } : { duration: 0.2 }}
+            >
+              <RefreshCw size={18} />
+            </motion.span>
           </button>
         </div>
       </div>
@@ -327,33 +344,62 @@ export function ProductsPage() {
             </div>
           ))}
         </div>
-      ) : visible.length ? (
-        viewMode === "grid" ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visible.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                edit={show} 
-                remove={remove} 
-              />
-            ))}
-          </div>
-        ) : (
-          <ProductTable products={visible} edit={show} remove={remove} />
-        )
       ) : (
-        <div className="rounded-xl border-2 border-dashed border-slate-200 bg-zinc-100/50 p-12">
-          <EmptyState 
-            title={search ? "No matching products" : "No products yet"} 
-            description={search ? "Try a different search term." : "Add your first product to start building the catalog."} 
-            action={!search && categories.length ? 
-              <button className={`${buttonPrimary} gap-2`} onClick={() => show()}>
-                <Plus size={17}/> Add product
-              </button> : undefined
-            }
-          />
-        </div>
+        <motion.div animate={{ opacity: refreshing ? 0.55 : 1 }} transition={{ duration: reduceMotion ? 0 : 0.18 }}>
+          <AnimatePresence mode="wait" initial={false}>
+            {visible.length ? (
+              viewMode === "grid" ? (
+                <motion.div
+                  key="product-grid"
+                  className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <AnimatePresence mode="popLayout">
+                    {visible.map((product) => (
+                      <ProductCard
+                        key={product.uuid}
+                        product={product}
+                        edit={show}
+                        remove={remove}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="product-list"
+                  initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ProductTable products={visible} edit={show} remove={remove} />
+                </motion.div>
+              )
+            ) : (
+              <motion.div
+                key="product-empty"
+                initial={reduceMotion ? false : { opacity: 0, scale: 0.985 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reduceMotion ? undefined : { opacity: 0 }}
+                className="rounded-xl border-2 border-dashed border-slate-200 bg-zinc-100/50 p-12"
+              >
+                <EmptyState
+                  title={search ? "No matching products" : "No products yet"}
+                  description={search ? "Try a different search term." : "Add your first product to start building the catalog."}
+                  action={!search && categories.length ?
+                    <button className={`${buttonPrimary} gap-2`} onClick={() => show()}>
+                      <Plus size={17}/> Add product
+                    </button> : undefined
+                  }
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       )}
 
       {/* Product Modal */}
@@ -508,15 +554,25 @@ export function ProductsPage() {
 
 // Product Card Component (Grid View)
 function ProductCard({ product, edit, remove }: { product: Product; edit: (product: Product) => void; remove: (product: Product) => void }) {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <article className="group relative rounded-xl bg-slate-100 border border-slate-200 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-zinc-200/50">
+    <motion.article
+      layout={!reduceMotion}
+      initial={reduceMotion ? false : { opacity: 0, scale: 0.975, y: 8 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={reduceMotion ? undefined : { opacity: 0, scale: 0.97, y: -6 }}
+      transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative rounded-xl bg-slate-100 border border-slate-200 p-4 shadow-sm transition-shadow duration-300 hover:shadow-xl hover:shadow-zinc-200/50"
+    >
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden rounded-xl shadow-sm">
         {product.thumbnail ? (
-          <img 
-            src={product.thumbnail} 
-            alt={product.name} 
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          <ProgressiveImage
+            src={product.thumbnail}
+            alt={product.name}
+            className="h-full w-full"
+            imageClassName="h-full w-full object-cover group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-slate-300">
@@ -596,7 +652,7 @@ function ProductCard({ product, edit, remove }: { product: Product; edit: (produ
           {product.category?.name || "Uncategorized"}
         </p>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -721,6 +777,8 @@ function FormSection({ title, description, children }: { title: string; descript
 }
 
 function ProductTable({ products, edit, remove }: { products: Product[]; edit: (product: Product) => void; remove: (product: Product) => void }) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
@@ -736,13 +794,22 @@ function ProductTable({ products, edit, remove }: { products: Product[]; edit: (
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
+            <AnimatePresence initial={false}>
             {products.map((product) => (
-              <tr key={product.id} className="group transition hover:bg-zinc-50/70">
+              <motion.tr
+                layout={!reduceMotion}
+                key={product.uuid}
+                initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="group transition-colors hover:bg-zinc-50/70"
+              >
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
                     <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
                       {product.thumbnail ? (
-                        <img src={product.thumbnail} alt="" className="h-full w-full object-cover"/>
+                        <ProgressiveImage src={product.thumbnail} alt={product.name} className="h-full w-full" imageClassName="h-full w-full object-cover" />
                       ) : (
                         <span className="grid h-full place-items-center text-slate-300">
                           <ImagePlus size={20}/>
@@ -808,8 +875,9 @@ function ProductTable({ products, edit, remove }: { products: Product[]; edit: (
                     </button>
                   </div>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>

@@ -9,11 +9,18 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   billingService,
   type BillingCycle,
   type SubscriptionPlan,
 } from "../Services/billing";
+
+const fallbackPlans: SubscriptionPlan[] = [
+  { id: -1, name: "Starter", slug: "starter", description: "Essential tools for a small business starting online.", monthly_price: "6.00", yearly_price: "60.00", currency: "USD", limits: { businesses: 1, staff: 1, products: 100 }, features: { inventory: "basic", telegram_notifications: true, restaurant_qr: false, analytics_history_days: 30, custom_domain: false, priority_support: false }, is_popular: false },
+  { id: -2, name: "Growth", slug: "growth", description: "Advanced operations for a growing store or restaurant.", monthly_price: "12.00", yearly_price: "120.00", currency: "USD", limits: { businesses: 1, staff: 5, products: null }, features: { inventory: "advanced", telegram_notifications: true, restaurant_qr: true, analytics_history_days: 365, custom_domain: false, priority_support: false }, is_popular: true },
+  { id: -3, name: "Pro", slug: "pro", description: "Multiple businesses, unlimited insights, and priority support.", monthly_price: "25.00", yearly_price: "250.00", currency: "USD", limits: { businesses: 3, staff: 15, products: null }, features: { inventory: "advanced", telegram_notifications: true, restaurant_qr: true, analytics_history_days: null, custom_domain: true, priority_support: true }, is_popular: false },
+];
 
 export function Pricing() {
   const navigate = useNavigate();
@@ -27,7 +34,10 @@ export function Pricing() {
     setError(false);
     billingService.getPlans()
       .then(setPlans)
-      .catch(() => setError(true))
+      .catch(() => {
+        setPlans(fallbackPlans);
+        setError(true);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -40,39 +50,26 @@ export function Pricing() {
   };
 
   return (
-    <section id="pricing" className="relative overflow-hidden bg-slate-50 py-20 sm:py-24">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(circle_at_top,_rgba(124,58,237,0.11),_transparent_65%)]" />
+    <section id="pricing" className="relative overflow-hidden bg-[#f8f7fb] py-20 sm:py-28">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,_rgba(116,88,220,0.16),_transparent_62%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(99,78,140,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(99,78,140,.08)_1px,transparent_1px)] [background-size:110px_110px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 shadow-sm">
+        <motion.div initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-3xl text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#ded6f5] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#6954d0] shadow-sm">
             <Sparkles className="h-3.5 w-3.5" />
             30-day Growth trial
           </div>
-          <h2 className="mt-5 text-3xl font-bold tracking-tight text-slate-950 md:text-5xl">
-            Start free. Choose a plan when your trial ends.
+          <h2 className="mt-5 text-4xl font-medium leading-[1.06] tracking-[-.05em] text-[#18171d] md:text-6xl">
+            Simple pricing.<br /><span className="text-[#735bd6]">Built to grow with you.</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-[#746f7b] sm:text-base">
             Explore every Growth feature for 30 days. No card required, no setup fee, and your business data stays yours.
           </p>
           <CycleToggle cycle={cycle} onChange={setCycle} />
-        </div>
+        </motion.div>
 
         {loading ? (
           <PricingSkeleton />
-        ) : error ? (
-          <div className="mx-auto mt-14 max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <RefreshCw className="mx-auto h-6 w-6 text-slate-400" />
-            <h3 className="mt-3 font-semibold text-slate-900">Pricing is temporarily unavailable</h3>
-            <p className="mt-1 text-sm text-slate-500">Try loading the current plans again.</p>
-            <button
-              type="button"
-              onClick={loadPlans}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Retry
-            </button>
-          </div>
         ) : (
           <div className="mt-14 grid gap-5 md:grid-cols-2 lg:mt-16 lg:grid-cols-3 lg:gap-6">
             {plans.map((plan) => (
@@ -86,6 +83,8 @@ export function Pricing() {
           </div>
         )}
 
+        {error && <button type="button" onClick={loadPlans} className="mx-auto mt-5 flex items-center gap-2 text-xs font-medium text-[#746f7b] transition hover:text-[#6954d0]"><RefreshCw className="h-3.5 w-3.5" /> Refresh live pricing</button>}
+
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-slate-500">
           {["No card required", "Cancel anytime", "Data preserved after expiry"].map((item) => (
             <span key={item} className="flex items-center gap-2">
@@ -95,9 +94,9 @@ export function Pricing() {
           ))}
         </div>
 
-        <div className="mx-auto mt-8 flex max-w-2xl items-start gap-3 rounded-2xl border border-violet-200 bg-violet-50/70 px-4 py-3.5 text-left">
-          <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
-          <p className="text-xs leading-5 text-violet-900">
+        <div className="mx-auto mt-8 flex max-w-2xl items-start gap-3 rounded-2xl border border-[#ddd4f4] bg-white/75 px-4 py-3.5 text-left shadow-sm backdrop-blur">
+          <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[#7058d4]" />
+          <p className="text-xs leading-5 text-[#514565]">
             Your trial begins with <strong>Growth</strong>. After 30 days, select Starter, Growth, or Pro to keep full access.
           </p>
         </div>
@@ -120,15 +119,16 @@ function PlanCard({
   const features = planFeatures(plan);
 
   return (
-    <article
-      className={`relative flex h-full flex-col rounded-2xl border bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7 ${
+    <motion.article
+      initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} whileHover={{ y: -7 }}
+      className={`relative flex h-full flex-col overflow-hidden rounded-[22px] border bg-white p-6 shadow-[0_20px_55px_-40px_rgba(66,45,112,.5)] transition duration-300 hover:shadow-[0_30px_65px_-35px_rgba(82,54,145,.5)] sm:p-7 ${
         plan.is_popular
-          ? "border-violet-500 ring-4 ring-violet-100 md:col-span-2 lg:col-span-1 lg:-translate-y-3 lg:hover:-translate-y-4"
-          : "border-slate-200"
+          ? "border-[#745bd8] bg-gradient-to-b from-[#f5f1ff] to-white ring-4 ring-[#ece7ff] md:col-span-2 lg:col-span-1 lg:-translate-y-3"
+          : "border-[#e4e0ea]"
       }`}
     >
       {plan.is_popular && (
-        <span className="absolute right-6 top-0 -translate-y-1/2 rounded-full bg-violet-600 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white shadow-lg shadow-violet-200">
+        <span className="absolute right-5 top-5 rounded-full bg-[#6c55d2] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white shadow-lg shadow-violet-200">
           Most popular
         </span>
       )}
@@ -140,7 +140,7 @@ function PlanCard({
 
       <div className="mt-6">
         <div className="flex items-end gap-1">
-          <span className="text-4xl font-bold tracking-tight text-slate-950">${price.toFixed(0)}</span>
+          <span className="text-5xl font-medium tracking-[-.06em] text-[#19171e]">${price.toFixed(0)}</span>
           <span className="pb-1 text-sm text-slate-500">/{yearly ? "year" : "month"}</span>
         </div>
         <p className={`mt-1.5 min-h-5 text-xs font-medium ${yearly ? "text-emerald-600" : "text-slate-400"}`}>
@@ -155,8 +155,8 @@ function PlanCard({
         onClick={onStart}
         className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${
           plan.is_popular
-            ? "bg-violet-600 text-white shadow-lg shadow-violet-200 hover:bg-violet-700"
-            : "border border-slate-200 text-slate-900 hover:border-slate-300 hover:bg-slate-50"
+            ? "bg-[#6c55d2] text-white shadow-lg shadow-violet-200 hover:bg-[#5943bd]"
+            : "border border-[#ded9e7] text-[#27232d] hover:border-[#c7bae0] hover:bg-[#f8f5fc]"
         }`}
       >
         Start 30-day free trial
@@ -183,13 +183,13 @@ function PlanCard({
           </li>
         ))}
       </ul>
-    </article>
+    </motion.article>
   );
 }
 
 function PlanLimit({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-slate-50 px-2 py-3 text-center">
+    <div className="rounded-xl bg-[#f7f5fa] px-2 py-3 text-center">
       <p className="text-sm font-bold text-slate-900">{value}</p>
       <p className="mt-0.5 truncate text-[9px] font-medium uppercase tracking-wide text-slate-400">{label}</p>
     </div>
@@ -204,14 +204,14 @@ function CycleToggle({
   onChange: (cycle: BillingCycle) => void;
 }) {
   return (
-    <div className="mt-7 inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+    <div className="mt-7 inline-flex rounded-full border border-[#ded9e8] bg-white p-1 shadow-sm">
       {(["monthly", "yearly"] as const).map((option) => (
         <button
           type="button"
           key={option}
           onClick={() => onChange(option)}
-          className={`rounded-lg px-4 py-2 text-xs font-semibold capitalize transition ${
-            cycle === option ? "bg-slate-950 text-white" : "text-slate-500 hover:bg-slate-50"
+          className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition ${
+            cycle === option ? "bg-[#6c55d2] text-white shadow-sm" : "text-slate-500 hover:bg-[#f4f0fa]"
           }`}
         >
           {option}

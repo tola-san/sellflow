@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   Banknote,
   ChevronLeft,
@@ -31,6 +32,7 @@ import { EmptyState, ErrorMessage, PageHeader, buttonPrimary, inputClass } from 
 import { useAuth } from "../components/Auth/AuthContext";
 import { useToast } from "../components/ui/ToastContext";
 import type { Order, OrderListResponse, OrderStatus, PaymentStatus } from "../types/order";
+import { NOTIFICATIONS_CHANGED_EVENT, type BusinessNotification } from "../Services/notifications";
 
 // Initial states
 const emptySummary: OrderListResponse["summary"] = {
@@ -68,6 +70,7 @@ const nextPayments: Record<PaymentStatus, PaymentStatus[]> = {
 };
 
 export function OrdersPage() {
+  const reduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { orderUuid } = useParams<{ orderUuid?: string }>();
   // State management
@@ -80,6 +83,7 @@ export function OrdersPage() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -105,6 +109,7 @@ export function OrdersPage() {
       setError(err);
     } finally {
       setLoading(false);
+      setHasLoaded(true);
     }
   }, [search, status, paymentStatus, page]);
 
@@ -113,6 +118,15 @@ export function OrdersPage() {
     const timer = window.setTimeout(load, search ? 300 : 0);
     return () => window.clearTimeout(timer);
   }, [load, search]);
+
+  useEffect(() => {
+    const receiveOrder = (event: Event) => {
+      const notification = (event as CustomEvent<BusinessNotification | undefined>).detail;
+      if (notification?.type === "order" && notification.title.startsWith("New order")) void load();
+    };
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, receiveOrder);
+    return () => window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, receiveOrder);
+  }, [load]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -304,13 +318,22 @@ export function OrdersPage() {
         </div>
 
         {/* Loading state */}
-        {loading ? (
+        {!hasLoaded ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-16">
             <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
             <p className="mt-4 text-sm text-slate-500">Loading orders...</p>
           </div>
-        ) : orders.length ? (
-          <>
+        ) : (
+          <motion.div animate={{ opacity: loading ? 0.55 : 1 }} transition={{ duration: reduceMotion ? 0 : 0.18 }}>
+          <AnimatePresence mode="wait" initial={false}>
+          {orders.length ? (
+          <motion.div
+            key={`orders-${page}-${status}-${paymentStatus}`}
+            initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+          >
             {/* Desktop table view */}
             <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
               <div className="overflow-x-auto">
@@ -327,13 +350,16 @@ export function OrdersPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {orders.map((order, index) => (
-                      <tr 
-                        key={order.id} 
+                    <AnimatePresence initial={false}>
+                    {orders.map((order) => (
+                      <motion.tr
+                        layout={!reduceMotion}
+                        key={order.uuid}
+                        initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+                        transition={{ duration: 0.2 }}
                         className="group transition-colors hover:bg-purple-50/30"
-                        style={{
-                          animationDelay: `${index * 50}ms`
-                        }}
                       >
                         <td className="px-5 py-4">
                           <button
@@ -377,8 +403,9 @@ export function OrdersPage() {
                             View
                           </button>
                         </td>
-                      </tr>
+                      </motion.tr>
                     ))}
+                    </AnimatePresence>
                   </tbody>
                 </table>
               </div>
@@ -386,9 +413,15 @@ export function OrdersPage() {
 
             {/* Mobile card view */}
             <div className="space-y-4 md:hidden">
+              <AnimatePresence initial={false}>
               {orders.map((order) => (
-                <button
-                  key={order.id}
+                <motion.button
+                  layout={!reduceMotion}
+                  key={order.uuid}
+                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -5 }}
+                  transition={{ duration: 0.22 }}
                   onClick={() => openOrder(order)}
                   className="w-full rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.99]"
                 >
@@ -413,8 +446,9 @@ export function OrdersPage() {
                     <StatusBadge value={order.status} />
                     <StatusBadge value={order.payment_status} />
                   </div>
-                </button>
+                </motion.button>
               ))}
+              </AnimatePresence>
             </div>
 
             {/* Pagination */}
@@ -443,20 +477,31 @@ export function OrdersPage() {
                 </button>
               </div>
             </div>
-          </>
+          </motion.div>
         ) : (
           // Empty state
-          <EmptyState
-            title="No orders found"
-            description={
-              search || status || paymentStatus
-                ? "Try adjusting your filters or search terms."
-                : "New customer orders will appear here once placed."
-            }
-          />
+          <motion.div
+            key="orders-empty"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={reduceMotion ? undefined : { opacity: 0 }}
+          >
+            <EmptyState
+              title="No orders found"
+              description={
+                search || status || paymentStatus
+                  ? "Try adjusting your filters or search terms."
+                  : "New customer orders will appear here once placed."
+              }
+            />
+          </motion.div>
+        )}
+          </AnimatePresence>
+          </motion.div>
         )}
 
         {/* Order detail drawer */}
+        <AnimatePresence>
         {selected && (
           <OrderDrawer
             order={selected}
@@ -468,6 +513,7 @@ export function OrdersPage() {
             supportsReady={supportsReady}
           />
         )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -494,20 +540,44 @@ function OrderDrawer({
   onPayment: (value: PaymentStatus) => void;
   supportsReady: boolean;
 }) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <>
-      <button
-        className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm transition-opacity"
+      <motion.button
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={reduceMotion ? undefined : { opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm"
         onClick={close}
         aria-label="Close order details"
       />
-      <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl overflow-y-auto bg-white shadow-2xl animate-in slide-in-from-right duration-300">
+      <motion.aside
+        initial={reduceMotion ? false : { x: "100%" }}
+        animate={{ x: 0 }}
+        exit={reduceMotion ? undefined : { x: "100%" }}
+        transition={{ type: "spring", stiffness: 360, damping: 36 }}
+        className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl overflow-y-auto bg-white shadow-2xl"
+      >
         <div className="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-200 bg-white/95 px-6 py-5 backdrop-blur">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Order details</p>
             <h2 className="font-mono text-xl font-bold text-slate-800">{order.order_number}</h2>
             {order.restaurant_table && <p className="mt-1 text-sm font-semibold text-purple-600">Dine-in · {order.restaurant_table.name}{order.restaurant_table.area ? ` · ${order.restaurant_table.area}` : ""}</p>}
           </div>
+          <AnimatePresence>
+            {updating && (
+              <motion.span
+                initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reduceMotion ? undefined : { opacity: 0, scale: 0.92 }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700"
+              >
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving
+              </motion.span>
+            )}
+          </AnimatePresence>
           <button
             onClick={close}
             className="rounded-full p-2 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-600"
@@ -543,6 +613,8 @@ function OrderDrawer({
                 onChange={(value) => onPayment(value as PaymentStatus)}
               />
             </div>
+
+            <StatusTimeline status={order.status} supportsReady={supportsReady} />
 
             {/* Customer information */}
             <Section title="Customer Information" icon={<User size={18} />}>
@@ -630,7 +702,7 @@ function OrderDrawer({
             </Section>
           </div>
         )}
-      </aside>
+      </motion.aside>
     </>
   );
 }
@@ -683,6 +755,7 @@ function Stat({
  * Status badge component
  */
 function StatusBadge({ value }: { value: string }) {
+  const reduceMotion = useReducedMotion();
   const colors: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
     pending: { 
       bg: "bg-amber-50", 
@@ -734,12 +807,16 @@ function StatusBadge({ value }: { value: string }) {
   const color = colors[value] || colors.pending;
 
   return (
-    <span
+    <motion.span
+      key={value}
+      initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.18 }}
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${color.bg} ${color.text}`}
     >
       {color.icon}
       {value}
-    </span>
+    </motion.span>
   );
 }
 
@@ -786,6 +863,85 @@ function Control({
         ))}
       </select>
     </div>
+  );
+}
+
+function StatusTimeline({ status, supportsReady }: { status: OrderStatus; supportsReady: boolean }) {
+  const reduceMotion = useReducedMotion();
+  const steps: OrderStatus[] = supportsReady
+    ? ["pending", "confirmed", "preparing", "ready", "completed"]
+    : ["pending", "confirmed", "preparing", "completed"];
+  const currentIndex = Math.max(0, steps.indexOf(status));
+  const progress = steps.length > 1 ? currentIndex / (steps.length - 1) : 0;
+
+  if (status === "cancelled") {
+    return (
+      <motion.section
+        initial={reduceMotion ? false : { opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+        aria-label="Order status: cancelled"
+      >
+        <div className="flex items-center gap-3">
+          <motion.span initial={reduceMotion ? false : { scale: 0.7 }} animate={{ scale: 1 }} className="grid h-9 w-9 place-items-center rounded-full bg-slate-200 text-slate-500">
+            <XCircle size={18} />
+          </motion.span>
+          <div>
+            <p className="text-sm font-semibold text-slate-700">Order cancelled</p>
+            <p className="mt-0.5 text-xs text-slate-500">Fulfillment has stopped for this order.</p>
+          </div>
+        </div>
+      </motion.section>
+    );
+  }
+
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" aria-label={`Order progress: ${titleCase(status)}`}>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Order progress</p>
+          <p className="mt-1 text-sm font-semibold text-slate-800">{titleCase(status)}</p>
+        </div>
+        <StatusBadge value={status} />
+      </div>
+
+      <div className="relative">
+        <div className="absolute left-[10%] right-[10%] top-4 h-0.5 bg-slate-200" aria-hidden="true">
+          <motion.div
+            className="h-full origin-left bg-purple-500"
+            initial={reduceMotion ? false : { scaleX: 0 }}
+            animate={{ scaleX: progress }}
+            transition={{ duration: reduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+          />
+        </div>
+        <ol className="relative grid" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+          {steps.map((step, index) => {
+            const complete = index < currentIndex || status === "completed";
+            const current = index === currentIndex && status !== "completed";
+            return (
+              <li key={step} className="flex min-w-0 flex-col items-center text-center">
+                <motion.span
+                  animate={current && !reduceMotion ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+                  transition={current ? { duration: 0.8, repeat: 1 } : { duration: 0.2 }}
+                  className={`relative z-10 grid h-8 w-8 place-items-center rounded-full border-2 ${
+                    complete
+                      ? "border-purple-500 bg-purple-500 text-white"
+                      : current
+                        ? "border-purple-500 bg-white text-purple-600 shadow-[0_0_0_4px_rgba(168,85,247,.12)]"
+                        : "border-slate-200 bg-white text-slate-400"
+                  }`}
+                >
+                  {complete ? <CheckCircle2 size={15} /> : current ? <Clock3 size={14} /> : <span className="text-[10px] font-bold">{index + 1}</span>}
+                </motion.span>
+                <span className={`mt-2 max-w-full truncate text-[9px] font-semibold sm:text-[10px] ${complete || current ? "text-slate-700" : "text-slate-400"}`}>
+                  {titleCase(step)}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </section>
   );
 }
 
