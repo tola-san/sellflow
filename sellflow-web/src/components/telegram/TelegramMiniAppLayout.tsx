@@ -40,7 +40,7 @@ export function TelegramMiniAppLayout() {
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#229ED9] text-white"><Send size={15} /></span>
             <span className="truncate"><strong>Telegram Mini App</strong><span className="ml-2 text-slate-500">Browser preview</span></span>
           </span>
-          <Link to={`/${slug}`} className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-sky-700">Web store <ExternalLink size={13} /></Link>
+          <Link to={`/store/${slug}`} className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-sky-700">Web store <ExternalLink size={13} /></Link>
         </div>
       )}
       <Outlet />

@@ -119,7 +119,7 @@ export function TelegramMiniAppProvider({ children }: { children: ReactNode }) {
     customerName: [user?.first_name, user?.last_name].filter(Boolean).join(" "),
     storePath: (slug, suffix = "") => isMiniAppRoute
       ? `/telegram/store/${encodeURIComponent(slug)}${suffix}`
-      : `/${encodeURIComponent(slug)}${suffix}`,
+      : `/store/${encodeURIComponent(slug)}${suffix}`,
     hapticImpact: () => webApp?.HapticFeedback?.impactOccurred("light"),
     hapticSuccess: () => webApp?.HapticFeedback?.notificationOccurred("success"),
     requestWriteAccess: () => new Promise((resolve) => {

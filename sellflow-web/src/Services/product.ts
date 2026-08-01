@@ -34,9 +34,9 @@ export const productService = {
     return response.data.data;
   },
 
-  async getProduct(id: number): Promise<Product> {
+  async getProduct(identifier: string | number): Promise<Product> {
     const response =
-      await api.get<ProductResponse>(`/products/${id}`);
+      await api.get<ProductResponse>(`/products/${identifier}`);
 
     return response.data.data;
   },
@@ -44,14 +44,14 @@ export const productService = {
     const response = await api.post<ProductResponse>("/products", toFormData(data), multipartConfig);
     return response.data.data;
   },
-  async updateProduct(id: number, data: ProductPayload): Promise<Product> {
+  async updateProduct(identifier: string | number, data: ProductPayload): Promise<Product> {
     const formData = toFormData(data);
     formData.append("_method", "PUT");
-    const response = await api.post<ProductResponse>(`/products/${id}`, formData, multipartConfig);
+    const response = await api.post<ProductResponse>(`/products/${identifier}`, formData, multipartConfig);
     return response.data.data;
   },
-  async deleteProduct(id: number): Promise<void> {
-    await api.delete(`/products/${id}`);
+  async deleteProduct(identifier: string | number): Promise<void> {
+    await api.delete(`/products/${identifier}`);
   },
 };
 
