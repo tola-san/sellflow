@@ -359,9 +359,16 @@ function Donut({ items, value, label }: { items: Array<{ value: number; color: s
     cursor += total ? (item.value / total) * 100 : 0;
     return `${item.color} ${start}% ${cursor}%`;
   });
-  const style = { "--donut": total ? `conic-gradient(${stops.join(",")})` : "#e2e8f0" } as CSSProperties;
+  const style: CSSProperties = {
+    background: total ? `conic-gradient(${stops.join(",")})` : "#e2e8f0",
+  };
   return (
-    <div className="relative grid h-40 w-40 place-items-center rounded-full bg-[var(--donut)]" style={style}>
+    <div
+      className="relative grid h-40 w-40 place-items-center rounded-full"
+      style={style}
+      role="img"
+      aria-label={`${label}: ${value}`}
+    >
       <div className="grid h-[112px] w-[112px] place-items-center rounded-full bg-white text-center shadow-[0_0_0_2px_white]">
         <span className="flex flex-col">
           <strong className="text-2xl font-semibold tracking-tight text-slate-950">{value}</strong>

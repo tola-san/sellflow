@@ -10,6 +10,7 @@ class PublicBusinessResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'uuid' => $this->uuid,
             'name' => $this->name,
             'business_type' => $this->business_type,
             'slug' => $this->slug,

@@ -122,7 +122,7 @@ export function OrdersPage() {
     setDetailLoading(true);
     setError(null);
     try {
-      setSelected(await orderService.getOrder(order.id));
+      setSelected(await orderService.getOrder(order.uuid));
     } catch (err) {
       setError(err);
     } finally {
@@ -146,7 +146,7 @@ export function OrdersPage() {
     setUpdating(true);
     setError(null);
     try {
-      replaceOrder(await orderService.updateStatus(selected.id, value));
+      replaceOrder(await orderService.updateStatus(selected.uuid, value));
       showToast("Order status updated successfully.");
       await load();
     } catch (err) {
@@ -162,7 +162,7 @@ export function OrdersPage() {
     setUpdating(true);
     setError(null);
     try {
-      replaceOrder(await orderService.updatePaymentStatus(selected.id, value));
+      replaceOrder(await orderService.updatePaymentStatus(selected.uuid, value));
       showToast("Payment status updated successfully.");
       await load();
     } catch (err) {

@@ -10,6 +10,7 @@ class PublicProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'uuid' => $this->uuid,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
