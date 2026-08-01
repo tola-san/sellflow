@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, BadgeCheck, Banknote, Landmark, Send, ShoppingBag } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import { checkoutService, type CheckoutPayload, type PublicOrder } from "../Services/checkout";
 import { storefrontService, type PublicRestaurantTable, type Storefront } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
@@ -20,6 +21,7 @@ const initialForm: CheckoutForm = {
 };
 
 export function CheckoutPage() {
+  const reduceMotion = useReducedMotion();
   const { slug = "" } = useParams();
   const [store, setStore] = useState<Storefront | null>(null);
   const [form, setForm] = useState(initialForm);
@@ -100,7 +102,7 @@ export function CheckoutPage() {
       setOrder(created);
       cart.clear(slug);
       hapticSuccess();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
     } catch (err) {
       setError(err);
     } finally {
@@ -112,9 +114,41 @@ export function CheckoutPage() {
   if (order) {
     return (
       <div className="customer-flow-theme min-h-screen bg-slate-50 flex items-center justify-center p-5" style={themeVariables}>
-        <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl">
-          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-600">
-            <BadgeCheck size={48} />
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl"
+        >
+          <div className="relative mx-auto h-24 w-24">
+            {!reduceMotion && Array.from({ length: 10 }).map((_, index) => {
+              const angle = (index / 10) * Math.PI * 2;
+              return (
+                <motion.span
+                  aria-hidden="true"
+                  key={index}
+                  className="absolute left-1/2 top-1/2 h-2 w-2 rounded-sm"
+                  style={{ backgroundColor: index % 2 ? primary : "#10b981" }}
+                  initial={{ opacity: 0, x: -4, y: -4, scale: 0 }}
+                  animate={{
+                    opacity: [0, 1, 0],
+                    x: Math.cos(angle) * 62,
+                    y: Math.sin(angle) * 62,
+                    rotate: index * 52,
+                    scale: [0, 1, 0.6],
+                  }}
+                  transition={{ duration: 0.9, delay: 0.15 + index * 0.025, ease: "easeOut" }}
+                />
+              );
+            })}
+            <motion.div
+              initial={reduceMotion ? false : { scale: 0, rotate: -18 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 340, damping: 20, delay: reduceMotion ? 0 : 0.08 }}
+              className="absolute inset-2 grid place-items-center rounded-full bg-emerald-100 text-emerald-600"
+            >
+              <BadgeCheck size={48} />
+            </motion.div>
           </div>
           <h1 className="mt-6 text-3xl font-bold">Order Received</h1>
           <p className="mt-3 text-slate-600">Thank you, <strong>{order.customer_name}</strong>!</p>
@@ -163,7 +197,7 @@ export function CheckoutPage() {
             Back to Store
           </Link>
           {isTelegramClient && <button type="button" onClick={close} className="mt-3 w-full rounded-2xl border border-slate-200 py-3.5 text-sm font-semibold text-slate-600">Close</button>}
-        </div>
+        </motion.div>
       </div>
     );
   }

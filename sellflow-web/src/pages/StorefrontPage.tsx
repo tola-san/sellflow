@@ -3,7 +3,7 @@ import axios from "axios";
 import { Check, ChevronDown, ExternalLink, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { storefrontService, type PublicRestaurantTable, type Storefront } from "../Services/storefront";
 import type { ThemeSettings } from "../types/theme";
 import { CUSTOMER_THEMES, CUSTOMER_THEME_LABELS, findCustomerTheme, type CustomerThemeId } from "../theme/customerThemes";
@@ -13,6 +13,7 @@ import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 import { withHexOpacity } from "../lib/color";
 import { StoreProfileDrawer } from "../components/ui/StoreProfileDrawer";
+import { ProgressiveImage } from "../components/ui/ProgressiveImage";
 
 export function StorefrontPage() {
   const { slug = "" } = useParams();
@@ -215,7 +216,7 @@ export function StorefrontPage() {
             onChange={selectCustomerTheme}
             />
           </div>
-          <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><span className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</span></Link>
+          <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><motion.span key={cart.count(slug)} initial={{ scale: 0.65 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 520, damping: 20 }} className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</motion.span></Link>
         </div>
       </header>
 
@@ -340,14 +341,15 @@ export function StorefrontPage() {
                   </div>
                   <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${theme.grid_columns === 2 ? "lg:grid-cols-2" : theme.grid_columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
                     {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} onAdd={() => {
-                      if (!product.is_available_now) return;
+                      if (!product.is_available_now) return false;
                       if ((product.modifier_groups || []).length > 0 || (product.variants || []).length > 0) {
                         navigate(storePath(slug, `/products/${product.slug}`));
-                        return;
+                        return false;
                       }
                       cart.add(slug, product);
                       hapticImpact();
                       showToast(`${product.name} added to cart.`);
+                      return true;
                     }} />)}
                   </div>
                 </section>
@@ -509,16 +511,23 @@ function Filter({ active, theme, onClick, children, buttonRef }: {
   );
 }
 
-function ProductCard({ product, theme, onAdd }: { product: Storefront["products"][number]; theme: ThemeSettings; onAdd: () => void }) {
+function ProductCard({ product, theme, onAdd }: { product: Storefront["products"][number]; theme: ThemeSettings; onAdd: () => boolean }) {
+  const reduceMotion = useReducedMotion();
+  const [added, setAdded] = useState(false);
   const cardStyle = theme.card_style === "elevated"
     ? { borderColor: "transparent", boxShadow: "0 12px 30px rgba(15,23,42,.10)" }
     : theme.card_style === "flat"
       ? { borderColor: "transparent", boxShadow: "none" }
       : { borderColor: `${theme.muted_color}40`, boxShadow: "none" };
+  const add = () => {
+    if (!onAdd()) return;
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 1100);
+  };
   return (
     <article className="min-w-0 overflow-hidden border transition hover:-translate-y-1" style={{ ...cardStyle, borderRadius: theme.button_style === "square" ? "7px" : "16px", backgroundColor: theme.surface_color }}>
       <Link to={`products/${product.slug}`} aria-label={`View ${product.name}`} className="block aspect-square overflow-hidden" style={{ backgroundColor: `${theme.muted_color}12` }}>
-        {product.thumbnail ? <img src={product.thumbnail} alt={product.name} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-slate-300"><ShoppingBag className="h-12 w-12" /></div>}
+        {product.thumbnail ? <ProgressiveImage src={product.thumbnail} alt={product.name} className="h-full w-full" imageClassName="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-slate-300"><ShoppingBag className="h-12 w-12" /></div>}
       </Link>
       <div className="p-4">
         <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: theme.primary_color }}>{product.category.name}</p>
@@ -527,7 +536,21 @@ function ProductCard({ product, theme, onAdd }: { product: Storefront["products"
           <strong className="text-xl">${Number(product.discount_price || product.price).toFixed(2)}</strong>
           {product.discount_price && <span className="text-xs text-slate-400 line-through">${Number(product.price).toFixed(2)}</span>}
         </div>
-        <button disabled={product.stock < 1 || !product.is_available_now} onClick={onAdd} className="mt-4 w-full px-3 py-2 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40" style={{ backgroundColor: theme.primary_color, borderRadius: "var(--store-radius)" }}>{product.is_available_now && product.stock > 0 ? "Add to cart" : product.availability_status === "sold_out" ? "Sold out" : "Currently unavailable"}</button>
+        <motion.button
+          disabled={product.stock < 1 || !product.is_available_now}
+          onClick={add}
+          whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+          animate={added && !reduceMotion ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+          className="mt-4 w-full overflow-hidden px-3 py-2 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
+          style={{ backgroundColor: theme.primary_color, borderRadius: "var(--store-radius)" }}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span key={added ? "added" : "add"} initial={reduceMotion ? false : { opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0, y: -5 }} className="flex items-center justify-center gap-1.5">
+              {added && <Check size={14} />}
+              {added ? "Added" : product.is_available_now && product.stock > 0 ? "Add to cart" : product.availability_status === "sold_out" ? "Sold out" : "Currently unavailable"}
+            </motion.span>
+          </AnimatePresence>
+        </motion.button>
       </div>
     </article>
   );

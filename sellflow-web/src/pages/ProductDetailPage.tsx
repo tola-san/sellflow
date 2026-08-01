@@ -2,21 +2,24 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { ArrowLeft, Check, Copy, Minus, Plus, RefreshCw, Send, Share2, Shield, ShoppingCart, Store, Truck, X } from "lucide-react";
 import { FaFacebook } from "react-icons/fa";
 import { Link, useParams } from "react-router-dom";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { storefrontService, type StorefrontProductDetail } from "../Services/storefront";
 import { useCart, type SelectedModifier } from "../components/cart/CartContext";
 import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 import { resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
+import { ProgressiveImage } from "../components/ui/ProgressiveImage";
 
 export function ProductDetailPage() {
+  const reduceMotion = useReducedMotion();
   const { slug = "", productSlug = "" } = useParams();
   const [detail, setDetail] = useState<StorefrontProductDetail | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [missing, setMissing] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
+  const [added, setAdded] = useState(false);
   const cart = useCart();
   const { showToast } = useToast();
   const { hapticImpact, storePath } = useTelegramMiniApp();
@@ -25,7 +28,6 @@ export function ProductDetailPage() {
   useEffect(() => {
     setMissing(false);
     setDetail(null);
-    setImageLoaded(false);
     setSelectedOptionIds([]);
     setSelectedVariantId(null);
     storefrontService.getProduct(slug, productSlug)
@@ -117,6 +119,8 @@ export function ProductDetailPage() {
     }
     cart.add(slug, product, quantity, selectedModifiers, selectedVariant);
     hapticImpact();
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 1200);
     showToast(`${quantity} × ${product.name} added to cart.`, "success");
   };
 
@@ -218,9 +222,9 @@ export function ProductDetailPage() {
           >
             <ShoppingCart className="shrink-0" size={18} />
             <span>Cart</span>
-            <div className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-xs font-bold shadow-md transition-all" style={{ color: theme.primary_color }}>
+            <motion.div key={cart.count(slug)} initial={reduceMotion ? false : { scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 520, damping: 20 }} className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1.5 text-xs font-bold shadow-md" style={{ color: theme.primary_color }}>
               {cart.count(slug)}
-            </div>
+            </motion.div>
           </Link>
         </div>
       </header>
@@ -253,15 +257,13 @@ export function ProductDetailPage() {
                 }}
               >
                 {product.thumbnail ? (
-                  <>
-                    {!imageLoaded && <div className="absolute inset-0 animate-pulse" style={{ backgroundColor: `${theme.muted_color}12` }} />}
-                    <img
-                      src={product.thumbnail}
-                      alt={product.name}
-                      className={`h-full w-full object-contain transition duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
-                      onLoad={() => setImageLoaded(true)}
-                    />
-                  </>
+                  <ProgressiveImage
+                    src={product.thumbnail}
+                    alt={product.name}
+                    eager
+                    className="h-full w-full"
+                    imageClassName="h-full w-full object-contain"
+                  />
                 ) : (
                   <div className="flex flex-col items-center gap-3" style={{ color: `${theme.muted_color}70` }}>
                     <ShoppingCart size={72} strokeWidth={1.25} />
@@ -450,18 +452,24 @@ export function ProductDetailPage() {
                   </p>
                 </div>
 
-                <button
+                <motion.button
                   disabled={isOutOfStock}
                   onClick={addToCart}
+                  whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+                  animate={added && !reduceMotion ? { scale: [1, 1.035, 1] } : { scale: 1 }}
                   className="group relative flex h-14 flex-1 items-center justify-center gap-3 rounded-3xl px-6 font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-2xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   style={{
                     backgroundColor: theme.primary_color,
                     boxShadow: `0 8px 25px -5px ${theme.primary_color}50`,
                   }}
                 >
-                  <ShoppingCart size={20} className="transition-transform group-hover:scale-110" />
-                  <span>{isOutOfStock ? "Unavailable" : "Add to cart"}</span>
-                </button>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span key={added ? "added" : "add"} initial={reduceMotion ? false : { opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0, y: -5 }} className="flex items-center gap-2">
+                      {added ? <Check size={20} /> : <ShoppingCart size={20} className="transition-transform group-hover:scale-110" />}
+                      <span>{added ? "Added to cart" : isOutOfStock ? "Unavailable" : "Add to cart"}</span>
+                    </motion.span>
+                  </AnimatePresence>
+                </motion.button>
               </div>
             </div>
 
@@ -515,9 +523,11 @@ export function ProductDetailPage() {
               compact
             />
 
-           <button
+           <motion.button
             disabled={isOutOfStock}
             onClick={addToCart}
+            whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+            animate={added && !reduceMotion ? { scale: [1, 1.035, 1] } : { scale: 1 }}
             className="
               group
               relative
@@ -543,17 +553,13 @@ export function ProductDetailPage() {
               boxShadow: `0 10px 24px -8px ${theme.primary_color}40`,
             }}
           >
-          <span className="flex items-center justify-center gap-2 whitespace-nowrap">
-            <ShoppingCart
-              size={16}
-              strokeWidth={2.2}
-              className="shrink-0"
-            />
-            <span className="text-sm sm:text-base">
-              {isOutOfStock ? "Unavailable" : "Add to Cart"}
-            </span>
-          </span>
-        </button>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span key={added ? "added" : "add"} initial={reduceMotion ? false : { opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0, y: -5 }} className="flex items-center justify-center gap-2 whitespace-nowrap">
+              {added ? <Check size={16} strokeWidth={2.2} /> : <ShoppingCart size={16} strokeWidth={2.2} className="shrink-0" />}
+              <span className="text-sm sm:text-base">{added ? "Added" : isOutOfStock ? "Unavailable" : "Add to Cart"}</span>
+            </motion.span>
+          </AnimatePresence>
+        </motion.button>
           </div>
         </div>
       </div>
