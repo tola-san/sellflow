@@ -75,7 +75,7 @@ class OrderController extends Controller
 
     private function emptySummary(): array
     {
-        return ['total' => 0, 'pending' => 0, 'confirmed' => 0, 'preparing' => 0, 'ready' => 0, 'completed' => 0, 'paid_revenue' => '0.00'];
+        return ['total' => 0, 'pending' => 0, 'confirmed' => 0, 'preparing' => 0, 'ready' => 0, 'completed' => 0, 'cancelled' => 0, 'paid_revenue' => '0.00'];
     }
 
     private function emptyMeta(): array

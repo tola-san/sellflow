@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -23,6 +23,7 @@ import { dashboardService, type DashboardOverview } from "../Services/dashboard"
 import { orderService } from "../Services/order";
 import type { Order, OrderListResponse } from "../types/order";
 import { ErrorMessage } from "../components/dashboard/DashboardUI";
+import { DashboardLoading } from "../components/dashboard/DashboardLoading";
 
 const emptySummary: OrderListResponse["summary"] = {
   total: 0,
@@ -31,6 +32,7 @@ const emptySummary: OrderListResponse["summary"] = {
   preparing: 0,
   ready: 0,
   completed: 0,
+  cancelled: 0,
   paid_revenue: "0",
 };
 
@@ -179,7 +181,7 @@ export function DashboardPage() {
         <SetupCard steps={launchSteps} completed={completedSteps} />
       )}
 
-      <section aria-label="Business metrics" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section aria-label="Business metrics" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <MetricCard
           label="Paid revenue"
           value={money(revenue)}
@@ -213,7 +215,7 @@ export function DashboardPage() {
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.65fr)]">
         <SalesPulse data={dailySales} />
-        <OrderProgress summary={summary} activeOrders={activeOrders} />
+        <OrderDistribution summary={summary} />
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.65fr)]">
@@ -244,17 +246,11 @@ function OverviewHeader({
   quickActions: QuickAction[];
 }) {
   return (
-    <header className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-[30px]">
-            Overview
-          </h1>
-          <span className="hidden rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:inline-flex">
-            Live
-          </span>
-        </div>
-        <p className="mt-1.5 max-w-xl text-sm leading-6 text-slate-500">
+        <p className="text-xs font-medium text-slate-400">Workspace / Overview</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">Overview</h1>
+        <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
           {businessName
             ? `Here’s what’s happening at ${businessName} today.`
             : "Set up your business and start taking orders."}
@@ -301,7 +297,7 @@ function SetupCard({ steps, completed }: { steps: LaunchStep[]; completed: numbe
   const percent = Math.round((completed / steps.length) * 100);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm shadow-violet-950/[0.03]">
+    <section className="overflow-hidden rounded-xl border border-violet-200 bg-white shadow-sm shadow-violet-950/[0.03]">
       <div className="grid lg:grid-cols-[minmax(250px,0.72fr)_minmax(0,1.28fr)]">
         <div className="border-b border-violet-100 bg-violet-50/70 p-5 lg:border-b-0 lg:border-r sm:p-6">
           <div className="flex items-center gap-2 text-xs font-semibold text-violet-700">
@@ -396,9 +392,9 @@ function MetricCard({
   };
 
   return (
-    <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/[0.025] sm:p-5">
+    <article className="min-w-0 rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-950/[0.025] sm:p-5">
       <div className="flex items-center justify-between gap-3">
-        <span className={`grid h-9 w-9 place-items-center rounded-xl ${accents[accent]}`}>
+        <span className={`grid h-8 w-8 place-items-center rounded-lg sm:h-9 sm:w-9 sm:rounded-xl ${accents[accent]}`}>
           <Icon className="h-[18px] w-[18px]" />
         </span>
         {attention && (
@@ -408,9 +404,9 @@ function MetricCard({
           </span>
         )}
       </div>
-      <p className="mt-4 truncate text-[11px] font-medium text-slate-500 sm:text-xs">{label}</p>
-      <p className="mt-1 truncate text-xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-2xl">{value}</p>
-      <p className="mt-1.5 truncate text-[10px] text-slate-400 sm:text-[11px]">{helper}</p>
+      <p className="mt-4 truncate text-[11px] font-medium text-slate-500 sm:mt-5 sm:text-xs">{label}</p>
+      <p className="mt-1.5 truncate text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-3xl">{value}</p>
+      <p className="mt-2 truncate text-[11px] text-slate-400">{helper}</p>
     </article>
   );
 }
@@ -424,9 +420,24 @@ function SalesPulse({ data }: { data: DailySales[] }) {
     1,
   );
   const showingOrderVolume = chartMetric === "orders";
+  const points = data.map((item, index) => {
+    const value = chartMetric === "revenue" ? item.revenue : item.orders;
+    return {
+      x: data.length === 1 ? 450 : 44 + (index / Math.max(data.length - 1, 1)) * 812,
+      y: 22 + (1 - value / maxValue) * 205,
+      item,
+    };
+  });
+  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const peak = points.reduce<typeof points[number] | null>((best, point) => {
+    if (!best) return point;
+    const value = chartMetric === "revenue" ? point.item.revenue : point.item.orders;
+    const bestValue = chartMetric === "revenue" ? best.item.revenue : best.item.orders;
+    return value > bestValue ? point : best;
+  }, null);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.025]">
+    <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-950/[0.025]">
       <SectionHeader
         title="Sales pulse"
         description="Daily performance from recent orders"
@@ -437,7 +448,7 @@ function SalesPulse({ data }: { data: DailySales[] }) {
         }
       />
 
-      <div className="p-4 sm:p-6">
+      <div className="p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-[11px] font-medium text-slate-500">
@@ -452,7 +463,7 @@ function SalesPulse({ data }: { data: DailySales[] }) {
               </p>
             )}
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-right">
+          <div className="rounded-xl bg-slate-50 px-3.5 py-2.5 text-right ring-1 ring-inset ring-slate-200/70">
             <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
               {showingOrderVolume ? "Paid revenue" : "Orders"}
             </p>
@@ -462,59 +473,46 @@ function SalesPulse({ data }: { data: DailySales[] }) {
           </div>
         </div>
 
-        <div className="mt-7 grid h-44 grid-cols-7 items-end gap-2 sm:h-52 sm:gap-3">
-          {data.map((item) => {
-            const value = chartMetric === "revenue" ? item.revenue : item.orders;
-            const height = value > 0 ? Math.max((value / maxValue) * 100, 10) : 3;
-            return (
-              <div className="group flex h-full min-w-0 flex-col justify-end" key={item.key}>
-                <div className="relative flex flex-1 items-end">
-                  <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-950 px-2.5 py-1.5 text-[10px] font-medium text-white shadow-lg group-hover:block">
-                    {item.orders} {item.orders === 1 ? "order" : "orders"} · {money(item.revenue)} paid
-                  </div>
-                  <div
-                    className={`w-full rounded-t-md transition-all sm:rounded-t-lg ${
-                      value > 0
-                        ? "bg-violet-200 group-hover:bg-violet-500"
-                        : "bg-slate-100"
-                    }`}
-                    style={{ height: `${height}%` }}
-                    aria-label={`${item.label}: ${item.orders} orders and ${money(item.revenue)} paid revenue`}
-                  />
-                </div>
-                <div className="mt-2 text-center">
-                  <p className="text-[10px] font-medium text-slate-500 sm:text-[11px]">{item.day}</p>
-                  <p className="mt-0.5 hidden text-[9px] text-slate-400 sm:block">{item.label}</p>
-                </div>
-              </div>
-            );
-          })}
+        <div className="mt-6 overflow-hidden">
+          <svg viewBox="0 0 900 235" className="h-[190px] w-full sm:h-[250px]" role="img" aria-label="Seven day sales trend">
+            <defs>
+              <linearGradient id="overview-sales-area" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {[73, 124, 175, 226].map((y) => <line key={y} x1="44" x2="856" y1={y} y2={y} stroke="#e8e9ee" strokeDasharray="3 7" />)}
+            {points.length > 1 && <polygon points={`44,227 ${line} 856,227`} fill="url(#overview-sales-area)" />}
+            <polyline points={line} fill="none" stroke="#6d4aff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            {peak && <circle cx={peak.x} cy={peak.y} r="7" fill="#6d4aff" stroke="white" strokeWidth="4"><title>{`${peak.item.label}: ${peak.item.orders} orders · ${money(peak.item.revenue)}`}</title></circle>}
+          </svg>
+          <div className="grid grid-cols-7 px-1 text-center text-[10px] font-medium text-slate-400 sm:text-[11px]">
+            {points.map((point, index) => (
+              <span key={point.item.key} className={index !== 0 && index !== 3 && index !== points.length - 1 ? "text-transparent sm:text-slate-400" : ""}>
+                {point.item.day}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </article>
   );
 }
 
-function OrderProgress({
-  summary,
-  activeOrders,
-}: {
-  summary: OrderListResponse["summary"];
-  activeOrders: number;
-}) {
+function OrderDistribution({ summary }: { summary: OrderListResponse["summary"] }) {
   const groups = [
     { label: "Pending", value: summary.pending, color: "bg-amber-400" },
-    { label: "In progress", value: summary.confirmed + summary.preparing, color: "bg-violet-500" },
-    { label: "Ready", value: summary.ready, color: "bg-cyan-500" },
+    { label: "Preparing", value: summary.confirmed + summary.preparing + summary.ready, color: "bg-violet-500" },
     { label: "Completed", value: summary.completed, color: "bg-emerald-500" },
+    { label: "Cancelled", value: summary.cancelled ?? 0, color: "bg-rose-500" },
   ];
   const tracked = groups.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.025]">
+    <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-950/[0.025]">
       <SectionHeader
-        title="Order flow"
-        description="Fulfillment at a glance"
+        title="Order distribution"
+        description="All orders by fulfillment status"
         action={
           <Link to="/dashboard/orders" aria-label="Open orders" className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
             <ArrowUpRight className="h-4 w-4" />
@@ -522,24 +520,8 @@ function OrderProgress({
         }
       />
       <div className="p-5 sm:p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-medium text-slate-500">Needs attention</p>
-            <p className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-slate-950">{activeOrders}</p>
-          </div>
-          <span className={`grid h-12 w-12 place-items-center rounded-2xl ${activeOrders ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}`}>
-            {activeOrders ? <Clock3 className="h-5 w-5" /> : <Check className="h-5 w-5" />}
-          </span>
-        </div>
-
-        <div className="mt-6 flex h-2 overflow-hidden rounded-full bg-slate-100">
-          {groups.map((item) => (
-            <span
-              className={item.color}
-              key={item.label}
-              style={{ width: tracked ? `${(item.value / tracked) * 100}%` : "0%" }}
-            />
-          ))}
+        <div className="flex justify-center">
+          <OrderDonut groups={groups} total={tracked} />
         </div>
 
         <div className="mt-6 space-y-4">
@@ -559,6 +541,36 @@ function OrderProgress({
   );
 }
 
+function OrderDonut({ groups, total }: {
+  groups: Array<{ label: string; value: number; color: string }>;
+  total: number;
+}) {
+  const palette: Record<string, string> = {
+    "bg-amber-400": "#f59e0b",
+    "bg-violet-500": "#8b5cf6",
+    "bg-emerald-500": "#10b981",
+    "bg-rose-500": "#f43f5e",
+  };
+  let cursor = 0;
+  const stops = groups.map((group) => {
+    const start = cursor;
+    cursor += total ? (group.value / total) * 100 : 0;
+    return `${palette[group.color]} ${start}% ${cursor}%`;
+  });
+  const style = { "--order-donut": total ? `conic-gradient(${stops.join(",")})` : "#e2e8f0" } as CSSProperties;
+
+  return (
+    <div className="relative grid h-40 w-40 place-items-center rounded-full bg-[var(--order-donut)]" style={style}>
+      <div className="grid h-[112px] w-[112px] place-items-center rounded-full bg-white text-center">
+        <div>
+          <p className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">{total}</p>
+          <p className="mt-1 text-[10px] font-medium text-slate-400">Total orders</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RecentOrders({
   orders,
   businessLogo,
@@ -571,7 +583,7 @@ function RecentOrders({
   const recent = orders.slice(0, 6);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.025]">
+    <article className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-950/[0.025]">
       <SectionHeader
         title="Recent orders"
         description="Latest customer activity"
@@ -730,7 +742,7 @@ function InventoryHealth({
   const categoryPercent = categories ? Math.round((activeCategories / categories) * 100) : 0;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.025]">
+    <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.025]">
       <SectionHeader
         title="Catalog health"
         description="Products and availability"
@@ -862,22 +874,27 @@ function EmptyOrders() {
 
 function DashboardSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-[1600px] animate-pulse space-y-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="h-8 w-40 rounded-lg bg-slate-200" />
-          <div className="mt-2 h-4 w-72 max-w-full rounded bg-slate-100" />
+    <div className="relative mx-auto w-full max-w-[1600px] overflow-hidden rounded-3xl">
+      <div className="animate-pulse space-y-5 opacity-45 blur-[1px]" aria-hidden="true">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="h-8 w-40 rounded-lg bg-slate-200" />
+            <div className="mt-2 h-4 w-72 max-w-full rounded bg-slate-100" />
+          </div>
+          <div className="h-10 w-full rounded-xl bg-slate-200 sm:w-44" />
         </div>
-        <div className="h-10 w-full rounded-xl bg-slate-200 sm:w-44" />
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div className="h-36 rounded-xl border border-slate-200 bg-white" key={index} />
+          ))}
+        </div>
+        <div className="grid gap-5 xl:grid-cols-[1.55fr_0.65fr]">
+          <div className="h-80 rounded-xl border border-slate-200 bg-white" />
+          <div className="h-80 rounded-xl border border-slate-200 bg-white" />
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div className="h-36 rounded-2xl border border-slate-200 bg-white" key={index} />
-        ))}
-      </div>
-      <div className="grid gap-5 xl:grid-cols-[1.55fr_0.65fr]">
-        <div className="h-80 rounded-2xl border border-slate-200 bg-white" />
-        <div className="h-80 rounded-2xl border border-slate-200 bg-white" />
+      <div className="absolute inset-0 grid place-items-center bg-white/45 backdrop-blur-[2px]">
+        <DashboardLoading message="Preparing your dashboard..." />
       </div>
     </div>
   );

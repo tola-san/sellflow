@@ -28,6 +28,7 @@ import { InventoryPage } from "./pages/InventoryPage";
 import { ProductVariantsPage } from "./pages/ProductVariantsPage";
 import { useTelegramMiniApp } from "./components/telegram/TelegramMiniAppContext";
 import { NotificationsPage } from "./pages/NotificationsPage";
+import { DashboardLoading } from "./components/dashboard/DashboardLoading";
 
 const OrdersPage = lazy(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage").then((module) => ({ default: module.AnalyticsPage })));
@@ -71,10 +72,10 @@ export function App() {
                                 <Route path="menu-availability" element={<MenuAvailabilityPage />} />
                                 <Route path="restaurant-tables" element={<RestaurantTablesPage />} />
                                 <Route path="theme" element={<ThemePage />} />
-                                <Route path="orders" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading orders...</div>}><OrdersPage /></Suspense>} />
-                                <Route path="analytics" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading analytics...</div>}><AnalyticsPage /></Suspense>} />
-                                <Route path="billing" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading billing...</div>}><BillingPage /></Suspense>} />
-                                <Route path="settings" element={<Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Loading settings...</div>}><SettingsPage /></Suspense>} />
+                                <Route path="orders" element={<Suspense fallback={<DashboardLoading compact message="Loading orders..." />}><OrdersPage /></Suspense>} />
+                                <Route path="analytics" element={<Suspense fallback={<DashboardLoading compact message="Loading analytics..." />}><AnalyticsPage /></Suspense>} />
+                                <Route path="billing" element={<Suspense fallback={<DashboardLoading compact message="Loading billing..." />}><BillingPage /></Suspense>} />
+                                <Route path="settings" element={<Suspense fallback={<DashboardLoading compact message="Loading settings..." />}><SettingsPage /></Suspense>} />
                                 <Route path="notifications" element={<TelegramNotificationsPage />} />
                                 <Route path="activity" element={<NotificationsPage />} />
                             </Route>

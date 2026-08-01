@@ -39,6 +39,7 @@ const emptySummary: OrderListResponse["summary"] = {
   preparing: 0,
   ready: 0,
   completed: 0,
+  cancelled: 0,
   paid_revenue: "0.00"
 };
 

@@ -10,7 +10,8 @@ and Telegram notifications from a private dashboard.
 ## Current Status
 
 SellFlow has reached the MVP stabilization stage. The main selling workflow is
-implemented end to end:
+implemented end to end, and the latest sprint added subscription controls,
+real-time dashboard notifications, and account settings:
 
 `Create store -> Add catalog -> Publish storefront -> Customer checkout -> Manage order`
 
@@ -28,6 +29,7 @@ product with automated payments and advanced features.
 - [x] Business ownership and tenant isolation
 - [x] Guided store-owner onboarding after registration
 - [x] Shared dashboard modules with business-type module presets
+- [x] Account profile and password settings
 
 ### Business and catalog
 
@@ -63,6 +65,16 @@ product with automated payments and advanced features.
 - [x] Telegram seller, staff-group, and customer-group connections
 - [x] New-order, receipt, order-status, and payment-status messages
 - [x] Secure Telegram order linking and customer updates
+- [x] Real-time dashboard notifications with Laravel Reverb and Echo
+
+### Subscription and billing
+
+- [x] Starter, Growth, and Pro plan definitions
+- [x] Automatic 30-day Growth trial for new businesses
+- [x] Subscription-aware feature access and product limits
+- [x] Billing overview with plan comparison and usage tracking
+- [x] Subscription payment-history foundation
+- [ ] Payment-provider integration and self-service plan activation
 
 ### Deployment
 
@@ -75,18 +87,24 @@ product with automated payments and advanced features.
 
 ## Current Workflow
 
-### 1. Stabilize the MVP — Current
+### 1. Stabilize the MVP - Current
 
-- [ ] Add an ESLint 9 flat configuration and make linting pass
+- [x] Add an ESLint 9 flat configuration and make linting pass
+- [ ] Resolve the remaining ESLint warnings
+- [ ] Standardize all trial messaging to the implemented 30-day Growth trial
 - [ ] Enable PDO SQLite locally so the Laravel feature suite can run
 - [ ] Add Laravel tests to GitHub Actions
 - [ ] Add frontend tests for authentication, cart, and checkout
+- [ ] Add regression tests for settings, billing limits, and trial expiration
 - [ ] Add an end-to-end seller-to-customer checkout test
+- [ ] Run the frontend production build in GitHub Actions
 - [ ] Verify migrations against PostgreSQL
+- [ ] Verify authenticated Reverb events and reconnect behavior in production
 - [ ] Verify Cloudinary uploads, queues, CORS, and Telegram webhooks in production
+- [ ] Document required production environment variables and deployment checks
 - [ ] Reconcile the feature branch with `main` and create a stable release
 
-### 2. Complete Bakong/KHQR payments — Next
+### 2. Complete Bakong/KHQR payments - Next
 
 - [ ] Add per-business Bakong account configuration
 - [ ] Generate a dynamic KHQR for the exact order amount
@@ -115,7 +133,7 @@ product with automated payments and advanced features.
 
 - [ ] Email verification
 - [ ] Forgot-password and reset-password flow
-- [ ] Profile and password settings UI
+- [x] Profile and password settings UI
 - [ ] Session/device management
 - [ ] Authentication rate-limit and security review
 
@@ -134,12 +152,15 @@ product with automated payments and advanced features.
 - [ ] Stock adjustment history
 - [ ] Low-stock notification preferences
 
-### 8. Subscription module — Later
+### 8. Complete subscription billing
 
-- [ ] Plans and feature limits
-- [ ] Trials and expiration rules
-- [ ] Subscription checkout and billing history
-- [ ] Plan-aware middleware and upgrade prompts
+- [x] Plans and feature limits
+- [x] Trials and expiration rules
+- [x] Billing overview and payment-history UI
+- [x] Plan-aware middleware and upgrade prompts
+- [ ] Subscription checkout and payment collection
+- [ ] Plan changes, renewals, and cancellations
+- [ ] Provider callbacks and payment reconciliation
 
 ### Future improvements
 
@@ -176,6 +197,7 @@ product with automated payments and advanced features.
 - Vercel
 - GitHub Actions
 - Telegram Bot API
+- Laravel Reverb
 
 ## Definition of MVP Release
 
@@ -188,4 +210,3 @@ The MVP is ready to release when:
 - [ ] Stock and totals remain correct during checkout
 - [ ] The seller receives and manages the order successfully
 - [ ] The customer receives order updates successfully
-
