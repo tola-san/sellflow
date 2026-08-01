@@ -14,16 +14,16 @@ export const orderService = {
     const response = await api.get<{ success: boolean; data: Order[]; summary: OrderListResponse["summary"]; meta: OrderListResponse["meta"] }>("/orders", { params: filters });
     return { orders: response.data.data, summary: response.data.summary, meta: response.data.meta };
   },
-  async getOrder(id: number): Promise<Order> {
-    const response = await api.get<{ success: boolean; data: Order }>(`/orders/${id}`);
+  async getOrder(identifier: string | number): Promise<Order> {
+    const response = await api.get<{ success: boolean; data: Order }>(`/orders/${identifier}`);
     return response.data.data;
   },
-  async updateStatus(id: number, status: OrderStatus): Promise<Order> {
-    const response = await api.patch<{ success: boolean; data: Order }>(`/orders/${id}/status`, { status });
+  async updateStatus(identifier: string | number, status: OrderStatus): Promise<Order> {
+    const response = await api.patch<{ success: boolean; data: Order }>(`/orders/${identifier}/status`, { status });
     return response.data.data;
   },
-  async updatePaymentStatus(id: number, payment_status: PaymentStatus): Promise<Order> {
-    const response = await api.patch<{ success: boolean; data: Order }>(`/orders/${id}/payment-status`, { payment_status });
+  async updatePaymentStatus(identifier: string | number, payment_status: PaymentStatus): Promise<Order> {
+    const response = await api.patch<{ success: boolean; data: Order }>(`/orders/${identifier}/payment-status`, { payment_status });
     return response.data.data;
   },
 };

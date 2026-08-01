@@ -10,6 +10,7 @@ class PublicOrderResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'uuid' => $this->uuid,
             'order_number' => $this->order_number,
             'customer_name' => $this->customer_name,
             'subtotal' => $this->subtotal,

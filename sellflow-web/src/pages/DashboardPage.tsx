@@ -557,10 +557,17 @@ function OrderDonut({ groups, total }: {
     cursor += total ? (group.value / total) * 100 : 0;
     return `${palette[group.color]} ${start}% ${cursor}%`;
   });
-  const style = { "--order-donut": total ? `conic-gradient(${stops.join(",")})` : "#e2e8f0" } as CSSProperties;
+  const style: CSSProperties = {
+    background: total ? `conic-gradient(${stops.join(",")})` : "#e2e8f0",
+  };
 
   return (
-    <div className="relative grid h-40 w-40 place-items-center rounded-full bg-[var(--order-donut)]" style={style}>
+    <div
+      className="relative grid h-40 w-40 place-items-center rounded-full"
+      style={style}
+      role="img"
+      aria-label={`Order distribution: ${groups.map((group) => `${group.label} ${group.value}`).join(", ")}`}
+    >
       <div className="grid h-[112px] w-[112px] place-items-center rounded-full bg-white text-center">
         <div>
           <p className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">{total}</p>

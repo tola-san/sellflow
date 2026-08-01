@@ -3,6 +3,7 @@ import type { BusinessType } from "./businessTypes";
 
 export interface Business {
   id: number;
+  uuid: string;
   name: string;
   business_type: BusinessType;
   slug: string;

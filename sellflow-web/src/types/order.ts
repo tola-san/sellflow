@@ -15,6 +15,7 @@ export interface OrderItem {
 
 export interface Order {
   id: number;
+  uuid: string;
   order_number: string;
   customer_name: string;
   customer_phone: string;

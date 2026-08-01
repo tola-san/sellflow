@@ -22,6 +22,7 @@ export interface ProductVariant {
 
 export interface Product {
   id: number;
+  uuid: string;
   business_id: number;
   category_id: number;
   name: string;
