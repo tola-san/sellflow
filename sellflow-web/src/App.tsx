@@ -66,6 +66,7 @@ export function App() {
                                 <Route path="business" element={<BusinessPage />} />
                                 <Route path="categories" element={<CategoriesPage />} />
                                 <Route path="products" element={<ProductsPage />} />
+                                <Route path="products/:productUuid/edit" element={<ProductsPage />} />
                                 <Route path="inventory" element={<InventoryPage />} />
                                 <Route path="product-variants" element={<ProductVariantsPage />} />
                                 <Route path="add-ons" element={<AddOnsPage />} />
@@ -73,6 +74,7 @@ export function App() {
                                 <Route path="restaurant-tables" element={<RestaurantTablesPage />} />
                                 <Route path="theme" element={<ThemePage />} />
                                 <Route path="orders" element={<Suspense fallback={<DashboardLoading compact message="Loading orders..." />}><OrdersPage /></Suspense>} />
+                                <Route path="orders/:orderUuid" element={<Suspense fallback={<DashboardLoading compact message="Loading order..." />}><OrdersPage /></Suspense>} />
                                 <Route path="analytics" element={<Suspense fallback={<DashboardLoading compact message="Loading analytics..." />}><AnalyticsPage /></Suspense>} />
                                 <Route path="billing" element={<Suspense fallback={<DashboardLoading compact message="Loading billing..." />}><BillingPage /></Suspense>} />
                                 <Route path="settings" element={<Suspense fallback={<DashboardLoading compact message="Loading settings..." />}><SettingsPage /></Suspense>} />
@@ -82,6 +84,12 @@ export function App() {
                         </Route>
 
                         {/* Customer Store Routes */}
+                        <Route path="/store/:slug/cart" element={<CartRoute />} />
+                        <Route path="/store/:slug/checkout" element={<CheckoutPage />} />
+                        <Route path="/store/:slug/products/:productSlug" element={<ProductDetailPage />} />
+                        <Route path="/store/:slug" element={<StorefrontPage />} />
+
+                        {/* Legacy storefront routes remain available for existing links. */}
                         <Route path="/:slug/cart" element={<CartRoute />} />
                         <Route path="/:slug/checkout" element={<CheckoutPage />} />
                         <Route path="/:slug/products/:productSlug" element={<ProductDetailPage />} />

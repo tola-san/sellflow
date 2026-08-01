@@ -46,7 +46,7 @@ export function RestaurantTablesPage() {
 
   if (user?.business?.business_type !== "food_beverage") return <Navigate to="/dashboard" replace />;
 
-  const qrUrl = selected ? `${window.location.origin}/${user.business.slug}?table=${selected.qr_token}` : "";
+  const qrUrl = selected ? `${window.location.origin}/store/${user.business.slug}?table=${selected.qr_token}` : "";
   const show = (table?: RestaurantTable) => {
     setEditing(table?.id ?? null);
     setForm(table ? { name: table.name, area: table.area, capacity: table.capacity, status: table.status, is_active: table.is_active, sort_order: table.sort_order } : { ...blank, sort_order: tables.length });

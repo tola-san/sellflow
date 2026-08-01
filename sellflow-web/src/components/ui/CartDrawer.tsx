@@ -9,6 +9,7 @@ import {
 import { Link } from "react-router-dom";
 import type { ThemeSettings } from "../../types/theme";
 import { useCart } from "../cart/CartContext";
+import { useTelegramMiniApp } from "../telegram/TelegramMiniAppContext";
 
 interface CartDrawerProps {
   slug: string;
@@ -24,6 +25,7 @@ export function CartDrawer({
   theme,
 }: CartDrawerProps) {
   const cart = useCart();
+  const { storePath } = useTelegramMiniApp();
 
   // Rename this if your CartContext uses another method.
   const items = cart.items(slug);
@@ -310,7 +312,7 @@ export function CartDrawer({
                 </p>
 
                 <Link
-                  to={`/${slug}/checkout`}
+                  to={storePath(slug, "/checkout")}
                   onClick={onClose}
                   className="mt-5 flex w-full items-center justify-center px-5 py-3 text-sm font-semibold text-white"
                   style={{

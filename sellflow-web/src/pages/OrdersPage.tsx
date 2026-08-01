@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Banknote,
   ChevronLeft,
@@ -67,6 +68,8 @@ const nextPayments: Record<PaymentStatus, PaymentStatus[]> = {
 };
 
 export function OrdersPage() {
+  const navigate = useNavigate();
+  const { orderUuid } = useParams<{ orderUuid?: string }>();
   // State management
   const [orders, setOrders] = useState<Order[]>([]);
   const [summary, setSummary] = useState(emptySummary);
@@ -116,19 +119,36 @@ export function OrdersPage() {
     setPage(1);
   }, [search, status, paymentStatus]);
 
-  // Open order detail drawer
-  const openOrder = async (order: Order) => {
-    setSelected(order);
+  useEffect(() => {
+    if (!orderUuid) {
+      setSelected(null);
+      return;
+    }
+
+    let cancelled = false;
     setDetailLoading(true);
     setError(null);
-    try {
-      setSelected(await orderService.getOrder(order.uuid));
-    } catch (err) {
-      setError(err);
-    } finally {
-      setDetailLoading(false);
-    }
+    orderService.getOrder(orderUuid)
+      .then((order) => {
+        if (!cancelled) setSelected(order);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setDetailLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [orderUuid]);
+
+  // Open order detail drawer
+  const openOrder = (order: Order) => {
+    setSelected(order);
+    navigate(`/dashboard/orders/${order.uuid}`);
   };
+
+  const closeOrder = () => navigate("/dashboard/orders");
 
   // Update order in local state after status change
   const replaceOrder = (updated: Order) => {
@@ -442,7 +462,7 @@ export function OrdersPage() {
             order={selected}
             loading={detailLoading}
             updating={updating}
-            close={() => setSelected(null)}
+            close={closeOrder}
             onStatus={changeStatus}
             onPayment={changePayment}
             supportsReady={supportsReady}

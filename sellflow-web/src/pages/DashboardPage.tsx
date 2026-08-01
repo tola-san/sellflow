@@ -148,7 +148,7 @@ export function DashboardPage() {
     {
       title: "Open your storefront",
       description: "Make your catalog available to customers.",
-      href: business?.slug ? `/${business.slug}` : "/dashboard/business",
+      href: business?.slug ? `/store/${business.slug}` : "/dashboard/business",
       action: business?.slug ? "View storefront" : "Set public URL",
       complete: Boolean(business?.is_active && counts.active_products > 0),
     },
@@ -161,7 +161,7 @@ export function DashboardPage() {
     { label: "Customize store", href: "/dashboard/theme", icon: Palette },
     {
       label: "View storefront",
-      href: business?.slug ? `/${business.slug}` : "/dashboard/business",
+      href: business?.slug ? `/store/${business.slug}` : "/dashboard/business",
       icon: ExternalLink,
       external: Boolean(business?.slug),
     },
@@ -647,7 +647,7 @@ function RecentOrders({
                       {money(order.total)}
                     </td>
                     <td className="px-4 py-3.5 text-right">
-                      <Link to="/dashboard/orders" aria-label={`View order ${order.order_number}`} className="inline-flex rounded-lg p-1.5 text-slate-300 transition group-hover:bg-white group-hover:text-slate-600">
+                      <Link to={`/dashboard/orders/${order.uuid}`} aria-label={`View order ${order.order_number}`} className="inline-flex rounded-lg p-1.5 text-slate-300 transition group-hover:bg-white group-hover:text-slate-600">
                         <MoreHorizontal className="h-4 w-4" />
                       </Link>
                     </td>
@@ -659,7 +659,7 @@ function RecentOrders({
 
           <div className="divide-y divide-slate-100 md:hidden">
             {recent.map((order) => (
-              <Link to="/dashboard/orders" className="block p-4 transition active:bg-slate-50" key={order.id}>
+              <Link to={`/dashboard/orders/${order.uuid}`} className="block p-4 transition active:bg-slate-50" key={order.id}>
                 <div className="flex items-start gap-3">
                   <BusinessAvatar
                     logo={businessLogo}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type DragEvent, type ReactNode } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { 
   AlertTriangle, 
   ImagePlus, 
@@ -53,10 +54,12 @@ const blank: ProductForm = {
 };
 
 export function ProductsPage() {
+  const navigate = useNavigate();
+  const { productUuid } = useParams<{ productUuid?: string }>();
   const [items, setItems] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<ProductForm>(blank);
-  const [editing, setEditing] = useState<number | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
@@ -87,12 +90,12 @@ export function ProductsPage() {
   const activeCount = items.filter((product) => product.is_active).length;
   const lowStockCount = items.filter((product) => product.stock <= 5).length;
   const featuredCount = items.filter((product) => product.is_featured).length;
-  const editingProduct = editing ? items.find((product) => product.id === editing) : null;
+  const editingProduct = editing ? items.find((product) => product.uuid === editing) : null;
   const stockManagedByVariants = Boolean(editingProduct?.variants?.length);
 
   const show = (product?: Product) => {
     setError(null);
-    setEditing(product?.id || null);
+    setEditing(product?.uuid || null);
     setImageFile(null);
     setImagePreview(product?.thumbnail || null);
     setRemoveImage(false);
@@ -109,7 +112,41 @@ export function ProductsPage() {
       is_active: product.is_active,
     } : { ...blank, category_id: categories.find((category) => category.is_active)?.id || 0 });
     setOpen(true);
+    if (product) navigate(`/dashboard/products/${product.uuid}/edit`);
   };
+
+  const closeModal = () => {
+    setOpen(false);
+    setEditing(null);
+    if (productUuid) navigate("/dashboard/products");
+  };
+
+  useEffect(() => {
+    if (!productUuid || loading) return;
+    const product = items.find((item) => item.uuid === productUuid);
+    if (!product) {
+      setError(new Error("Product not found."));
+      return;
+    }
+
+    setEditing(product.uuid);
+    setImageFile(null);
+    setImagePreview(product.thumbnail || null);
+    setRemoveImage(false);
+    setForm({
+      category_id: product.category_id,
+      name: product.name,
+      slug: product.slug,
+      sku: product.sku || "",
+      description: product.description || "",
+      price: String(product.price),
+      discount_price: product.discount_price ? String(product.discount_price) : "",
+      stock: product.stock,
+      is_featured: product.is_featured,
+      is_active: product.is_active,
+    });
+    setOpen(true);
+  }, [items, loading, productUuid]);
 
   const chooseImage = (file?: File) => {
     if (!file) return;
@@ -153,7 +190,7 @@ export function ProductsPage() {
     };
     try {
       editing ? await productService.updateProduct(editing, payload) : await productService.createProduct(payload);
-      setOpen(false);
+      closeModal();
       await load();
     } catch (err) {
       setError(err);
@@ -165,7 +202,7 @@ export function ProductsPage() {
   const remove = async (product: Product) => {
     if (!confirm(`Delete “${product.name}”?`)) return;
     try {
-      await productService.deleteProduct(product.id);
+      await productService.deleteProduct(product.uuid);
       setItems((current) => current.filter((item) => item.id !== product.id));
     } catch (err) {
       setError(err);
@@ -321,7 +358,7 @@ export function ProductsPage() {
 
       {/* Product Modal */}
       {open && (
-        <ProductModal title={editing ? "Edit product" : "Create product"} close={() => setOpen(false)}>
+        <ProductModal title={editing ? "Edit product" : "Create product"} close={closeModal}>
           <form onSubmit={submit} className="flex max-h-[calc(92vh-73px)] flex-col">
             <div className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[300px_minmax(0,1fr)] md:overflow-hidden xl:grid-cols-[330px_minmax(0,1fr)]">
               <aside className="border-b border-slate-200 bg-zinc-100/60 p-5 md:overflow-y-auto md:border-b-0 md:border-r xl:p-6">
@@ -449,7 +486,7 @@ export function ProductsPage() {
             <div className="flex shrink-0 items-center justify-between border-t border-slate-200 bg-white px-5 py-4 lg:px-7">
               <p className="hidden text-xs text-slate-400 sm:block">Changes appear after saving.</p>
               <div className="ml-auto flex gap-3">
-                <button type="button" className={buttonSecondary} onClick={() => setOpen(false)}>Cancel</button>
+                <button type="button" className={buttonSecondary} onClick={closeModal}>Cancel</button>
                 <button disabled={saving} className={`${buttonPrimary} gap-2`}>
                   {saving ? (
                     <>

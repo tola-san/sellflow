@@ -71,7 +71,7 @@ export function ThemePage() {
       <PageHeader
         title="Storefront theme"
         description="Choose a preset, customize the details, and preview your public store before publishing."
-        action={<a href={`/${business.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-purple-700">Open storefront <ExternalLink size={16}/></a>}
+        action={<a href={`/store/${business.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-purple-700">Open storefront <ExternalLink size={16}/></a>}
       />
       <ErrorMessage error={error}/>
 
