@@ -42,6 +42,7 @@ export interface OrderSummary {
   preparing: number;
   ready: number;
   completed: number;
+  cancelled: number;
   paid_revenue: string;
 }
 

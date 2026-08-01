@@ -1,6 +1,6 @@
 import api from "../lib/Axios";
 
-export type AnalyticsDays = 7 | 30 | 90;
+export type AnalyticsDays = 7 | 30 | 90 | 365;
 
 export interface AnalyticsReport {
   period: {

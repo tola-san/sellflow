@@ -13,6 +13,7 @@ import {
   Send,
   ShieldCheck,
   UserRound,
+  Volume2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { authService } from "../Services/auth";
@@ -25,6 +26,11 @@ import {
   saveDashboardTheme,
   type DashboardThemeId,
 } from "../theme/dashboardThemes";
+import {
+  isNotificationSoundEnabled,
+  playNotificationSound,
+  setNotificationSoundEnabled,
+} from "../lib/notificationSound";
 
 type SettingsSection = "account" | "appearance" | "notifications" | "security";
 
@@ -44,7 +50,7 @@ export function SettingsPage() {
   const [section, setSection] = useState<SettingsSection>("account");
 
   return (
-    <div className="mx-auto w-full max-w-[1450px] space-y-5 pb-8 sm:space-y-6 sm:pb-10">
+    <div className="mx-auto w-full min-w-0 max-w-[1450px] overflow-x-hidden space-y-5 pb-8 sm:space-y-6 sm:pb-10">
       <header>
         <p className="text-xs font-semibold text-violet-600">Workspace preferences</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-3xl">Settings</h1>
@@ -53,7 +59,7 @@ export function SettingsPage() {
         </p>
       </header>
 
-      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="grid min-w-0 grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
         <SettingsNavigation active={section} onChange={setSection} />
         <div className="min-w-0">
           {section === "account" && <AccountSettings />}
@@ -74,8 +80,8 @@ function SettingsNavigation({
   onChange: (section: SettingsSection) => void;
 }) {
   return (
-    <nav aria-label="Settings sections" className="lg:sticky lg:top-24 lg:self-start">
-      <div className="-mx-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:-mx-5 sm:px-5 lg:mx-0 lg:block lg:space-y-1 lg:overflow-visible lg:rounded-2xl lg:border lg:border-slate-200 lg:bg-white lg:p-2 lg:shadow-sm">
+    <nav aria-label="Settings sections" className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+      <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 lg:block lg:space-y-1 lg:rounded-xl lg:border lg:border-slate-200 lg:bg-white lg:p-2 lg:shadow-sm">
         {navigation.map((item) => {
           const Icon = item.icon;
           const selected = active === item.id;
@@ -85,17 +91,17 @@ function SettingsNavigation({
               key={item.id}
               onClick={() => onChange(item.id)}
               aria-current={selected ? "page" : undefined}
-              className={`flex shrink-0 snap-start items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition sm:gap-3 sm:px-3.5 lg:w-full lg:border-transparent lg:p-3 ${
+              className={`flex min-w-0 items-center gap-2 rounded-xl border px-2.5 py-2.5 text-left transition sm:gap-2.5 sm:px-3 lg:w-full lg:gap-3 lg:border-transparent lg:p-3 ${
                 selected
                   ? "border-violet-200 bg-violet-50 text-violet-700"
                   : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               }`}
             >
-              <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg sm:h-8 sm:w-8 ${selected ? "bg-white text-violet-600 shadow-sm" : "bg-slate-100 text-slate-500"}`}>
+              <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg lg:h-8 lg:w-8 ${selected ? "bg-white text-violet-600 shadow-sm" : "bg-slate-100 text-slate-500"}`}>
                 <Icon className="h-4 w-4" />
               </span>
-              <span>
-                <span className="block text-xs font-semibold sm:text-sm">{item.label}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-[11px] font-semibold min-[360px]:text-xs sm:text-sm">{item.label}</span>
                 <span className="mt-0.5 hidden text-[10px] text-slate-400 lg:block">{item.description}</span>
               </span>
             </button>
@@ -231,7 +237,7 @@ function AppearanceSettings() {
               type="button"
               key={themeId}
               onClick={() => select(themeId)}
-              className={`relative rounded-2xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
+              className={`relative min-w-0 rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
                 selected ? "border-violet-500 ring-2 ring-violet-100" : "border-slate-200"
               }`}
             >
@@ -270,6 +276,15 @@ function AppearanceSettings() {
 }
 
 function NotificationSettings() {
+  const [soundEnabled, setSoundEnabled] = useState(() => isNotificationSoundEnabled());
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    setNotificationSoundEnabled(next);
+    if (next) void playNotificationSound("system");
+  };
+
   return (
     <div className="space-y-5">
       <SettingsPanel
@@ -300,6 +315,37 @@ function NotificationSettings() {
         description="SellFlow keeps in-app notifications available even when an external channel is disconnected."
         icon={<ShieldCheck className="h-4 w-4" />}
       >
+        <div className="mb-5 flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-violet-100 text-violet-700">
+              <Volume2 className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Notification sound</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">Play a short chime when a new real-time alert arrives.</p>
+            </div>
+          </div>
+          <div className="flex w-full items-center justify-end gap-2 sm:w-auto sm:self-auto">
+            <button
+              type="button"
+              onClick={() => void playNotificationSound("system")}
+              disabled={!soundEnabled}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Test sound
+            </button>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={soundEnabled}
+              onClick={toggleSound}
+              className={`relative h-7 w-12 rounded-full transition-colors ${soundEnabled ? "bg-violet-600" : "bg-slate-300"}`}
+              aria-label="Toggle notification sound"
+            >
+              <span className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${soundEnabled ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+        </div>
         <div className="space-y-3">
           <StatusRow label="In-app notifications" description="Order and inventory activity" status="Active" />
           <StatusRow label="Real-time delivery" description="Laravel Reverb private business channel" status="Enabled" />
@@ -420,12 +466,12 @@ function SettingsPanel({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.025] sm:rounded-2xl">
+    <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.025]">
       <div className="flex items-start gap-3 border-b border-slate-100 px-4 py-3.5 sm:px-6 sm:py-4">
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-600">{icon}</span>
-        <div>
+        <div className="min-w-0">
           <h2 className="text-sm font-semibold text-slate-950">{title}</h2>
-          <p className="mt-0.5 text-[11px] leading-5 text-slate-500">{description}</p>
+          <p className="mt-0.5 break-words text-[11px] leading-5 text-slate-500">{description}</p>
         </div>
       </div>
       <div className="p-4 sm:p-6">{children}</div>
@@ -459,7 +505,7 @@ function SettingsLink({
   badge?: string;
 }) {
   return (
-    <Link to={to} className="group flex items-start gap-3 rounded-xl border border-slate-200 p-3.5 transition hover:border-violet-200 hover:bg-violet-50/40 sm:p-4">
+    <Link to={to} className="group flex min-w-0 items-start gap-3 overflow-hidden rounded-xl border border-slate-200 p-3.5 transition hover:border-violet-200 hover:bg-violet-50/40 sm:p-4">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-600 transition group-hover:bg-white group-hover:text-violet-600">
         {icon}
       </span>
@@ -468,7 +514,7 @@ function SettingsLink({
           <span className="text-sm font-semibold text-slate-900">{title}</span>
           {badge && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-emerald-600">{badge}</span>}
         </span>
-        <span className="mt-1 block text-[11px] leading-5 text-slate-500">{description}</span>
+        <span className="mt-1 block break-words text-[11px] leading-5 text-slate-500">{description}</span>
       </span>
       <ChevronRight className="mt-2 h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-violet-500" />
     </Link>

@@ -41,6 +41,7 @@ class OrderService
             ->selectRaw("SUM(CASE WHEN status = 'preparing' THEN 1 ELSE 0 END) as preparing")
             ->selectRaw("SUM(CASE WHEN status = 'ready' THEN 1 ELSE 0 END) as ready")
             ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed")
+            ->selectRaw("SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled")
             ->selectRaw("SUM(CASE WHEN payment_status = 'paid' THEN total ELSE 0 END) as paid_revenue")
             ->first();
 
@@ -51,6 +52,7 @@ class OrderService
             'preparing' => (int) ($row?->preparing ?? 0),
             'ready' => (int) ($row?->ready ?? 0),
             'completed' => (int) ($row?->completed ?? 0),
+            'cancelled' => (int) ($row?->cancelled ?? 0),
             'paid_revenue' => number_format((float) ($row?->paid_revenue ?? 0), 2, '.', ''),
         ];
     }

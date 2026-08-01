@@ -34,6 +34,7 @@ import {
   type NotificationType,
 } from "../../Services/notifications";
 import { subscribeToBusinessNotifications } from "../../lib/realtime";
+import { initializeNotificationSound, playNotificationSound } from "../../lib/notificationSound";
 
 function DateTimeDisplay() {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -107,7 +108,7 @@ function DateTimeDisplay() {
   };
 
   return (
-    <div className="hidden md:flex items-center gap-3 text-sm">
+    <div className="flex items-center gap-3 text-sm">
       <div className="relative">
         <button
           type="button"
@@ -135,7 +136,7 @@ function DateTimeDisplay() {
               onClick={() => setShowNotifications(false)}
               aria-label="Close notifications"
             />
-            <div className="absolute right-0 z-50 mt-2 w-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+            <div className="fixed left-3 right-3 top-14 z-50 mt-2 w-auto overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:top-16 md:absolute md:left-auto md:right-0 md:top-auto md:w-[360px]">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                 <div>
                   <p className="text-sm font-bold text-slate-900">Notifications</p>
@@ -213,7 +214,7 @@ function DateTimeDisplay() {
         )}
       </div>
 
-      <div className="relative">
+      <div className="relative hidden md:block">
         <button
           onClick={handleDateClick}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
@@ -257,7 +258,7 @@ function DateTimeDisplay() {
         )}
       </div>
 
-      <div className="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5 text-purple-700">
+      <div className="hidden items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5 text-purple-700 md:flex">
         <Clock size={15} className="text-purple-400" />
         <span className="font-medium">{formatTime(currentDateTime)}</span>
       </div>
@@ -302,6 +303,28 @@ export function DashboardLayout() {
     if (!business?.id) return;
     return subscribeToBusinessNotifications(business.id);
   }, [business?.id]);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      void initializeNotificationSound();
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
+    const playForNewNotification = (event: Event) => {
+      const notification = (event as CustomEvent<BusinessNotification | undefined>).detail;
+      if (notification) void playNotificationSound(notification.type);
+    };
+
+    window.addEventListener("pointerdown", unlockAudio, { once: true });
+    window.addEventListener("keydown", unlockAudio, { once: true });
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, playForNewNotification);
+
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, playForNewNotification);
+    };
+  }, []);
 
   const getInitials = (name: string) => {
     if (!name) return "U";
@@ -481,7 +504,7 @@ export function DashboardLayout() {
   );
 
   return (
-    <div className="dashboard-theme min-h-screen bg-slate-50 text-slate-900" data-dashboard-theme={dashboardTheme} style={dashboardThemeVariables(DASHBOARD_THEMES[dashboardTheme])}>
+    <div className="dashboard-theme min-h-screen bg-[#f7f7f5] text-slate-900" data-dashboard-theme={dashboardTheme} style={dashboardThemeVariables(DASHBOARD_THEMES[dashboardTheme])}>
       <aside className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-slate-200 bg-white transition-[width] duration-200 lg:flex ${
         collapsed ? "w-[76px]" : "w-[272px]"
       }`}>
@@ -502,7 +525,7 @@ export function DashboardLayout() {
       )}
 
       <div className={`transition-[padding] duration-200 ${collapsed ? "lg:pl-[76px]" : "lg:pl-[272px]"}`}>
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white/95 px-3 backdrop-blur sm:h-16 sm:px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200/80 bg-white/90 px-3 backdrop-blur-xl sm:h-16 sm:px-6">
           <div className="flex min-w-0 flex-1 items-center">
             <button
               className="mr-2 shrink-0 rounded-lg p-2 hover:bg-slate-100 sm:mr-3 lg:hidden"
@@ -518,9 +541,7 @@ export function DashboardLayout() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-            <div className="hidden md:block">
-              <DateTimeDisplay />
-            </div>
+            <DateTimeDisplay />
 
             <div className="relative">
               {user ? (
@@ -596,7 +617,7 @@ export function DashboardLayout() {
           </div>
         </header>
 
-        <main className="p-3 sm:p-5 lg:p-8">
+        <main className="p-4 sm:p-6 lg:p-8">
           {business && !business.is_active && (
             <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               <AlertTriangle size={18} className="mt-0.5 shrink-0" />
