@@ -18,6 +18,7 @@ import {
 import { useAuth } from "./Auth/AuthContext";
 import { Pricing } from "./Pricing";
 import { DotField } from "./ui/DotField";
+import { BrandLogo } from "./ui/BrandLogo";
 import "./landing.css";
 
 type HeroView = "products" | "orders" | "insights";
@@ -127,7 +128,7 @@ function HeroWorkspace({ activeView }: { activeView: HeroView }) {
         </div>
         <div className="grid min-h-[340px] grid-cols-[54px_1fr] sm:grid-cols-[176px_1fr]">
           <aside className="border-r border-[#eceaf0] bg-[#fbfafc] p-2 sm:p-4">
-            <div className="mb-6 flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 text-white"><ShoppingBag className="h-4 w-4" /></span><span className="hidden text-xs font-bold sm:block">SellFlow</span></div>
+            <BrandLogo className="mb-6" markClassName="h-8 w-8" wordmarkClassName="hidden text-xs sm:block" />
             <div className="space-y-1">{navigation.map((item, index) => <div key={item} className={`flex items-center gap-2 rounded-lg px-2 py-2 text-[9px] font-medium ${item.toLowerCase() === activeView || (activeView === "insights" && item === "Analytics") ? "bg-gradient-to-r from-violet-100 to-cyan-50 text-[#6047a7]" : "text-[#98919f]"}`}><span className={`h-1.5 w-1.5 rounded-full ${index % 2 ? "bg-cyan-300" : "bg-violet-300"}`} /><span className="hidden sm:block">{item}</span></div>)}</div>
           </aside>
           <main className="min-w-0 bg-white p-3 text-left sm:p-5">

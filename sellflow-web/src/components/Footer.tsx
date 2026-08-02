@@ -1,5 +1,6 @@
-import { ArrowUpRight, Heart, Mail, Send, ShoppingBag } from "lucide-react";
+import { ArrowUpRight, Heart, Mail, Send } from "lucide-react";
 import { Link } from "react-router-dom";
+import { BrandLogo } from "./ui/BrandLogo";
 
 const footerLinks = [
   { label: "Features", href: "#features" },
@@ -25,7 +26,7 @@ export function Footer() {
 
           <div className="grid gap-10 py-10 md:grid-cols-[1.2fr_1fr] md:items-start">
             <div>
-              <Link to="/" className="inline-flex items-center gap-2.5" aria-label="SellFlow home"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#8754d8] text-white"><ShoppingBag className="h-4 w-4" /></span><span className="text-lg font-bold tracking-[-.035em]">SellFlow</span></Link>
+              <Link to="/" aria-label="SellFlow home"><BrandLogo markClassName="h-10 w-10" wordmarkClassName="text-xl" /></Link>
               <p className="mt-4 max-w-sm text-sm leading-6 text-[#7a7381]">Simple commerce software for modern local businesses.</p>
               <div className="mt-5 flex gap-2"><a href="mailto:tolasan369369@gmail.com" aria-label="Email SellFlow" className="grid h-9 w-9 place-items-center rounded-full border border-[#d9cfE5] bg-white text-[#7543bd] transition hover:bg-[#f1e8fb]"><Mail className="h-4 w-4" /></a><a href="https://t.me/tolasannn" target="_blank" rel="noopener noreferrer" aria-label="SellFlow on Telegram" className="grid h-9 w-9 place-items-center rounded-full border border-[#d9cfe5] bg-white text-[#7543bd] transition hover:bg-[#f1e8fb]"><Send className="h-4 w-4" /></a></div>
             </div>
