@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Menu, ShoppingBag, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "./Auth/AuthContext";
+import { BrandLogo } from "./ui/BrandLogo";
 
 const navLinks = [
   { name: "Features", href: "#features" },
@@ -45,15 +46,7 @@ export function Navbar() {
             : "border border-white/50 bg-white/90 shadow-[0_12px_35px_-24px_rgba(32,22,90,.5)] backdrop-blur-xl"
         }`}
       >
-        <Link to="/" className="flex items-center gap-2.5" aria-label="SellFlow home">
-          <motion.span
-            whileHover={{ rotate: -8, scale: 1.06 }}
-            className="grid h-9 w-9 place-items-center rounded-full bg-[#8754d8] text-white shadow-lg shadow-violet-200"
-          >
-            <ShoppingBag className="h-4 w-4" />
-          </motion.span>
-          <span className="text-lg font-bold tracking-[-0.035em] text-slate-950">SellFlow</span>
-        </Link>
+        <Link to="/" className="transition hover:-translate-y-0.5" aria-label="SellFlow home"><BrandLogo /></Link>
 
         <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary navigation">
           {navLinks.map((link) => (
