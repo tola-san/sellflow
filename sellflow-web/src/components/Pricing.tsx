@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { DotField } from "./ui/DotField";
 import {
   billingService,
   type BillingCycle,
@@ -51,6 +52,7 @@ export function Pricing() {
 
   return (
     <section id="pricing" className="relative overflow-hidden bg-[#f8f7fb] py-20 sm:py-28">
+      <DotField gap={36} className="opacity-40 [mask-image:radial-gradient(circle_at_50%_32%,black,transparent_70%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,_rgba(116,88,220,0.16),_transparent_62%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(99,78,140,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(99,78,140,.08)_1px,transparent_1px)] [background-size:110px_110px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

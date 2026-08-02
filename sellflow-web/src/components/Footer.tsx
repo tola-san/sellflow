@@ -10,8 +10,8 @@ const footerLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-white px-3 pb-3 sm:px-5 sm:pb-5">
-      <div className="relative overflow-hidden rounded-[24px] border border-[#ded8ed] bg-[#f7f5fb] px-5 py-10 text-[#201d28] sm:rounded-[30px] sm:px-10 lg:px-14 lg:py-14">
+    <footer className="bg-[#f7f5fb]">
+      <div className="relative overflow-hidden px-5 py-10 text-[#201d28] sm:px-10 lg:px-14 lg:py-14">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(211,189,244,.42),transparent_30%)]" />
         <div className="relative mx-auto max-w-7xl">
           <div className="flex flex-col gap-8 border-b border-[#dfd7e8] pb-10 lg:flex-row lg:items-center lg:justify-between">
