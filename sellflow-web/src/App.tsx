@@ -2,38 +2,38 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, useNavigate, useParams } from "react-router-dom";
 
 import LandingPage from "./pages/LandingPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { BusinessPage } from "./pages/BusinessPage";
-import { CategoriesPage } from "./pages/CategoriesPage";
-import { ProductsPage } from "./pages/ProductsPage";
-import { ThemePage } from "./pages/ThemePage";
-import { StorefrontPage } from "./pages/StorefrontPage";
-import { ProductDetailPage } from "./pages/ProductDetailPage";
-import { CartDrawer } from "./pages/CartPage";        // ← Make sure this exports CartDrawer
-import { CheckoutPage } from "./pages/CheckoutPage";
-import { TelegramNotificationsPage } from "./pages/TelegramNotificationsPage";
-import { DashboardLayout } from "./components/dashboard/DashboardLayout";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute";
 import { GuestRoute } from "./components/Auth/GuestRoute";
 import { AuthProvider } from "./components/Auth/AuthContext";
 import { ToastProvider } from "./components/ui/ToastContext";
 import { CartProvider } from "./components/cart/CartContext";
-import { TelegramMiniAppLayout } from "./components/telegram/TelegramMiniAppLayout";
-import { TelegramStoreEntryPage } from "./pages/TelegramStoreEntryPage";
-import { OnboardingPage } from "./pages/OnboardingPage";
-import { AddOnsPage } from "./pages/AddOnsPage";
-import { MenuAvailabilityPage } from "./pages/MenuAvailabilityPage";
-import { RestaurantTablesPage } from "./pages/RestaurantTablesPage";
-import { InventoryPage } from "./pages/InventoryPage";
-import { ProductVariantsPage } from "./pages/ProductVariantsPage";
 import { useTelegramMiniApp } from "./components/telegram/TelegramMiniAppContext";
-import { NotificationsPage } from "./pages/NotificationsPage";
 import { DashboardLoading } from "./components/dashboard/DashboardLoading";
 
+const DashboardLayout = lazy(() => import("./components/dashboard/DashboardLayout").then((module) => ({ default: module.DashboardLayout })));
+const TelegramMiniAppLayout = lazy(() => import("./components/telegram/TelegramMiniAppLayout").then((module) => ({ default: module.TelegramMiniAppLayout })));
+const DashboardPage = lazy(() => import("./pages/DashboardPage").then((module) => ({ default: module.DashboardPage })));
+const BusinessPage = lazy(() => import("./pages/BusinessPage").then((module) => ({ default: module.BusinessPage })));
+const CategoriesPage = lazy(() => import("./pages/CategoriesPage").then((module) => ({ default: module.CategoriesPage })));
+const ProductsPage = lazy(() => import("./pages/ProductsPage").then((module) => ({ default: module.ProductsPage })));
+const InventoryPage = lazy(() => import("./pages/InventoryPage").then((module) => ({ default: module.InventoryPage })));
+const ProductVariantsPage = lazy(() => import("./pages/ProductVariantsPage").then((module) => ({ default: module.ProductVariantsPage })));
+const AddOnsPage = lazy(() => import("./pages/AddOnsPage").then((module) => ({ default: module.AddOnsPage })));
+const MenuAvailabilityPage = lazy(() => import("./pages/MenuAvailabilityPage").then((module) => ({ default: module.MenuAvailabilityPage })));
+const RestaurantTablesPage = lazy(() => import("./pages/RestaurantTablesPage").then((module) => ({ default: module.RestaurantTablesPage })));
+const ThemePage = lazy(() => import("./pages/ThemePage").then((module) => ({ default: module.ThemePage })));
 const OrdersPage = lazy(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage").then((module) => ({ default: module.AnalyticsPage })));
 const BillingPage = lazy(() => import("./pages/BillingPage").then((module) => ({ default: module.BillingPage })));
 const SettingsPage = lazy(() => import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
+const TelegramNotificationsPage = lazy(() => import("./pages/TelegramNotificationsPage").then((module) => ({ default: module.TelegramNotificationsPage })));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage").then((module) => ({ default: module.NotificationsPage })));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage").then((module) => ({ default: module.OnboardingPage })));
+const StorefrontPage = lazy(() => import("./pages/StorefrontPage").then((module) => ({ default: module.StorefrontPage })));
+const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage").then((module) => ({ default: module.ProductDetailPage })));
+const CartDrawer = lazy(() => import("./pages/CartPage").then((module) => ({ default: module.CartDrawer })));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage").then((module) => ({ default: module.CheckoutPage })));
+const TelegramStoreEntryPage = lazy(() => import("./pages/TelegramStoreEntryPage").then((module) => ({ default: module.TelegramStoreEntryPage })));
 
 function CartRoute() {
     const navigate = useNavigate();
@@ -53,7 +53,8 @@ export function App() {
         <ToastProvider>
             <CartProvider>
                 <AuthProvider>
-                    <Routes>
+                    <Suspense fallback={<DashboardLoading message="Loading page..." />}>
+                      <Routes>
                         <Route element={<GuestRoute />}>
                             <Route path="/" element={<LandingPage />} />
                             <Route path="/register" element={<LandingPage />} />
@@ -73,11 +74,11 @@ export function App() {
                                 <Route path="menu-availability" element={<MenuAvailabilityPage />} />
                                 <Route path="restaurant-tables" element={<RestaurantTablesPage />} />
                                 <Route path="theme" element={<ThemePage />} />
-                                <Route path="orders" element={<Suspense fallback={<DashboardLoading compact message="Loading orders..." />}><OrdersPage /></Suspense>} />
-                                <Route path="orders/:orderUuid" element={<Suspense fallback={<DashboardLoading compact message="Loading order..." />}><OrdersPage /></Suspense>} />
-                                <Route path="analytics" element={<Suspense fallback={<DashboardLoading compact message="Loading analytics..." />}><AnalyticsPage /></Suspense>} />
-                                <Route path="billing" element={<Suspense fallback={<DashboardLoading compact message="Loading billing..." />}><BillingPage /></Suspense>} />
-                                <Route path="settings" element={<Suspense fallback={<DashboardLoading compact message="Loading settings..." />}><SettingsPage /></Suspense>} />
+                                <Route path="orders" element={<OrdersPage />} />
+                                <Route path="orders/:orderUuid" element={<OrdersPage />} />
+                                <Route path="analytics" element={<AnalyticsPage />} />
+                                <Route path="billing" element={<BillingPage />} />
+                                <Route path="settings" element={<SettingsPage />} />
                                 <Route path="notifications" element={<TelegramNotificationsPage />} />
                                 <Route path="activity" element={<NotificationsPage />} />
                             </Route>
@@ -103,7 +104,8 @@ export function App() {
                             <Route path="cart" element={<CartRoute />} />
                             <Route path="checkout" element={<CheckoutPage />} />
                         </Route>
-                    </Routes>
+                      </Routes>
+                    </Suspense>
                 </AuthProvider>
             </CartProvider>
         </ToastProvider>
