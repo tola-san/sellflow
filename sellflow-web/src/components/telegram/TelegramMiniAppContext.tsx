@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 
 interface TelegramUser {
@@ -76,9 +76,29 @@ const TelegramMiniAppContext = createContext<TelegramMiniAppContextValue | null>
 export function TelegramMiniAppProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const isMiniAppRoute = location.pathname === "/telegram/store" || location.pathname.startsWith("/telegram/store/");
-  const webApp = typeof window !== "undefined" ? window.Telegram?.WebApp ?? null : null;
+  const [webApp, setWebApp] = useState<TelegramWebApp | null>(() => (
+    typeof window !== "undefined" ? window.Telegram?.WebApp ?? null : null
+  ));
   const isTelegramClient = isMiniAppRoute && Boolean(webApp?.initData);
   const user = webApp?.initDataUnsafe?.user ?? null;
+
+  useEffect(() => {
+    if (!isMiniAppRoute || webApp) return;
+
+    const handleLoad = () => setWebApp(window.Telegram?.WebApp ?? null);
+    const existingScript = document.querySelector<HTMLScriptElement>("script[data-telegram-web-app]");
+    const script = existingScript ?? document.createElement("script");
+
+    script.addEventListener("load", handleLoad);
+    if (!existingScript) {
+      script.src = "https://telegram.org/js/telegram-web-app.js?63";
+      script.async = true;
+      script.dataset.telegramWebApp = "true";
+      document.head.append(script);
+    }
+
+    return () => script.removeEventListener("load", handleLoad);
+  }, [isMiniAppRoute, webApp]);
 
   const startParam = useMemo(() => {
     const query = new URLSearchParams(location.search);
