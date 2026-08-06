@@ -70,7 +70,7 @@ export function Navbar() {
             onClick={() => openAuth("register")}
             className="group relative inline-flex h-10 items-center overflow-hidden rounded-full bg-gradient-to-r from-[#7655df] via-[#8269e8] to-cyan-400 py-1 pl-4 pr-11 text-sm font-semibold text-white shadow-lg shadow-violet-200 transition-all duration-500 hover:pl-11 hover:pr-4"
           >
-            <span className="relative z-10">Start free</span>
+            <span className="relative z-10">Start trial</span>
             <span className="absolute right-1 grid h-8 w-8 place-items-center rounded-full bg-white text-slate-950 transition-all duration-500 group-hover:right-[calc(100%-36px)] group-hover:rotate-45">
               <ArrowUpRight className="h-4 w-4" />
             </span>
@@ -105,7 +105,7 @@ export function Navbar() {
             </nav>
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
               <button onClick={() => { setMobileOpen(false); openAuth("login"); }} className="rounded-full border border-zinc-200 px-4 py-3 text-sm font-semibold">Sign in</button>
-              <button onClick={() => { setMobileOpen(false); openAuth("register"); }} className="rounded-full bg-gradient-to-r from-[#7655df] via-[#8269e8] to-cyan-400 px-4 py-3 text-sm font-semibold text-white">Start free</button>
+              <button onClick={() => { setMobileOpen(false); openAuth("register"); }} className="rounded-full bg-gradient-to-r from-[#7655df] via-[#8269e8] to-cyan-400 px-4 py-3 text-sm font-semibold text-white">Start trial</button>
             </div>
           </motion.div>
         )}

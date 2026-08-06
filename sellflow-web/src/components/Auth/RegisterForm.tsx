@@ -78,7 +78,7 @@ export function RegisterForm({ onSwitch }: RegisterFormProps) {
         </h2>
 
         <p className="text-sm text-muted mt-1">
-          Free forever. Set up your digital catalog in minutes.
+          Start with Growth features free for 30 days. No card required.
         </p>
       </div>
 
