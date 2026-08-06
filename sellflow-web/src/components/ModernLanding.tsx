@@ -31,10 +31,10 @@ const reveal = {
 };
 
 const faqs = [
-  ["Do I need technical experience?", "No. Add your products, choose a theme, and share your store link. SellFlow handles the technical setup for you."],
-  ["Can customers order from their phone?", "Yes. Every SellFlow storefront is mobile-first, so customers can browse, order, and check out smoothly from any modern phone."],
-  ["How do Telegram notifications work?", "Connect Telegram once and receive new-order and status updates without keeping your dashboard open."],
-  ["Can I use SellFlow for a restaurant?", "Yes. SellFlow supports menu availability, product options, restaurant tables, and QR ordering alongside standard storefronts."],
+  ["How do customers place an order?", "Share your public store link. Customers can browse, add items to their cart, and check out from their phone without creating an account."],
+  ["What happens after the 30-day trial?", "Your trial starts with Growth features. After 30 days, choose Starter, Growth, or Pro based on your catalog, staff, and business needs."],
+  ["How do Telegram notifications work?", "Connect Telegram once to receive new-order alerts and send order or payment-status updates without keeping the dashboard open."],
+  ["Can I use SellFlow for a restaurant?", "Yes. Growth and Pro support menu availability, add-ons, restaurant tables, and table QR ordering alongside the standard storefront."],
 ];
 
 export function ModernLanding() {
@@ -51,22 +51,25 @@ export function ModernLanding() {
 
         <div className="relative z-10 mx-auto max-w-6xl text-center">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="mx-auto inline-flex items-center gap-2 rounded-full border border-violet-200/70 bg-white/80 px-3 py-1.5 text-[10px] font-semibold text-[#655d70] shadow-[0_8px_25px_-15px_rgba(107,70,193,.5)] backdrop-blur-xl">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-gradient-to-br from-violet-500 to-cyan-400" /> Your business, beautifully organized
+            <span className="h-2 w-2 animate-pulse rounded-full bg-gradient-to-br from-violet-500 to-cyan-400" /> Built for local businesses in Cambodia
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.85, delay: 0.05, ease: [0.16, 1, 0.3, 1] }} className="mx-auto mt-6 max-w-[780px] text-[2.75rem] font-semibold leading-[1.02] tracking-[-.055em] text-[#17151a] sm:text-6xl lg:text-[4.35rem]">
-            Manage every sale with <span className="gradient-word">clarity and speed.</span>
+            Turn your catalog into a store <span className="gradient-word">customers can order from.</span>
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.16 }} className="mx-auto mt-5 max-w-xl text-xs leading-6 text-[#77717e] sm:text-sm">
-            Products, orders, customers, and insights in one calm workspace built to keep your business moving.
+            Publish a branded mobile storefront, accept guest orders, manage stock and fulfillment, and stay updated through Telegram—all from one dashboard.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.24 }} className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button onClick={() => openAuth("register")} className="group inline-flex h-12 items-center gap-2 rounded-full bg-[#1c1a1f] px-5 text-xs font-semibold text-white shadow-[0_14px_30px_-12px_rgba(20,18,25,.62)] transition hover:-translate-y-1 hover:bg-[#6f54d9]">
-              Start selling free <span className="grid h-6 w-6 place-items-center rounded-full bg-white text-[#1c1a1f]"><ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" /></span>
+              Start 30-day Growth trial <span className="grid h-6 w-6 place-items-center rounded-full bg-white text-[#1c1a1f]"><ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" /></span>
             </button>
           </motion.div>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.32 }} className="mt-3 text-[10px] font-medium text-[#8b8491] sm:text-xs">
+            No card required <span aria-hidden="true">·</span> Plans from $6/month after your trial
+          </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="hero-view-switcher mx-auto mt-8 flex w-fit items-center rounded-xl bg-white/75 p-1 shadow-[0_10px_35px_-18px_rgba(61,43,99,.45)] backdrop-blur-xl">
             {(["products", "orders", "insights"] as HeroView[]).map((view) => <button key={view} onClick={() => setHeroView(view)} className={`relative isolate rounded-lg px-4 py-2 text-[10px] font-semibold capitalize transition ${heroView === view ? "text-[#4e3a75]" : "text-[#918a98] hover:text-[#655d70]"}`}>{heroView === view && <motion.span layoutId="hero-view" className="absolute inset-0 -z-10 rounded-lg bg-gradient-to-r from-violet-100 to-cyan-100 shadow-sm" transition={{ type: "spring", stiffness: 380, damping: 30 }} />}{view}</button>)}
@@ -78,27 +81,29 @@ export function ModernLanding() {
 
       <TrustedCompanies />
 
+      <BusinessModelStrip />
+
       <section className="relative mx-auto max-w-7xl overflow-hidden px-3 py-20 sm:px-8 lg:py-28">
         <DotField gap={38} className="-z-10 opacity-45 [mask-image:radial-gradient(circle_at_center,black,transparent_74%)]" />
         <motion.div {...reveal} className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#f1edff] px-3 py-1.5 text-[10px] font-semibold text-[#6954d0]"><Sparkles className="h-3 w-3" /> Powerful features</span>
-          <h2 className="mx-auto mt-5 max-w-3xl text-4xl font-medium leading-[1.08] tracking-[-.05em] sm:text-6xl">Commerce for the<br />modern business</h2>
-          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#6e6877]">Simple enough to start today, powerful enough to support your next stage of growth.</p>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#f1edff] px-3 py-1.5 text-[10px] font-semibold text-[#6954d0]"><Sparkles className="h-3 w-3" /> One connected sales workflow</span>
+          <h2 className="mx-auto mt-5 max-w-3xl text-4xl font-medium leading-[1.08] tracking-[-.05em] sm:text-6xl">From product setup<br />to fulfilled order</h2>
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#6e6877]">SellFlow connects the customer-facing store with the tools you use to run orders, inventory, and day-to-day operations.</p>
         </motion.div>
 
         <div id="features" className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-12">
-          <SoftCard className="lg:col-span-7" icon={Store} eyebrow="Storefront" title="A beautiful store that is unmistakably yours." description="Choose your colors, organize your catalog, and publish a fast experience that looks polished on every screen.">
+          <SoftCard className="lg:col-span-7" icon={Store} eyebrow="Mobile storefront" title="A branded store customers can open from any link." description="Choose your colors, organize your catalog, and let customers browse and check out without creating an account.">
             <StorefrontPreview />
           </SoftCard>
-          <SoftCard className="feature-highlight lg:col-span-5" icon={Send} eyebrow="Telegram" title="Every new order finds you instantly." description="Stay close to your business with clear order updates wherever your day takes you.">
+          <SoftCard className="feature-highlight lg:col-span-5" icon={Send} eyebrow="Telegram workflow" title="New orders reach you where you already work." description="Receive seller alerts and keep customers informed as payment and fulfillment statuses change.">
             <div className="mt-8 space-y-3">
               <OrderToast label="New order #1048" detail="3 items · $24.50" />
-              <OrderToast label="Payment confirmed" detail="ABA Pay · Just now" subtle />
+              <OrderToast label="Order ready for pickup" detail="Customer update · Just now" subtle />
             </div>
           </SoftCard>
-          <SoftCard className="lg:col-span-4" icon={QrCode} eyebrow="QR ordering" title="Scan. Browse. Order." description="Turn tables, counters, and packaging into direct sales channels." />
-          <SoftCard className="lg:col-span-4" icon={PackageCheck} eyebrow="Inventory" title="Always know what’s available." description="Products, variants, add-ons, and stock stay neatly in sync." />
-          <SoftCard className="lg:col-span-4" icon={BarChart3} eyebrow="Analytics" title="See what moves your business." description="Understand revenue and best sellers through clear, useful insights." />
+          <SoftCard className="lg:col-span-4" icon={QrCode} eyebrow="Restaurant QR" title="Let each table open the right menu." description="Create restaurant tables and table QR codes for a faster dine-in ordering flow." />
+          <SoftCard className="lg:col-span-4" icon={PackageCheck} eyebrow="Catalog & stock" title="Know exactly what is available." description="Products, categories, add-ons, availability, and stock stay connected to every order." />
+          <SoftCard className="lg:col-span-4" icon={BarChart3} eyebrow="Business overview" title="See the numbers that need attention." description="Track paid revenue, order status, live products, categories, and low-stock activity." />
         </div>
       </section>
 
@@ -108,7 +113,7 @@ export function ModernLanding() {
 
       <section id="faq" className="relative mx-auto grid max-w-7xl gap-12 overflow-hidden px-3 pb-28 pt-8 sm:px-8 lg:grid-cols-[.7fr_1.3fr] lg:pb-36">
         <DotField gap={40} className="-z-10 opacity-35 [mask-image:radial-gradient(circle_at_25%_45%,black,transparent_55%)]" />
-        <motion.div {...reveal}><p className="text-xs font-semibold uppercase tracking-[.18em] text-[#8754d8]">Questions, answered</p><h2 className="mt-4 text-4xl font-medium tracking-[-.05em] sm:text-5xl">Good to know.</h2><p className="mt-5 max-w-sm text-sm leading-7 text-[#746d7d]">Still curious? We’ll help you find the right setup for your business.</p><a href="https://t.me/tolasannn" target="_blank" rel="noreferrer" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-[#7543bd]">Talk to us on Telegram <ArrowRight className="h-4 w-4" /></a></motion.div>
+        <motion.div {...reveal}><p className="text-xs font-semibold uppercase tracking-[.18em] text-[#8754d8]">Questions, answered</p><h2 className="mt-4 text-4xl font-medium tracking-[-.05em] sm:text-5xl">Know before you start.</h2><p className="mt-5 max-w-sm text-sm leading-7 text-[#746d7d]">Clear answers about ordering, subscriptions, Telegram, and restaurant workflows.</p><a href="https://t.me/tolasannn" target="_blank" rel="noreferrer" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-[#7543bd]">Talk to us on Telegram <ArrowRight className="h-4 w-4" /></a></motion.div>
         <div className="overflow-hidden rounded-3xl border border-[#dcd3e9] bg-white/70 px-5 shadow-[0_20px_60px_-40px_rgba(80,52,119,.45)] backdrop-blur sm:px-7">{faqs.map(([question, answer], index) => <div key={question} className="border-b border-[#e6e0ed] last:border-0"><button onClick={() => setOpenFaq(openFaq === index ? -1 : index)} className="flex w-full items-center justify-between gap-5 py-6 text-left text-sm font-semibold sm:text-base"><span>{question}</span><span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#d8cce8] text-[#7543bd] transition ${openFaq === index ? "rotate-180 bg-[#8754d8] text-white" : "bg-white"}`}><ChevronDown className="h-4 w-4" /></span></button><AnimatePresence initial={false}>{openFaq === index && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden"><p className="max-w-2xl pb-6 pr-8 text-sm leading-7 text-[#746d7d]">{answer}</p></motion.div>}</AnimatePresence></div>)}</div>
       </section>
     </div>
@@ -116,7 +121,7 @@ export function ModernLanding() {
 }
 
 function HeroWorkspace({ activeView }: { activeView: HeroView }) {
-  const navigation = ["Overview", "Products", "Orders", "Customers", "Analytics"];
+  const navigation = ["Overview", "Products", "Orders", "Inventory", "Analytics"];
 
   return (
     <motion.div initial={{ opacity: 0, y: 54, scale: .97 }} animate={{ opacity: 1, y: [0, -5, 0], scale: 1 }} transition={{ opacity: { duration: .8, delay: .4 }, y: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.2 }, scale: { duration: .8, delay: .4 } }} className="hero-dashboard relative z-10 mx-auto mt-9 w-full max-w-[1040px]">
@@ -163,8 +168,8 @@ function InsightsView() {
 function HowItWorksJourney() {
   const steps = [
     { number: "01", title: "Create your space", copy: "Add your brand, products, and prices in a guided setup.", icon: Store, tone: "violet" },
-    { number: "02", title: "Share anywhere", copy: "Turn your store into a link or QR code customers can open instantly.", icon: QrCode, tone: "cyan" },
-    { number: "03", title: "Watch orders flow", copy: "Receive orders, update status, and understand what sells best.", icon: ShoppingBag, tone: "mix" },
+    { number: "02", title: "Publish and share", copy: "Share your public store link, or use table QR ordering when you run a restaurant.", icon: QrCode, tone: "cyan" },
+    { number: "03", title: "Manage every order", copy: "Receive orders, update payment and fulfillment status, and keep stock accurate.", icon: ShoppingBag, tone: "mix" },
   ] as const;
 
   return <section id="how-it-works" className="journey-section relative isolate overflow-hidden px-5 py-24 sm:px-10 lg:py-32">
@@ -190,7 +195,7 @@ function HowItWorksJourney() {
       </div>
 
       <motion.div {...reveal} className="mt-10 flex flex-col items-center justify-center gap-4 text-center sm:flex-row">
-        <p className="text-xs font-medium text-[#7c7583]">Most stores are ready to share in less than 10 minutes.</p>
+        <p className="text-xs font-medium text-[#7c7583]">Guided onboarding keeps the path from registration to published catalog clear.</p>
         <a href="#pricing" className="group inline-flex items-center gap-2 text-xs font-semibold text-[#684bbd]">See plans <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></a>
       </motion.div>
     </div>
@@ -207,6 +212,34 @@ function TrustedCompanies() {
   const businessTypes = ["Retail stores", "Restaurants", "Cafes", "Fashion brands", "Beauty salons", "Online sellers"];
   const repeated = [...businessTypes, ...businessTypes];
   return <section className="overflow-hidden bg-white px-4 py-12 sm:py-16"><div className="mx-auto max-w-6xl text-center"><motion.h2 {...reveal} className="text-xl font-medium tracking-[-.035em] sm:text-3xl">Made for every <span className="text-[#725bd8]">growing</span> business</motion.h2><div className="mt-8 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"><motion.div className="flex w-max gap-3" animate={{ x: ["0%", "-50%"] }} transition={{ duration: 24, repeat: Infinity, ease: "linear" }}>{repeated.map((businessType, index) => <div key={`${businessType}-${index}`} className="flex min-w-36 items-center justify-center gap-2 rounded-full border border-[#ebe8f1] bg-[#faf9fc] px-5 py-3 text-sm font-semibold text-[#5d5964] shadow-sm"><span className="grid h-6 w-6 place-items-center rounded-full bg-gradient-to-br from-violet-100 to-cyan-100 text-[#6b55d8]"><Store className="h-3.5 w-3.5" /></span>{businessType}</div>)}</motion.div></div></div></section>;
+}
+
+function BusinessModelStrip() {
+  const cards = [
+    { icon: ShoppingBag, label: "Customer experience", title: "Browse and order without an account", copy: "Customers open your store link, add items, choose a payment method, and check out on mobile." },
+    { icon: BarChart3, label: "Owner workflow", title: "Run the sale from one dashboard", copy: "Manage catalog, stock, orders, payment status, fulfillment, storefront design, and Telegram updates." },
+    { icon: Sparkles, label: "Simple subscription", title: "Try Growth, then choose your plan", copy: "Start with Growth features for 30 days. Continue from $6/month with limits that match your business." },
+  ];
+
+  return (
+    <section aria-labelledby="business-model-heading" className="bg-[#f8f7fb] px-5 py-16 sm:px-8 sm:py-20">
+      <div className="mx-auto max-w-7xl">
+        <motion.div {...reveal} className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7655d6]">How SellFlow works for your business</p>
+          <h2 id="business-model-heading" className="mt-4 text-3xl font-medium leading-tight tracking-[-.045em] sm:text-5xl">One system for the customer order and everything behind it.</h2>
+        </motion.div>
+        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          {cards.map(({ icon: Icon, label, title, copy }, index) => (
+            <motion.article key={label} {...reveal} transition={{ ...reveal.transition, delay: index * .08 }} className="rounded-2xl border border-[#e5e0eb] bg-white p-6 shadow-[0_18px_45px_-38px_rgba(75,53,118,.45)]">
+              <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-violet-100 to-cyan-100 text-[#6f55cf]"><Icon className="h-[18px] w-[18px]" /></span><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#837a8d]">{label}</p></div>
+              <h3 className="mt-5 text-xl font-semibold tracking-[-.035em]">{title}</h3>
+              <p className="mt-3 text-sm leading-6 text-[#746d7d]">{copy}</p>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function SoftCard({ className = "", icon: Icon, eyebrow, title, description, children }: { className?: string; icon: typeof Store; eyebrow: string; title: string; description: string; children?: React.ReactNode }) { return <motion.article {...reveal} whileHover={{ y: -7, scale: 1.005 }} className={`feature-card relative min-h-[300px] overflow-hidden rounded-[20px] border border-[#e8e5ee] bg-[#fbfafc] p-6 shadow-[0_24px_70px_-50px_rgba(80,52,119,.55)] sm:p-8 ${className}`}><div className="feature-eyebrow flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.16em] text-[#725bd8]"><span className="feature-icon grid h-9 w-9 place-items-center rounded-xl bg-[#ece7ff]"><Icon className="h-4 w-4" /></span>{eyebrow}</div><h3 className="mt-7 max-w-lg text-2xl font-medium leading-[1.12] tracking-[-.035em] sm:text-3xl">{title}</h3><p className="feature-copy mt-4 max-w-md text-sm leading-6 text-[#777080]">{description}</p>{children}</motion.article>; }

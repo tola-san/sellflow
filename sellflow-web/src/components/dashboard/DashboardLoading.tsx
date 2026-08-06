@@ -1,15 +1,5 @@
-import { lazy, Suspense } from "react";
 import { useReducedMotion } from "framer-motion";
 import { Boxes } from "lucide-react";
-
-const DotLottiePlayer = lazy(() =>
-  import("@lottiefiles/dotlottie-react").then((module) => ({
-    default: module.DotLottieReact,
-  })),
-);
-
-const DASHBOARD_ANIMATION_URL =
-  "https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie";
 
 type DashboardLoadingProps = {
   message?: string;
@@ -29,29 +19,16 @@ export function DashboardLoading({
       aria-live="polite"
       aria-label={message}
     >
-      <div className="relative grid h-36 w-36 place-items-center sm:h-44 sm:w-44">
-        <div className="absolute inset-5 rounded-full bg-violet-300/20 blur-2xl" aria-hidden="true" />
-        {reduceMotion ? (
-          <BrandFallback />
-        ) : (
-          <Suspense fallback={<BrandFallback pulsing />}>
-            <DotLottiePlayer
-              src={DASHBOARD_ANIMATION_URL}
-              autoplay
-              loop
-              className="relative h-full w-full"
-            />
-          </Suspense>
+      <div className="relative grid h-28 w-28 place-items-center sm:h-32 sm:w-32">
+        <div className="absolute inset-3 rounded-full bg-violet-300/25 blur-2xl" aria-hidden="true" />
+        {!reduceMotion && (
+          <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-violet-500 border-r-indigo-300" aria-hidden="true" />
         )}
+        <BrandFallback pulsing={!reduceMotion} />
       </div>
 
       <p className="mt-1 text-sm font-semibold text-slate-700">{message}</p>
       <p className="mt-1 text-xs text-slate-400">Loading your latest store activity</p>
-      {!reduceMotion && (
-        <div className="mt-4 h-1 w-28 overflow-hidden rounded-full bg-violet-100" aria-hidden="true">
-          <div className="h-full w-1/2 animate-[pulse_1.2s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-violet-500 to-indigo-500" />
-        </div>
-      )}
     </div>
   );
 }
@@ -59,10 +36,10 @@ export function DashboardLoading({
 function BrandFallback({ pulsing = false }: { pulsing?: boolean }) {
   return (
     <div
-      className={`relative grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-xl shadow-violet-200 ${pulsing ? "animate-pulse" : ""}`}
+      className={`relative grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-xl shadow-violet-200 ${pulsing ? "animate-pulse" : ""}`}
       aria-hidden="true"
     >
-      <Boxes className="h-9 w-9" />
+      <Boxes className="h-7 w-7" />
     </div>
   );
 }

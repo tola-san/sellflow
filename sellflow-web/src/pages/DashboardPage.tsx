@@ -24,7 +24,6 @@ import { dashboardService, type DashboardOverview } from "../Services/dashboard"
 import { orderService } from "../Services/order";
 import type { Order, OrderListResponse } from "../types/order";
 import { ErrorMessage } from "../components/dashboard/DashboardUI";
-import { DashboardLoading } from "../components/dashboard/DashboardLoading";
 import { NOTIFICATIONS_CHANGED_EVENT, type BusinessNotification } from "../Services/notifications";
 
 const emptySummary: OrderListResponse["summary"] = {
@@ -292,37 +291,33 @@ function OverviewHeader({
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:mx-0 sm:pb-0">
-          {quickActions.slice(1).map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link
-                to={action.href}
-                target={action.external ? "_blank" : undefined}
-                rel={action.external ? "noreferrer" : undefined}
-                key={action.label}
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 shadow-sm shadow-slate-950/[0.02] transition hover:border-slate-300 hover:bg-slate-50"
-              >
-                <Icon className="h-3.5 w-3.5 text-slate-500" />
-                {action.label}
-                {action.label === "Manage orders" && activeOrders > 0 && (
-                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">
-                    {activeOrders}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-        <Link
-          to="/dashboard/products"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-        >
-          <Plus className="h-4 w-4" />
-          Add item
-        </Link>
-      </div>
+      <nav aria-label="Dashboard shortcuts" className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+        {quickActions.map((action, index) => {
+          const Icon = action.icon;
+          const primary = index === 0;
+          return (
+            <Link
+              to={action.href}
+              target={action.external ? "_blank" : undefined}
+              rel={action.external ? "noreferrer" : undefined}
+              key={action.label}
+              className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 sm:shrink-0 ${
+                primary
+                  ? "col-span-2 bg-slate-950 text-white hover:bg-slate-800 sm:order-last sm:col-auto sm:px-4 sm:text-sm"
+                  : "border border-slate-200 bg-white text-slate-700 shadow-slate-950/[0.02] hover:border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              <Icon className={`h-3.5 w-3.5 ${primary ? "text-white" : "text-slate-500"}`} />
+              {action.label}
+              {action.label === "Manage orders" && activeOrders > 0 && (
+                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">
+                  {activeOrders}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
     </header>
   );
 }
@@ -499,6 +494,7 @@ function SalesPulse({ data }: { data: DailySales[] }) {
     1,
   );
   const showingOrderVolume = chartMetric === "orders";
+  const hasSalesActivity = totalOrders > 0 || totalRevenue > 0;
   const points = data.map((item, index) => {
     const value = chartMetric === "revenue" ? item.revenue : item.orders;
     return {
@@ -560,8 +556,9 @@ function SalesPulse({ data }: { data: DailySales[] }) {
           </div>
         </div>
 
-        <div className="mt-6 overflow-hidden">
-          <svg viewBox="0 0 900 235" className="h-[190px] w-full sm:h-[250px]" role="img" aria-label="Seven day sales trend">
+        {hasSalesActivity ? (
+          <div className="mt-6 overflow-hidden">
+            <svg viewBox="0 0 900 235" className="h-[190px] w-full sm:h-[250px]" role="img" aria-label="Seven day sales trend">
             <defs>
               <linearGradient id="overview-sales-area" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.2" />
@@ -590,15 +587,27 @@ function SalesPulse({ data }: { data: DailySales[] }) {
               transition={{ duration: 0.9, delay: reduceMotion ? 0 : 0.25, ease: "easeOut" }}
             />
             {peak && <circle cx={peak.x} cy={peak.y} r="7" fill="#6d4aff" stroke="white" strokeWidth="4"><title>{`${peak.item.label}: ${peak.item.orders} orders · ${money(peak.item.revenue)}`}</title></circle>}
-          </svg>
-          <div className="grid grid-cols-7 px-1 text-center text-[10px] font-medium text-slate-400 sm:text-[11px]">
-            {points.map((point, index) => (
-              <span key={point.item.key} className={index !== 0 && index !== 3 && index !== points.length - 1 ? "text-transparent sm:text-slate-400" : ""}>
-                {point.item.day}
-              </span>
-            ))}
+            </svg>
+            <div className="grid grid-cols-7 px-1 text-center text-[10px] font-medium text-slate-400 sm:text-[11px]">
+              {points.map((point, index) => (
+                <span key={point.item.key} className={index !== 0 && index !== 3 && index !== points.length - 1 ? "text-transparent sm:text-slate-400" : ""}>
+                  {point.item.day}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-6 flex min-h-[220px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-6 py-10 text-center sm:min-h-[286px]">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-violet-600 shadow-sm ring-1 ring-slate-200">
+              <ReceiptText className="h-5 w-5" />
+            </span>
+            <p className="mt-4 text-sm font-semibold text-slate-900">Your sales pulse starts with the first order</p>
+            <p className="mt-1 max-w-sm text-xs leading-5 text-slate-500">Share your storefront with customers. Revenue and daily order activity will appear here automatically.</p>
+            <Link to="/dashboard/business" className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 transition hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2">
+              Open storefront settings <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        )}
       </div>
     </motion.article>
   );
@@ -1027,8 +1036,15 @@ function EmptyOrders() {
 
 function DashboardSkeleton() {
   return (
-    <div className="relative mx-auto w-full max-w-[1600px] overflow-hidden rounded-3xl">
-      <div className="animate-pulse space-y-5 opacity-45 blur-[1px]" aria-hidden="true">
+    <div className="mx-auto w-full max-w-[1600px] space-y-5">
+      <div className="flex items-center gap-3 rounded-xl border border-violet-100 bg-violet-50/70 px-4 py-3" role="status" aria-live="polite">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" aria-hidden="true" />
+        <div>
+          <p className="text-sm font-semibold text-slate-700">Preparing your dashboard...</p>
+          <p className="text-xs text-slate-500">Loading your latest store activity</p>
+        </div>
+      </div>
+      <div className="animate-pulse space-y-5 opacity-60" aria-hidden="true">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="h-8 w-40 rounded-lg bg-slate-200" />
@@ -1045,9 +1061,6 @@ function DashboardSkeleton() {
           <div className="h-80 rounded-xl border border-slate-200 bg-white" />
           <div className="h-80 rounded-xl border border-slate-200 bg-white" />
         </div>
-      </div>
-      <div className="absolute inset-0 grid place-items-center bg-white/45 backdrop-blur-[2px]">
-        <DashboardLoading message="Preparing your dashboard..." />
       </div>
     </div>
   );

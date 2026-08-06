@@ -20,10 +20,10 @@ export function AuthModal() {
     };
   }, [isOpen, closeAuth]);
   const highlights = [
-  'Beautiful product catalog in minutes',
-  'Share instantly with QR codes',
-  'Manage orders from one dashboard',
-  'Free forever, open source'];
+  'Branded mobile storefront with guest checkout',
+  'Catalog, stock, and orders in one dashboard',
+  'Telegram alerts and restaurant QR ordering',
+  '30-day Growth trial with no card required'];
 
   return (
     <AnimatePresence>
@@ -86,7 +86,7 @@ export function AuthModal() {
                   </span>
                 </div>
                 <h3 className="font-display text-2xl font-bold leading-snug mb-6">
-                  Showcase your products. Grow your business.
+                  Publish your store. Manage every order.
                 </h3>
                 <ul className="space-y-3">
                   {highlights.map((item) =>
@@ -103,7 +103,7 @@ export function AuthModal() {
                 </ul>
               </div>
               <p className="relative text-xs text-brand-soft/80">
-                Trusted by 10,000+ growing small businesses.
+                Built for modern local businesses in Cambodia.
               </p>
             </div>
 
