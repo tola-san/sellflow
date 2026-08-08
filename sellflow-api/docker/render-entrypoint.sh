@@ -44,6 +44,7 @@ fi
 # Cache configuration only after Render has injected production environment values.
 php artisan config:clear
 php artisan config:cache
+php artisan route:clear
 php artisan route:cache
 php artisan view:cache
 
