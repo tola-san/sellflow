@@ -1,5 +1,6 @@
 import type { ThemeSettings } from "./theme";
 import type { BusinessType } from "./businessTypes";
+import type { StoreCurrency } from "../lib/currency";
 
 export interface Business {
   id: number;
@@ -19,6 +20,7 @@ export interface Business {
   address: string | null;
   city: string | null;
   country: string | null;
+  currency: StoreCurrency;
   show_map: boolean;
   primary_color: string;
   secondary_color: string;

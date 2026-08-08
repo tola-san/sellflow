@@ -14,6 +14,7 @@ import { productVariantService, type ProductVariantPayload } from "../Services/i
 import { productService } from "../Services/product";
 import type { Product, ProductVariant } from "../types/product";
 import type { BusinessType } from "../types/businessTypes";
+import { formatCurrency } from "../lib/currency";
 
 const retailTypes: BusinessType[] = ["fashion", "beauty", "electronics", "grocery_retail"];
 
@@ -229,7 +230,7 @@ export function ProductVariantsPage() {
                           {Object.keys(variant.attributes).length > 0 && <p className="mt-0.5 text-xs text-slate-500">{Object.entries(variant.attributes).map(([key, value]) => `${key}: ${value}`).join(" · ")}</p>}
                         </td>
                         <td className="px-5 py-3.5 font-mono text-xs text-slate-600">{variant.sku || "—"}</td>
-                        <td className="px-5 py-3.5 font-semibold text-slate-800">${Number(variant.effective_price ?? variant.price ?? product.discount_price ?? product.price).toFixed(2)}</td>
+                        <td className="px-5 py-3.5 font-semibold text-slate-800">{formatCurrency(variant.effective_price ?? variant.price ?? product.discount_price ?? product.price, user?.business?.currency)}</td>
                         <td className="px-5 py-3.5">
                           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                             variant.stock === 0 ? "bg-rose-50 text-rose-700"

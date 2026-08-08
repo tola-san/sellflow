@@ -484,18 +484,21 @@ class StorefrontApiTest extends TestCase
             'name' => 'New Store',
             'business_type' => 'food_beverage',
             'slug' => 'new-store',
+            'currency' => 'KHR',
             'is_active' => true,
         ])
             ->assertCreated()
             ->assertJsonPath('data.name', 'New Store')
             ->assertJsonPath('data.business_type', 'food_beverage')
             ->assertJsonPath('data.slug', 'new-store')
+            ->assertJsonPath('data.currency', 'KHR')
             ->assertJsonPath('data.show_map', true);
 
         $this->assertDatabaseHas('businesses', [
             'user_id' => $user->id,
             'business_type' => 'food_beverage',
             'slug' => 'new-store',
+            'currency' => 'KHR',
         ]);
 
         $this->getJson('/api/v1/me')
@@ -506,7 +509,12 @@ class StorefrontApiTest extends TestCase
             ->assertJsonPath('data.business.name', 'New Store')
             ->assertJsonPath('data.business.slug', 'new-store')
             ->assertJsonPath('data.business.business_type', 'food_beverage')
+            ->assertJsonPath('data.business.currency', 'KHR')
             ->assertJsonPath('data.business.is_active', true);
+
+        $this->getJson('/api/v1/store/new-store')
+            ->assertOk()
+            ->assertJsonPath('data.business.currency', 'KHR');
 
         $anotherUser = User::factory()->create();
         Sanctum::actingAs($anotherUser);
@@ -515,9 +523,10 @@ class StorefrontApiTest extends TestCase
             'name' => 'Another Store',
             'business_type' => 'unsupported',
             'slug' => 'another-store',
+            'currency' => 'EUR',
         ])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors('business_type');
+            ->assertJsonValidationErrors(['business_type', 'currency']);
     }
 
     public function test_seller_can_publish_a_valid_theme_to_the_public_storefront(): void

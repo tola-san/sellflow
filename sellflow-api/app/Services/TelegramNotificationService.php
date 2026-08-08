@@ -198,7 +198,7 @@ class TelegramNotificationService
 
         $items = $order->items
             ->take(10)
-            ->map(function ($item) {
+            ->map(function ($item) use ($order) {
                 $modifiers = collect($item->modifiers ?? [])
                     ->pluck('option_name')
                     ->filter()
@@ -207,7 +207,7 @@ class TelegramNotificationService
 
                 return '• <b>'.$item->quantity.'×</b> '.$this->escapeHtml($item->product_name)
                     .($modifiers ? ' <i>('.$modifiers.')</i>' : '')
-                    .' — $'.$this->money($item->line_total);
+                    .' — '.$order->business->formatMoney($item->line_total);
             })
             ->all();
 
@@ -233,7 +233,7 @@ class TelegramNotificationService
             '<b>Order items</b>',
             ...$items,
             '',
-            '<b>Total</b>  <code>$'.$this->money($order->total).'</code>',
+            '<b>Total</b>  <code>'.$order->business->formatMoney($order->total).'</code>',
             '💳 '.$this->escapeHtml(Str::headline($order->payment_method)).' · '.$this->escapeHtml(Str::headline($order->status)),
         ]);
 

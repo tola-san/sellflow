@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState, createContext, useContext } from 'react';
 import type { BusinessType } from '../../types/businessTypes';
+import type { StoreCurrency } from '../../lib/currency';
 export type AuthMode = 'login' | 'register';
 
 export interface AuthBusiness {
@@ -7,6 +8,7 @@ export interface AuthBusiness {
   name: string;
   slug: string;
   business_type: BusinessType;
+  currency: StoreCurrency;
   logo: string | null;
   is_active: boolean;
 }

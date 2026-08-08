@@ -37,6 +37,7 @@ class StoreBusinessRequest extends FormRequest
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string'],
             'country' => ['nullable', 'string'],
+            'currency' => ['sometimes', 'required', 'string', Rule::in(config('currencies.supported', []))],
             'show_map' => ['nullable', 'boolean'],
             'primary_color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'secondary_color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],

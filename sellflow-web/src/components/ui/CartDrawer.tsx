@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import type { ThemeSettings } from "../../types/theme";
 import { useCart } from "../cart/CartContext";
 import { useTelegramMiniApp } from "../telegram/TelegramMiniAppContext";
+import { activeStoreCurrency, formatCurrency } from "../../lib/currency";
 
 interface CartDrawerProps {
   slug: string;
@@ -268,10 +269,7 @@ export function CartDrawer({
                             </div>
 
                             <strong>
-                              $
-                              {(
-                                unitPrice * item.quantity
-                              ).toFixed(2)}
+                              {formatCurrency(unitPrice * item.quantity, activeStoreCurrency())}
                             </strong>
                           </div>
                         </div>
@@ -299,7 +297,7 @@ export function CartDrawer({
                   </span>
 
                   <strong className="text-2xl">
-                    ${subtotal.toFixed(2)}
+                    {formatCurrency(subtotal, activeStoreCurrency())}
                   </strong>
                 </div>
 

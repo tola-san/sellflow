@@ -26,6 +26,7 @@ class PublicBusinessResource extends JsonResource
             'address' => $this->address,
             'city' => $this->city,
             'country' => $this->country,
+            'currency' => $this->currency ?? config('currencies.default', 'USD'),
             'show_map' => $this->show_map,
             'theme' => $this->resolvedTheme(),
         ];

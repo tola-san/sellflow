@@ -12,14 +12,14 @@ class BusinessNotificationService
 {
     public function orderCreated(Order $order): void
     {
-        $order->loadMissing(['items.product', 'items.productVariant']);
+        $order->loadMissing(['business', 'items.product', 'items.productVariant']);
 
         $this->upsert(
             $order->business_id,
             "order:{$order->id}:created",
             'order',
             "New order {$order->order_number}",
-            "{$order->customer_name} placed an order for $".number_format((float) $order->total, 2).'.',
+            "{$order->customer_name} placed an order for ".$order->business->formatMoney($order->total).'.',
             '/dashboard/orders',
             ['order_id' => $order->id, 'order_number' => $order->order_number]
         );

@@ -7,9 +7,11 @@ import { BUSINESS_TYPES, type BusinessType } from "../types/businessTypes";
 import { ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../components/dashboard/DashboardUI";
 import { withHexOpacity } from "../lib/color";
 import { useAuth } from "../components/Auth/AuthContext";
+import { STORE_CURRENCIES, type StoreCurrency } from "../lib/currency";
 
 const emptyBusiness: Business = {
   id: 0,
+  uuid: "",
   name: "",
   business_type: "other",
   slug: "",
@@ -25,6 +27,7 @@ const emptyBusiness: Business = {
   address: "",
   city: "",
   country: "",
+  currency: "USD",
   show_map: true,
   primary_color: "#7c3aed",
   secondary_color: "#0f172a",
@@ -94,6 +97,7 @@ export function BusinessPage() {
             name: saved.name,
             slug: saved.slug,
             business_type: saved.business_type,
+            currency: saved.currency,
             logo: saved.logo,
             is_active: saved.is_active,
           },
@@ -177,6 +181,21 @@ export function BusinessPage() {
             <label className="text-sm font-medium text-slate-700 sm:col-span-2">
               Description
               <textarea rows={4} className={inputClass} placeholder="Tell customers what makes your store special..." value={form.description ?? ""} onChange={(event) => change("description", event.target.value)} />
+            </label>
+            <label className="text-sm font-medium text-slate-700 sm:col-span-2">
+              Store currency
+              <select
+                className={inputClass}
+                value={form.currency}
+                onChange={(event) => setForm((current) => ({ ...current, currency: event.target.value as StoreCurrency }))}
+              >
+                {STORE_CURRENCIES.map((currency) => (
+                  <option key={currency.value} value={currency.value}>{currency.label}</option>
+                ))}
+              </select>
+              <span className="mt-1.5 block text-xs font-normal text-slate-500">
+                Product prices, checkout, orders, analytics, and notifications use this currency. Changing it does not convert existing numeric prices.
+              </span>
             </label>
             <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm sm:col-span-2">
               <input type="checkbox" className="mt-0.5 h-4 w-4 accent-purple-600" checked={form.is_active} onChange={(event) => setForm((current) => ({ ...current, is_active: event.target.checked }))} />
