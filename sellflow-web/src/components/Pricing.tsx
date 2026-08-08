@@ -18,9 +18,9 @@ import {
 } from "../Services/billing";
 
 const fallbackPlans: SubscriptionPlan[] = [
-  { id: -1, name: "Starter", slug: "starter", description: "Essential tools for a small business starting online.", monthly_price: "6.00", yearly_price: "60.00", currency: "USD", limits: { businesses: 1, staff: 1, products: 100 }, features: { inventory: "basic", telegram_notifications: true, restaurant_qr: false, analytics_history_days: 30, custom_domain: false, priority_support: false }, is_popular: false },
-  { id: -2, name: "Growth", slug: "growth", description: "Advanced operations for a growing store or restaurant.", monthly_price: "12.00", yearly_price: "120.00", currency: "USD", limits: { businesses: 1, staff: 5, products: null }, features: { inventory: "advanced", telegram_notifications: true, restaurant_qr: true, analytics_history_days: 365, custom_domain: false, priority_support: false }, is_popular: true },
-  { id: -3, name: "Pro", slug: "pro", description: "Multiple businesses, unlimited insights, and priority support.", monthly_price: "25.00", yearly_price: "250.00", currency: "USD", limits: { businesses: 3, staff: 15, products: null }, features: { inventory: "advanced", telegram_notifications: true, restaurant_qr: true, analytics_history_days: null, custom_domain: true, priority_support: true }, is_popular: false },
+  { id: -1, name: "Starter", slug: "starter", description: "Essential selling tools for independent shops starting online.", monthly_price: "3.00", yearly_price: "30.00", currency: "USD", limits: { businesses: 1, staff: 1, products: 100 }, features: { inventory: "basic", telegram_notifications: true, restaurant_qr: false, analytics_history_days: 30, custom_domain: false, priority_support: false }, is_popular: false },
+  { id: -2, name: "Business", slug: "business", description: "Advanced operations for growing stores and restaurants.", monthly_price: "9.00", yearly_price: "90.00", currency: "USD", limits: { businesses: 1, staff: 5, products: null }, features: { inventory: "advanced", telegram_notifications: true, restaurant_qr: true, analytics_history_days: 365, custom_domain: false, priority_support: true }, is_popular: true },
+  { id: -3, name: "Pro", slug: "pro", description: "Multi-business tools, unlimited insights, and priority support.", monthly_price: "12.00", yearly_price: "120.00", currency: "USD", limits: { businesses: 3, staff: 15, products: null }, features: { inventory: "advanced", telegram_notifications: true, restaurant_qr: true, analytics_history_days: null, custom_domain: true, priority_support: true }, is_popular: false },
 ];
 
 export function Pricing() {
@@ -59,13 +59,13 @@ export function Pricing() {
         <motion.div initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#ded6f5] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#6954d0] shadow-sm">
             <Sparkles className="h-3.5 w-3.5" />
-            30-day Growth trial
+            30-day Business trial
           </div>
           <h2 className="mt-5 text-4xl font-medium leading-[1.06] tracking-[-.05em] text-[#18171d] md:text-6xl">
             Simple pricing.<br /><span className="text-[#735bd6]">Built to grow with you.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-[#746f7b] sm:text-base">
-            Explore every Growth feature for 30 days. No card required, no setup fee, and your business data stays yours.
+            Explore every Business feature for 30 days. No card required, no setup fee, and your business data stays yours.
           </p>
           <CycleToggle cycle={cycle} onChange={setCycle} />
         </motion.div>
@@ -99,7 +99,7 @@ export function Pricing() {
         <div className="mx-auto mt-8 flex max-w-2xl items-start gap-3 rounded-2xl border border-[#ddd4f4] bg-white/75 px-4 py-3.5 text-left shadow-sm backdrop-blur">
           <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[#7058d4]" />
           <p className="text-xs leading-5 text-[#514565]">
-            Your trial begins with <strong>Growth</strong>. After 30 days, select Starter, Growth, or Pro to keep full access.
+            Your trial begins with <strong>Business</strong>. After 30 days, select Starter, Business, or Pro to keep full access.
           </p>
         </div>
       </div>

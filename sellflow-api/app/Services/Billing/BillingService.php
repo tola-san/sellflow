@@ -7,6 +7,9 @@ use App\Models\BusinessSubscription;
 use App\Models\SubscriptionPayment;
 use App\Models\SubscriptionPlan;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class BillingService
@@ -27,7 +30,7 @@ class BillingService
         }
 
         $plan = SubscriptionPlan::query()
-            ->where('slug', config('billing.trial_plan', 'growth'))
+            ->where('slug', config('billing.trial_plan', 'business'))
             ->where('is_active', true)
             ->first();
 
@@ -99,21 +102,79 @@ class BillingService
             ->latest()
             ->limit(50)
             ->get()
-            ->map(fn (SubscriptionPayment $payment): array => [
-                'id' => $payment->id,
-                'invoice_number' => $payment->invoice_number,
-                'plan' => $payment->plan?->only(['name', 'slug']),
-                'amount' => $payment->amount,
-                'currency' => $payment->currency,
-                'billing_cycle' => $payment->billing_cycle,
-                'status' => $payment->status,
-                'provider' => $payment->provider,
-                'period_start' => $payment->period_start?->toIso8601String(),
-                'period_end' => $payment->period_end?->toIso8601String(),
-                'paid_at' => $payment->paid_at?->toIso8601String(),
-                'created_at' => $payment->created_at?->toIso8601String(),
-            ])
+            ->map(fn (SubscriptionPayment $payment): array => $this->paymentData($payment))
             ->all();
+    }
+
+    public function createPayment(Business $business, string $planSlug, string $billingCycle): SubscriptionPayment
+    {
+        $subscription = $this->current($business);
+        $plan = SubscriptionPlan::query()
+            ->where('slug', $planSlug)
+            ->where('is_active', true)
+            ->firstOrFail();
+        $amount = $billingCycle === 'yearly' ? $plan->yearly_price : $plan->monthly_price;
+
+        return DB::transaction(function () use ($business, $subscription, $plan, $billingCycle, $amount): SubscriptionPayment {
+            return SubscriptionPayment::query()->create([
+                'business_subscription_id' => $subscription->id,
+                'business_id' => $business->id,
+                'subscription_plan_id' => $plan->id,
+                'invoice_number' => 'SF-'.now()->format('ymd').'-'.Str::upper(Str::random(8)),
+                'amount' => $amount,
+                'currency' => $plan->currency,
+                'billing_cycle' => $billingCycle,
+                'status' => 'pending',
+                'provider' => 'bank_qr',
+                'metadata' => ['expires_at' => now()->addDay()->toIso8601String()],
+            ])->load('plan:id,name,slug');
+        });
+    }
+
+    public function submitPaymentProof(
+        Business $business,
+        SubscriptionPayment $payment,
+        UploadedFile $receipt,
+        ?string $transactionReference = null,
+    ): SubscriptionPayment {
+        if ((int) $payment->business_id !== (int) $business->id) {
+            abort(404);
+        }
+
+        if ($payment->status !== 'pending') {
+            abort(422, 'Payment proof has already been submitted for this invoice.');
+        }
+
+        $path = $receipt->store("billing/{$business->id}/receipts", 'local');
+        $payment->update([
+            'status' => 'proof_submitted',
+            'metadata' => array_merge($payment->metadata ?? [], [
+                'receipt_path' => $path,
+                'receipt_original_name' => $receipt->getClientOriginalName(),
+                'transaction_reference' => $transactionReference,
+                'proof_submitted_at' => now()->toIso8601String(),
+            ]),
+        ]);
+
+        return $payment->fresh('plan:id,name,slug');
+    }
+
+    public function paymentData(SubscriptionPayment $payment): array
+    {
+        return [
+            'id' => $payment->id,
+            'invoice_number' => $payment->invoice_number,
+            'plan' => $payment->plan?->only(['name', 'slug']),
+            'amount' => $payment->amount,
+            'currency' => $payment->currency,
+            'billing_cycle' => $payment->billing_cycle,
+            'status' => $payment->status,
+            'provider' => $payment->provider,
+            'period_start' => $payment->period_start?->toIso8601String(),
+            'period_end' => $payment->period_end?->toIso8601String(),
+            'paid_at' => $payment->paid_at?->toIso8601String(),
+            'created_at' => $payment->created_at?->toIso8601String(),
+        ];
     }
 
     public function planData(SubscriptionPlan $plan): array
@@ -128,7 +189,7 @@ class BillingService
             'currency' => $plan->currency,
             'limits' => $plan->limits,
             'features' => $plan->features,
-            'is_popular' => $plan->slug === 'growth',
+            'is_popular' => $plan->slug === 'business',
         ];
     }
 

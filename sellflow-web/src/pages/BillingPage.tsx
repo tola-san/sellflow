@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  ArrowLeft,
   ArrowRight,
   Building2,
   Check,
+  CheckCircle2,
+  Clock3,
   CreditCard,
   FileText,
   Package,
+  QrCode,
   ReceiptText,
   ShieldCheck,
   Sparkles,
+  Upload,
   Users,
   X,
 } from "lucide-react";
@@ -21,6 +26,7 @@ import {
   type UsageMetric,
 } from "../Services/billing";
 import { ErrorMessage } from "../components/dashboard/DashboardUI";
+import bankQrCode from "../assets/images/qrcode-bakong/sellflow-subscription-qr.png";
 
 const featureLabels = [
   "Inventory management",
@@ -36,6 +42,7 @@ export function BillingPage() {
   const [overview, setOverview] = useState<BillingOverview | null>(null);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
+  const [checkoutPlan, setCheckoutPlan] = useState<SubscriptionPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
@@ -81,7 +88,7 @@ export function BillingPage() {
       <section>
         <div className="mb-4">
           <h2 className="text-base font-semibold text-slate-950">Choose the right plan</h2>
-          <p className="mt-1 text-xs text-slate-500">Every new business starts with Growth features free for 30 days.</p>
+          <p className="mt-1 text-xs text-slate-500">Every new business starts with Business features free for 30 days.</p>
         </div>
         <div className="grid gap-4 xl:grid-cols-3">
           {plans.map((plan) => (
@@ -91,12 +98,22 @@ export function BillingPage() {
               cycle={cycle}
               currentPlan={overview?.subscription.plan.slug}
               trialing={overview?.subscription.status === "trialing"}
+              onSelect={() => setCheckoutPlan(plan)}
             />
           ))}
         </div>
       </section>
 
       <PaymentHistory payments={payments} />
+
+      {checkoutPlan && (
+        <PaymentFlowDialog
+          plan={checkoutPlan}
+          cycle={cycle}
+          onClose={() => setCheckoutPlan(null)}
+          onSubmitted={(payment) => setPayments((current) => [payment, ...current.filter((item) => item.id !== payment.id)])}
+        />
+      )}
     </div>
   );
 }
@@ -201,11 +218,13 @@ function PlanCard({
   cycle,
   currentPlan,
   trialing,
+  onSelect,
 }: {
   plan: SubscriptionPlan;
   cycle: BillingCycle;
   currentPlan?: string;
   trialing?: boolean;
+  onSelect: () => void;
 }) {
   const current = plan.slug === currentPlan;
   const price = Number(cycle === "monthly" ? plan.monthly_price : plan.yearly_price);
@@ -227,7 +246,7 @@ function PlanCard({
       </div>
       <div className="mt-5">
         <div className="flex items-end gap-1">
-          <span className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">${monthlyEquivalent.toFixed(0)}</span>
+          <span className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">${monthlyEquivalent.toFixed(Number.isInteger(monthlyEquivalent) ? 0 : 2)}</span>
           <span className="pb-1 text-xs text-slate-500">/month</span>
         </div>
         {cycle === "yearly" && (
@@ -249,16 +268,203 @@ function PlanCard({
       </ul>
       <button
         type="button"
-        disabled
-        title={current ? "This is your current plan." : "Connect a payment provider to enable plan changes."}
-        className={`mt-6 inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${
-          current ? "bg-violet-50 text-violet-700" : "bg-slate-100 text-slate-500"
+        onClick={onSelect}
+        className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+          current && !trialing
+            ? "bg-slate-950 text-white hover:bg-slate-800"
+            : "bg-violet-600 text-white hover:bg-violet-700"
         }`}
       >
-        {current ? (trialing ? "Current trial plan" : "Current plan") : "Payment setup required"}
-        {!current && <ArrowRight className="h-4 w-4" />}
+        {current ? (trialing ? `Subscribe to ${plan.name}` : "Renew this plan") : `Choose ${plan.name}`}
+        <ArrowRight className="h-4 w-4" />
       </button>
     </article>
+  );
+}
+
+function PaymentFlowDialog({
+  plan,
+  cycle,
+  onClose,
+  onSubmitted,
+}: {
+  plan: SubscriptionPlan;
+  cycle: BillingCycle;
+  onClose: () => void;
+  onSubmitted: (payment: SubscriptionPayment) => void;
+}) {
+  const [step, setStep] = useState<"confirm" | "pay" | "proof" | "submitted">("confirm");
+  const [payment, setPayment] = useState<SubscriptionPayment | null>(null);
+  const [receipt, setReceipt] = useState<File | null>(null);
+  const [reference, setReference] = useState("");
+  const [working, setWorking] = useState(false);
+  const [flowError, setFlowError] = useState<unknown>(null);
+  const price = Number(cycle === "monthly" ? plan.monthly_price : plan.yearly_price);
+
+  const createPayment = async () => {
+    setWorking(true);
+    setFlowError(null);
+    try {
+      const created = await billingService.createPayment(plan.slug, cycle);
+      setPayment(created);
+      setStep("pay");
+    } catch (error) {
+      setFlowError(error);
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  const submitProof = async () => {
+    if (!payment || !receipt) return;
+    setWorking(true);
+    setFlowError(null);
+    try {
+      const submitted = await billingService.submitPaymentProof(payment.id, receipt, reference.trim() || undefined);
+      setPayment(submitted);
+      setStep("submitted");
+      onSubmitted(submitted);
+    } catch (error) {
+      setFlowError(error);
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="presentation">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="payment-flow-title"
+        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-slate-200 bg-white shadow-2xl sm:rounded-3xl"
+      >
+        <header className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur sm:px-7">
+          <div>
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-600">
+              <QrCode className="h-3.5 w-3.5" /> Bank QR payment
+            </div>
+            <h2 id="payment-flow-title" className="mt-1 text-lg font-semibold text-slate-950">
+              {step === "confirm" && `Subscribe to ${plan.name}`}
+              {step === "pay" && "Scan and pay"}
+              {step === "proof" && "Upload payment receipt"}
+              {step === "submitted" && "Payment sent for review"}
+            </h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close payment dialog" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+            <X className="h-5 w-5" />
+          </button>
+        </header>
+
+        <div className="px-5 py-6 sm:px-7">
+          <div className="mb-6 grid grid-cols-4 gap-2" aria-label="Payment progress">
+            {[
+              ["confirm", "Plan"],
+              ["pay", "Pay"],
+              ["proof", "Receipt"],
+              ["submitted", "Review"],
+            ].map(([value, label], index) => {
+              const currentIndex = ["confirm", "pay", "proof", "submitted"].indexOf(step);
+              return (
+                <div key={value}>
+                  <div className={`h-1.5 rounded-full ${index <= currentIndex ? "bg-violet-600" : "bg-slate-200"}`} />
+                  <p className={`mt-1.5 text-[10px] font-semibold ${index <= currentIndex ? "text-violet-700" : "text-slate-400"}`}>{label}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          <ErrorMessage error={flowError} />
+
+          {step === "confirm" && (
+            <div>
+              <div className="rounded-2xl border border-violet-200 bg-violet-50/70 p-5">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-violet-700">Selected plan</p>
+                    <h3 className="mt-1 text-xl font-semibold text-slate-950">{plan.name}</h3>
+                    <p className="mt-1 text-xs text-slate-500">{plan.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-semibold text-slate-950">${price.toFixed(0)}</p>
+                    <p className="text-[11px] capitalize text-slate-500">per {cycle === "monthly" ? "month" : "year"}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 rounded-xl border border-slate-200 p-4 text-xs leading-5 text-slate-600">
+                Your plan starts after Sellflow verifies the bank transfer. Renewal is manual, and we will remind you before the next payment is due.
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button type="button" onClick={createPayment} disabled={working} className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-60">
+                  {working ? "Creating invoice…" : "Continue to payment"}<ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === "pay" && payment && (
+            <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_240px] md:items-start">
+              <div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="flex justify-between gap-3 border-b border-slate-200 pb-4">
+                    <span className="text-xs text-slate-500">Amount to pay</span>
+                    <strong className="text-xl text-slate-950">${Number(payment.amount).toFixed(2)} {payment.currency}</strong>
+                  </div>
+                  <dl className="mt-3 space-y-3 text-xs">
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Invoice</dt><dd className="font-semibold text-slate-900">{payment.invoice_number}</dd></div>
+                    <div className="flex justify-between gap-4"><dt className="text-slate-500">Plan</dt><dd className="font-semibold text-slate-900">{plan.name} · {cycle}</dd></div>
+                  </dl>
+                </div>
+                <div className="mt-4 rounded-xl bg-amber-50 p-4 text-xs leading-5 text-amber-900">
+                  Pay the exact amount shown. After the transfer succeeds, continue and upload the receipt from your banking app.
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <img src={bankQrCode} alt="Sellflow bank payment QR code" className="aspect-square w-full object-contain" />
+                </div>
+                <a href={bankQrCode} download="sellflow-bank-qr.png" className="mt-2 inline-block text-xs font-semibold text-violet-700 hover:text-violet-900">Save QR image</a>
+              </div>
+              <div className="flex flex-wrap justify-between gap-3 md:col-span-2">
+                <button type="button" onClick={() => setStep("confirm")} className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><ArrowLeft className="h-4 w-4" /> Back</button>
+                <button type="button" onClick={() => setStep("proof")} className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white hover:bg-violet-700">I have paid <ArrowRight className="h-4 w-4" /></button>
+              </div>
+            </div>
+          )}
+
+          {step === "proof" && payment && (
+            <div>
+              <label className="flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center hover:border-violet-400 hover:bg-violet-50/40">
+                <span className="grid h-12 w-12 place-items-center rounded-xl bg-violet-100 text-violet-700"><Upload className="h-5 w-5" /></span>
+                <span className="mt-3 text-sm font-semibold text-slate-900">{receipt ? receipt.name : "Choose your bank receipt"}</span>
+                <span className="mt-1 text-xs text-slate-500">A screenshot or photo showing successful payment · JPG, PNG or PDF · max 5 MB</span>
+                <input type="file" accept="image/jpeg,image/png,application/pdf" className="sr-only" onChange={(event) => setReceipt(event.target.files?.[0] ?? null)} />
+              </label>
+              <label className="mt-4 block">
+                <span className="text-xs font-semibold text-slate-700">Bank transaction reference <span className="font-normal text-slate-400">(optional)</span></span>
+                <input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Example: 123456789" className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" />
+              </label>
+              <div className="mt-6 flex flex-wrap justify-between gap-3">
+                <button type="button" onClick={() => setStep("pay")} className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"><ArrowLeft className="h-4 w-4" /> Back to QR</button>
+                <button type="button" onClick={submitProof} disabled={!receipt || working} className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50">
+                  {working ? "Uploading…" : "Submit receipt"}<Upload className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === "submitted" && payment && (
+            <div className="py-6 text-center">
+              <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-700"><CheckCircle2 className="h-8 w-8" /></span>
+              <h3 className="mt-5 text-xl font-semibold text-slate-950">Receipt received</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">We will compare your receipt with the bank transfer and activate your {plan.name} plan after confirmation.</p>
+              <div className="mx-auto mt-6 flex max-w-sm items-center justify-center gap-2 rounded-xl bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900"><Clock3 className="h-4 w-4" /> Status: awaiting verification</div>
+              <button type="button" onClick={onClose} className="mt-7 rounded-xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800">Done</button>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
 
