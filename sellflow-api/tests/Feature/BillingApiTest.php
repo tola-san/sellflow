@@ -7,7 +7,9 @@ use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Laravel\Sanctum\Sanctum;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class BillingApiTest extends TestCase
@@ -26,15 +28,18 @@ class BillingApiTest extends TestCase
             ->assertOk()
             ->assertJsonCount(3, 'data')
             ->assertJsonPath('data.0.slug', 'starter')
-            ->assertJsonPath('data.0.monthly_price', '6.00')
-            ->assertJsonPath('data.1.slug', 'growth')
-            ->assertJsonPath('data.1.yearly_price', '120.00')
+            ->assertJsonPath('data.0.monthly_price', '3.00')
+            ->assertJsonPath('data.1.slug', 'business')
+            ->assertJsonPath('data.1.yearly_price', '90.00')
             ->assertJsonPath('data.1.is_popular', true)
+            ->assertJsonPath('data.1.limits.staff', 5)
             ->assertJsonPath('data.2.slug', 'pro')
+            ->assertJsonPath('data.2.monthly_price', '12.00')
+            ->assertJsonPath('data.2.yearly_price', '120.00')
             ->assertJsonPath('data.2.limits.businesses', 3);
     }
 
-    public function test_existing_business_receives_a_growth_trial_and_usage_summary(): void
+    public function test_existing_business_receives_a_business_trial_and_usage_summary(): void
     {
         CarbonImmutable::setTestNow('2026-07-28 09:00:00');
         $owner = User::factory()->create();
@@ -46,7 +51,7 @@ class BillingApiTest extends TestCase
             ->assertJsonPath('data.subscription.status', 'trialing')
             ->assertJsonPath('data.subscription.has_access', true)
             ->assertJsonPath('data.subscription.trial_days_remaining', 30)
-            ->assertJsonPath('data.subscription.plan.slug', 'growth')
+            ->assertJsonPath('data.subscription.plan.slug', 'business')
             ->assertJsonPath('data.usage.businesses.used', 1)
             ->assertJsonPath('data.usage.staff.used', 1)
             ->assertJsonPath('data.usage.products.used', 0)
@@ -55,7 +60,7 @@ class BillingApiTest extends TestCase
         $this->assertDatabaseHas('business_subscriptions', [
             'business_id' => $business->id,
             'status' => 'trialing',
-            'subscription_plan_id' => SubscriptionPlan::query()->where('slug', 'growth')->value('id'),
+            'subscription_plan_id' => SubscriptionPlan::query()->where('slug', 'business')->value('id'),
         ]);
     }
 
@@ -73,7 +78,7 @@ class BillingApiTest extends TestCase
 
         $business = $owner->fresh()->business;
         $this->assertNotNull($business?->subscription);
-        $this->assertSame('growth', $business->subscription->plan->slug);
+        $this->assertSame('business', $business->subscription->plan->slug);
         $this->assertSame('2026-08-27', $business->subscription->trial_ends_at->toDateString());
     }
 
@@ -113,6 +118,33 @@ class BillingApiTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonPath('code', 'SUBSCRIPTION_LIMIT_REACHED')
             ->assertJsonPath('upgrade_required', true);
+    }
+
+    public function test_business_can_create_a_bank_qr_invoice_and_submit_a_receipt(): void
+    {
+        Storage::fake('local');
+        $owner = User::factory()->create();
+        $business = $this->business($owner);
+        Sanctum::actingAs($owner);
+
+        $paymentId = $this->postJson('/api/v1/billing/payments', [
+            'plan_slug' => 'business',
+            'billing_cycle' => 'monthly',
+        ])->assertCreated()
+            ->assertJsonPath('data.amount', '9.00')
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.provider', 'bank_qr')
+            ->json('data.id');
+
+        $this->post("/api/v1/billing/payments/{$paymentId}/proof", [
+            'receipt' => UploadedFile::fake()->create('bank-receipt.jpg', 100, 'image/jpeg'),
+            'transaction_reference' => 'TXN-123456',
+        ])->assertOk()
+            ->assertJsonPath('data.status', 'proof_submitted');
+
+        $payment = $business->subscription->payments()->findOrFail($paymentId);
+        $this->assertSame('TXN-123456', $payment->metadata['transaction_reference']);
+        Storage::disk('local')->assertExists($payment->metadata['receipt_path']);
     }
 
     private function business(User $owner): Business

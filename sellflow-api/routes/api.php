@@ -60,6 +60,8 @@ Route::prefix('v1')->group(function () {
         // Subscription and billing
         Route::get('/billing', [BillingController::class, 'overview']);
         Route::get('/billing/payments', [BillingController::class, 'payments']);
+        Route::post('/billing/payments', [BillingController::class, 'createPayment'])->middleware('throttle:10,1');
+        Route::post('/billing/payments/{payment}/proof', [BillingController::class, 'submitProof'])->middleware('throttle:10,1');
 
         // Dashboard summary
         Route::get('/dashboard/overview', [DashboardController::class, 'overview']);

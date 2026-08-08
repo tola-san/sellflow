@@ -12,7 +12,7 @@ export type SubscriptionStatus =
 export interface SubscriptionPlan {
   id: number;
   name: string;
-  slug: "starter" | "growth" | "pro";
+  slug: "starter" | "business" | "pro";
   description: string;
   monthly_price: string;
   yearly_price: string;
@@ -93,6 +93,26 @@ export const billingService = {
 
   async getPayments(): Promise<SubscriptionPayment[]> {
     const response = await api.get<{ success: boolean; data: SubscriptionPayment[] }>("/billing/payments");
+    return response.data.data;
+  },
+
+  async createPayment(planSlug: SubscriptionPlan["slug"], billingCycle: BillingCycle): Promise<SubscriptionPayment> {
+    const response = await api.post<{ success: boolean; data: SubscriptionPayment }>("/billing/payments", {
+      plan_slug: planSlug,
+      billing_cycle: billingCycle,
+    });
+    return response.data.data;
+  },
+
+  async submitPaymentProof(paymentId: number, receipt: File, transactionReference?: string): Promise<SubscriptionPayment> {
+    const form = new FormData();
+    form.append("receipt", receipt);
+    if (transactionReference) form.append("transaction_reference", transactionReference);
+    const response = await api.post<{ success: boolean; data: SubscriptionPayment }>(
+      `/billing/payments/${paymentId}/proof`,
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
     return response.data.data;
   },
 };
