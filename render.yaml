@@ -72,7 +72,7 @@ services:
       - key: BILLING_TRIAL_DAYS
         value: "30"
       - key: BILLING_TRIAL_PLAN
-        value: growth
+        value: business
       - key: PRODUCT_IMAGE_DISK
         value: cloudinary
       - key: CLOUDINARY_URL
