@@ -1,6 +1,7 @@
 import api from "../lib/Axios";
 import type { BusinessType } from "../types/businessTypes";
 import type { ThemeSettings } from "../types/theme";
+import type { StoreCurrency } from "../lib/currency";
 
 export interface PublicCategory {
   name: string;
@@ -76,6 +77,7 @@ export interface PublicBusiness {
   address: string | null;
   city: string | null;
   country: string | null;
+  currency: StoreCurrency;
   show_map: boolean;
   theme: ThemeSettings;
 }

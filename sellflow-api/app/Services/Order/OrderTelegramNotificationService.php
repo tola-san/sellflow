@@ -131,7 +131,7 @@ class OrderTelegramNotificationService
             .'<blockquote><b>'.$this->escape($order->business->name).'</b>'."\n"
             .'Order <code>'.$this->escape($order->order_number).'</code>'."\n"
             .$lines."\n\n"
-            .'Total: <b>$'.number_format((float) $order->total, 2).'</b>'."\n"
+            .'Total: <b>'.$this->escape($order->business->formatMoney($order->total)).'</b>'."\n"
             .'Status: Pending</blockquote>'."\n"
             .'We will notify you when the seller updates your order.';
     }

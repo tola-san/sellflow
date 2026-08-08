@@ -14,6 +14,7 @@ import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContex
 import { withHexOpacity } from "../lib/color";
 import { StoreProfileDrawer } from "../components/ui/StoreProfileDrawer";
 import { ProgressiveImage } from "../components/ui/ProgressiveImage";
+import { formatCurrency, type StoreCurrency } from "../lib/currency";
 
 export function StorefrontPage() {
   const { slug = "" } = useParams();
@@ -340,7 +341,7 @@ export function StorefrontPage() {
                     <span className="text-sm text-slate-400">{categoryProducts.length} items</span>
                   </div>
                   <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${theme.grid_columns === 2 ? "lg:grid-cols-2" : theme.grid_columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
-                    {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} onAdd={() => {
+                    {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} currency={business.currency} onAdd={() => {
                       if (!product.is_available_now) return false;
                       if ((product.modifier_groups || []).length > 0 || (product.variants || []).length > 0) {
                         navigate(storePath(slug, `/products/${product.slug}`));
@@ -369,7 +370,7 @@ export function StorefrontPage() {
         <div className="fixed inset-x-0 bottom-0 z-[70] px-3 pb-[max(0.75rem,var(--tg-content-safe-area-inset-bottom,0px))]">
           <Link to={storePath(slug, "/cart")} className="mx-auto flex min-h-14 max-w-md items-center justify-between gap-4 rounded-2xl px-5 text-sm font-semibold text-white shadow-2xl" style={{ backgroundColor: primary }}>
             <span className="inline-flex items-center gap-2"><ShoppingBag size={18} />{cart.count(slug)} {cart.count(slug) === 1 ? "item" : "items"}</span>
-            <span>${cartTotal.toFixed(2)} <span aria-hidden="true">→</span></span>
+            <span>{formatCurrency(cartTotal, business.currency)} <span aria-hidden="true">→</span></span>
           </Link>
         </div>
       )}
@@ -511,7 +512,7 @@ function Filter({ active, theme, onClick, children, buttonRef }: {
   );
 }
 
-function ProductCard({ product, theme, onAdd }: { product: Storefront["products"][number]; theme: ThemeSettings; onAdd: () => boolean }) {
+function ProductCard({ product, theme, currency, onAdd }: { product: Storefront["products"][number]; theme: ThemeSettings; currency: StoreCurrency; onAdd: () => boolean }) {
   const reduceMotion = useReducedMotion();
   const [added, setAdded] = useState(false);
   const cardStyle = theme.card_style === "elevated"
@@ -533,8 +534,8 @@ function ProductCard({ product, theme, onAdd }: { product: Storefront["products"
         <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: theme.primary_color }}>{product.category.name}</p>
         <h3 className="mt-1 line-clamp-2 font-semibold leading-tight"><Link to={`products/${product.slug}`} className="transition hover:opacity-70">{product.name}</Link></h3>
         <div className="mt-3 flex items-baseline justify-between">
-          <strong className="text-xl">${Number(product.discount_price || product.price).toFixed(2)}</strong>
-          {product.discount_price && <span className="text-xs text-slate-400 line-through">${Number(product.price).toFixed(2)}</span>}
+          <strong className="text-xl">{formatCurrency(product.discount_price || product.price, currency)}</strong>
+          {product.discount_price && <span className="text-xs text-slate-400 line-through">{formatCurrency(product.price, currency)}</span>}
         </div>
         <motion.button
           disabled={product.stock < 1 || !product.is_available_now}

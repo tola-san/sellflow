@@ -25,6 +25,7 @@ import { orderService } from "../Services/order";
 import type { Order, OrderListResponse } from "../types/order";
 import { ErrorMessage } from "../components/dashboard/DashboardUI";
 import { NOTIFICATIONS_CHANGED_EVENT, type BusinessNotification } from "../Services/notifications";
+import { activeStoreCurrency, formatCurrency } from "../lib/currency";
 
 const emptySummary: OrderListResponse["summary"] = {
   total: 0,
@@ -37,13 +38,7 @@ const emptySummary: OrderListResponse["summary"] = {
   paid_revenue: "0",
 };
 
-const money = (value: number | string, compact = false) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    notation: compact ? "compact" : "standard",
-    maximumFractionDigits: compact ? 1 : 2,
-  }).format(Number(value) || 0);
+const money = (value: number | string, compact = false) => formatCurrency(value, activeStoreCurrency(), compact);
 
 const orderTone: Record<string, string> = {
   pending: "border-amber-200 bg-amber-50 text-amber-700",

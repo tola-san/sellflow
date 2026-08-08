@@ -17,6 +17,7 @@ import { businessService } from "../Services/business";
 import { BUSINESS_TYPES, type BusinessType } from "../types/businessTypes";
 import { useAuth } from "../components/Auth/AuthContext";
 import { useToast } from "../components/ui/ToastContext";
+import { STORE_CURRENCIES, type StoreCurrency } from "../lib/currency";
 
 type BusinessIcon = ComponentType<{ className?: string; size?: number }>;
 
@@ -38,6 +39,7 @@ interface OnboardingForm {
   phone: string;
   city: string;
   country: string;
+  currency: StoreCurrency;
 }
 
 const initialForm: OnboardingForm = {
@@ -47,6 +49,7 @@ const initialForm: OnboardingForm = {
   phone: "",
   city: "",
   country: "",
+  currency: "USD",
 };
 
 export function OnboardingPage() {
@@ -93,6 +96,7 @@ export function OnboardingPage() {
           phone: form.phone.trim() || null,
           city: form.city.trim() || null,
           country: form.country.trim() || null,
+          currency: form.currency,
           is_active: true,
         },
         false,
@@ -110,6 +114,7 @@ export function OnboardingPage() {
             name: saved.name,
             slug: saved.slug,
             business_type: saved.business_type,
+            currency: saved.currency,
             logo: saved.logo,
             is_active: saved.is_active,
           },
@@ -282,6 +287,18 @@ export function OnboardingPage() {
                     onChange={(country) => setForm((current) => ({ ...current, country }))}
                     placeholder="Cambodia"
                   />
+                  <label className="text-sm font-semibold text-slate-700">
+                    Store currency
+                    <select
+                      value={form.currency}
+                      onChange={(event) => setForm((current) => ({ ...current, currency: event.target.value as StoreCurrency }))}
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm font-normal text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+                    >
+                      {STORE_CURRENCIES.map((currency) => (
+                        <option key={currency.value} value={currency.value}>{currency.label}</option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
 
                 <div className="mt-7 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">

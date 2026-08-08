@@ -11,6 +11,7 @@ import {
 import { analyticsService, type AnalyticsDays, type AnalyticsReport } from "../Services/analytics";
 import { useAuth } from "../components/Auth/AuthContext";
 import { EmptyState, ErrorMessage } from "../components/dashboard/DashboardUI";
+import { activeStoreCurrency, formatCurrency } from "../lib/currency";
 
 const ranges: Array<{ value: AnalyticsDays; label: string }> = [
   { value: 7, label: "7 days" },
@@ -437,7 +438,7 @@ function chartPoints(values: number[], width: number, height: number, padding: n
 }
 
 function money(value: string | number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value) || 0);
+  return formatCurrency(value, activeStoreCurrency());
 }
 
 function formatDate(value?: string) {

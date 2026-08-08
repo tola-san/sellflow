@@ -33,6 +33,7 @@ import { useAuth } from "../components/Auth/AuthContext";
 import { useToast } from "../components/ui/ToastContext";
 import type { Order, OrderListResponse, OrderStatus, PaymentStatus } from "../types/order";
 import { NOTIFICATIONS_CHANGED_EVENT, type BusinessNotification } from "../Services/notifications";
+import { activeStoreCurrency, formatCurrency } from "../lib/currency";
 
 // Initial states
 const emptySummary: OrderListResponse["summary"] = {
@@ -254,7 +255,7 @@ export function OrdersPage() {
           )}
           <Stat
             label="Paid revenue"
-            value={`$${Number(summary.paid_revenue).toFixed(2)}`}
+            value={formatCurrency(summary.paid_revenue, user?.business?.currency)}
             icon={<Banknote size={20} />}
             tone="emerald"
             wide
@@ -379,7 +380,7 @@ export function OrdersPage() {
                         </td>
 
                         <td className="px-5 py-4 text-right font-bold text-slate-800">
-                          ${Number(order.total).toFixed(2)}
+                          {formatCurrency(order.total, user?.business?.currency)}
                         </td>
 
                         <td className="px-5 py-4">
@@ -437,7 +438,7 @@ export function OrdersPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-slate-800">
-                        ${Number(order.total).toFixed(2)}
+                        {formatCurrency(order.total, user?.business?.currency)}
                       </p>
                       <p className="text-xs text-slate-400">{order.items_count} items</p>
                     </div>
@@ -663,11 +664,11 @@ function OrderDrawer({
                         </p>
                       )}
                       <p className="text-sm text-slate-500">
-                        {item.quantity} × ${Number(item.unit_price).toFixed(2)}
+                        {item.quantity} × {formatCurrency(item.unit_price, activeStoreCurrency())}
                       </p>
                     </div>
                     <p className="font-semibold text-slate-800">
-                      ${Number(item.line_total).toFixed(2)}
+                      {formatCurrency(item.line_total, activeStoreCurrency())}
                     </p>
                   </div>
                 ))}
@@ -676,11 +677,11 @@ function OrderDrawer({
               <div className="mt-6 border-t border-slate-200 pt-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Subtotal</span>
-                  <span className="font-medium text-slate-700">${Number(order.subtotal).toFixed(2)}</span>
+                  <span className="font-medium text-slate-700">{formatCurrency(order.subtotal, activeStoreCurrency())}</span>
                 </div>
                 <div className="mt-3 flex justify-between text-lg">
                   <span className="font-semibold text-slate-800">Total</span>
-                  <span className="font-bold text-purple-600">${Number(order.total).toFixed(2)}</span>
+                  <span className="font-bold text-purple-600">{formatCurrency(order.total, activeStoreCurrency())}</span>
                 </div>
               </div>
             </Section>

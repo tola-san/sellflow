@@ -30,6 +30,7 @@ class UserResource extends JsonResource
                 'name' => $business->name,
                 'slug' => $business->slug,
                 'business_type' => $business->business_type,
+                'currency' => $business->currency ?? config('currencies.default', 'USD'),
                 'logo' => $business->logoUrl(),
                 'is_active' => $business->is_active,
             ] : null,

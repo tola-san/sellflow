@@ -8,6 +8,7 @@ import { useCart } from "../components/cart/CartContext";
 import { ErrorMessage, inputClass } from "../components/dashboard/DashboardUI";
 import { useTelegramMainButton, useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 import { customerThemeVariables, resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
+import { formatCurrency } from "../lib/currency";
 
 type CheckoutForm = Required<Pick<CheckoutPayload, "customer_name" | "customer_phone" | "delivery_address" | "city" | "notes" | "payment_method">>;
 
@@ -63,7 +64,7 @@ export function CheckoutPage() {
   }, [customerName]);
 
   useTelegramMainButton({
-    text: submitting ? "Placing order…" : `Place order · $${subtotal.toFixed(2)}`,
+    text: submitting ? "Placing order…" : `Place order · ${formatCurrency(subtotal, store?.business.currency)}`,
     color: primary,
     visible: isTelegramClient && Boolean(store) && items.length > 0 && !order,
     enabled: !submitting,
@@ -165,7 +166,7 @@ export function CheckoutPage() {
             <div className="mt-6 space-y-3">
               <div className="flex justify-between">
                 <span className="text-slate-600">Total</span>
-                <span className="font-semibold">${Number(order.total).toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(order.total, store?.business.currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Status</span>
@@ -379,7 +380,7 @@ export function CheckoutPage() {
                       <p className="text-sm text-slate-500 mt-0.5">Qty: {quantity}</p>
                     </div>
                     <p className="font-semibold whitespace-nowrap">
-                      ${(unit_price * quantity).toFixed(2)}
+                      {formatCurrency(unit_price * quantity, store?.business.currency)}
                     </p>
                   </div>
                 ))}
@@ -389,7 +390,7 @@ export function CheckoutPage() {
 
               <div className="flex justify-between text-xl font-bold">
                 <span>Total</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{formatCurrency(subtotal, store?.business.currency)}</span>
               </div>
 
               <p className="mt-4 text-xs text-slate-500 leading-relaxed">

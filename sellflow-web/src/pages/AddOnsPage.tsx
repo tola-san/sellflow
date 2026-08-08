@@ -6,6 +6,7 @@ import { EmptyState, ErrorMessage, PageHeader, buttonPrimary, buttonSecondary, i
 import { modifierGroupService, type ModifierGroup, type ModifierGroupPayload } from "../Services/modifierGroups";
 import { productService } from "../Services/product";
 import type { Product } from "../types/product";
+import { formatCurrency } from "../lib/currency";
 
 const blank: ModifierGroupPayload = {
   name: "",
@@ -120,7 +121,7 @@ export function AddOnsPage() {
                   <button className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600" onClick={() => void remove(group)} aria-label={`Delete ${group.name}`}><Trash2 size={17} /></button>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {group.options.map((option) => <span key={option.id} className="rounded-lg border border-slate-200 px-2.5 py-1 text-sm text-slate-700">{option.name}{Number(option.price_adjustment) > 0 && <b className="ml-1 text-emerald-600">+${Number(option.price_adjustment).toFixed(2)}</b>}</span>)}
+                  {group.options.map((option) => <span key={option.id} className="rounded-lg border border-slate-200 px-2.5 py-1 text-sm text-slate-700">{option.name}{Number(option.price_adjustment) > 0 && <b className="ml-1 text-emerald-600">+{formatCurrency(option.price_adjustment, user?.business?.currency)}</b>}</span>)}
                 </div>
               </article>
             ))}

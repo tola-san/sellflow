@@ -6,6 +6,7 @@ import { storefrontService, type Storefront } from "../Services/storefront";
 import { useCart } from "../components/cart/CartContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 import { customerThemeVariables, resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
+import { formatCurrency } from "../lib/currency";
 
 const backdropVariants: Variants = {
   hidden: { opacity: 0 },
@@ -144,7 +145,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                                             {variant && <p className="mt-1 text-xs font-medium text-slate-600">{variant.name}</p>}
                                             {modifiers.length > 0 && <p className="mt-1 text-xs leading-5 text-slate-500">{modifiers.map((option) => option.name).join(", ")}</p>}
                                             <p className="mt-1.5 font-semibold">
-                                                ${unit_price.toFixed(2)}
+                                                {formatCurrency(unit_price, store?.business.currency)}
                                             </p>
 
                                             <div className="mt-4 flex items-center justify-between">
@@ -172,7 +173,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                             <div className="border-t bg-white p-4 flex-shrink-0">
                                 <div className="flex justify-between items-center mb-4">
                                     <span className="text-slate-600 text-[17px]">Total</span>
-                                    <span className="text-2xl font-bold">${subtotal.toFixed(2)}</span>
+                                    <span className="text-2xl font-bold">{formatCurrency(subtotal, store?.business.currency)}</span>
                                 </div>
 
                                 <Link

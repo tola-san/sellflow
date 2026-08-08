@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../components/Auth/AuthContext";
 import { ErrorMessage, PageHeader, buttonPrimary, buttonSecondary, inputClass } from "../components/dashboard/DashboardUI";
 import { restaurantTableService, type RestaurantTable, type RestaurantTablePayload, type RestaurantTableStatus } from "../Services/restaurantTables";
+import { formatCurrency } from "../lib/currency";
 
 const blank: RestaurantTablePayload = { name: "", area: "Main floor", capacity: 4, status: "available", is_active: true, sort_order: 0 };
 const statusStyles: Record<RestaurantTableStatus, string> = {
@@ -138,7 +139,7 @@ export function RestaurantTablesPage() {
           {filtered.map((table) => <button key={table.id} onClick={() => setSelectedId(table.id)} className={`group rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md ${selectedId === table.id ? "border-purple-500 ring-2 ring-purple-100" : "border-slate-200"}`}>
             <div className="flex items-start justify-between"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-purple-50 text-purple-600"><UsersRound size={23} /></span><QrCode size={20} className="text-purple-500" /></div>
             <h3 className="mt-4 text-lg font-semibold">{table.name}</h3><p className="text-sm text-slate-500">{table.area || "No area"} · {table.capacity} seats</p>
-            <div className="mt-4 flex items-center justify-between"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusStyles[table.status]}`}>{table.status}</span>{table.active_order && <span className="text-xs font-medium text-slate-600">${Number(table.active_order.total).toFixed(2)}</span>}</div>
+            <div className="mt-4 flex items-center justify-between"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusStyles[table.status]}`}>{table.status}</span>{table.active_order && <span className="text-xs font-medium text-slate-600">{formatCurrency(table.active_order.total, user?.business?.currency)}</span>}</div>
           </button>)}
         </div> : <p className="p-12 text-center text-sm text-slate-500">No tables match these filters.</p>}
       </section>
@@ -146,7 +147,7 @@ export function RestaurantTablesPage() {
       <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         {selected ? <><div className="flex items-start"><div><h2 className="text-xl font-bold">{selected.name}</h2><p className="text-sm text-slate-500">{selected.area || "No area"} · {selected.capacity} seats</p></div><button className="ml-auto p-2 text-slate-400 hover:text-purple-600" onClick={() => show(selected)}><Pencil size={17} /></button><button className="p-2 text-slate-400 hover:text-rose-600" onClick={() => void remove(selected)}><Trash2 size={17} /></button></div>
           <span className={`mt-3 inline-block rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusStyles[selected.status]}`}>{selected.status}</span>
-          {selected.active_order && <div className="mt-5 rounded-xl border border-orange-100 bg-orange-50 p-4"><p className="text-xs font-semibold uppercase text-orange-600">Current order</p><p className="mt-1 font-mono font-semibold">{selected.active_order.order_number}</p><div className="mt-2 flex items-center justify-between text-sm"><span className="flex items-center gap-1 text-slate-500"><Clock3 size={14} /> {selected.active_order.status}</span><strong>${Number(selected.active_order.total).toFixed(2)}</strong></div></div>}
+          {selected.active_order && <div className="mt-5 rounded-xl border border-orange-100 bg-orange-50 p-4"><p className="text-xs font-semibold uppercase text-orange-600">Current order</p><p className="mt-1 font-mono font-semibold">{selected.active_order.order_number}</p><div className="mt-2 flex items-center justify-between text-sm"><span className="flex items-center gap-1 text-slate-500"><Clock3 size={14} /> {selected.active_order.status}</span><strong>{formatCurrency(selected.active_order.total, user?.business?.currency)}</strong></div></div>}
           <div className="mt-6 border-t pt-5"><h3 className="font-semibold">QR ordering code</h3><div ref={qrRef} className="mx-auto mt-4 w-fit rounded-2xl border bg-white p-4"><QRCodeSVG value={qrUrl} size={190} level="H" marginSize={1} /></div><p className="mt-3 break-all text-center text-xs text-purple-600">{qrUrl}</p><div className="mt-4 grid grid-cols-2 gap-2"><button className={buttonSecondary} onClick={downloadQr}><Download size={16} /> Download PNG</button><button className={buttonSecondary} onClick={printQr}><Printer size={16} /> Print</button></div><button className={`${buttonSecondary} mt-2 w-full`} onClick={() => void regenerate()}><RefreshCw size={16} /> Regenerate code</button></div>
         </> : <div className="grid min-h-80 place-items-center text-center text-sm text-slate-500"><div><QrCode className="mx-auto mb-3 text-slate-300" size={50} />Select a table to view its QR code.</div></div>}
       </aside>

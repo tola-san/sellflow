@@ -47,6 +47,8 @@ class BusinessResource extends JsonResource
 
             'country' => $this->country,
 
+            'currency' => $this->currency ?? config('currencies.default', 'USD'),
+
             'show_map' => $this->show_map,
 
             'primary_color' => $this->primary_color,

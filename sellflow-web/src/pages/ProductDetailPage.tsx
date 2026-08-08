@@ -9,6 +9,7 @@ import { useToast } from "../components/ui/ToastContext";
 import { useTelegramMiniApp } from "../components/telegram/TelegramMiniAppContext";
 import { resolveCustomerTheme, useCustomerTheme } from "../theme/useCustomerTheme";
 import { ProgressiveImage } from "../components/ui/ProgressiveImage";
+import { formatCurrency } from "../lib/currency";
 
 export function ProductDetailPage() {
   const reduceMotion = useReducedMotion();
@@ -309,10 +310,10 @@ export function ProductDetailPage() {
 
             <div className="mt-4 flex items-baseline gap-4">
               <div className="text-4xl font-bold tracking-tight" style={{ color: theme.primary_color }}>
-                ${currentPrice.toFixed(2)}
+                {formatCurrency(currentPrice, business.currency)}
               </div>
               {discountPercent > 0 && (
-                <div className="text-xl line-through opacity-50">${regularPrice.toFixed(2)}</div>
+                <div className="text-xl line-through opacity-50">{formatCurrency(regularPrice, business.currency)}</div>
               )}
             </div>
 
@@ -383,7 +384,7 @@ export function ProductDetailPage() {
                           </span>
                         </span>
                         <span className="text-right">
-                          <span className="block font-semibold" style={{ color: theme.primary_color }}>${Number(variant.effective_price).toFixed(2)}</span>
+                          <span className="block font-semibold" style={{ color: theme.primary_color }}>{formatCurrency(variant.effective_price, business.currency)}</span>
                           <span className="text-[11px]" style={{ color: theme.muted_color }}>{unavailable ? "Out of stock" : `${variant.stock} left`}</span>
                         </span>
                       </label>
@@ -419,7 +420,7 @@ export function ProductDetailPage() {
                                 style={{ accentColor: theme.primary_color }}
                               />
                               <span className="flex-1 font-medium">{option.name}</span>
-                              {Number(option.price_adjustment) > 0 && <span style={{ color: theme.primary_color }}>+${Number(option.price_adjustment).toFixed(2)}</span>}
+                              {Number(option.price_adjustment) > 0 && <span style={{ color: theme.primary_color }}>+{formatCurrency(option.price_adjustment, business.currency)}</span>}
                             </label>
                           );
                         })}
@@ -448,7 +449,7 @@ export function ProductDetailPage() {
                 <div className="flex-1">
                   <p className="text-xs font-medium uppercase tracking-wider opacity-50">Total</p>
                   <p className="text-2xl font-bold tracking-tight" style={{ color: theme.primary_color }}>
-                    ${(configuredUnitPrice * quantity).toFixed(2)}
+                    {formatCurrency(configuredUnitPrice * quantity, business.currency)}
                   </p>
                 </div>
 
@@ -509,7 +510,7 @@ export function ProductDetailPage() {
                 )}
               </div>
               <p className="text-2xl font-bold tracking-tight" style={{ color: theme.primary_color }}>
-                ${(configuredUnitPrice * quantity).toFixed(2)}
+                {formatCurrency(configuredUnitPrice * quantity, business.currency)}
               </p>
             </div>
 

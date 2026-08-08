@@ -33,6 +33,7 @@ class Business extends Model
         'address',
         'city',
         'country',
+        'currency',
         'show_map',
         'primary_color',
         'secondary_color',
@@ -65,6 +66,19 @@ class Business extends Model
         }
 
         return ['preset' => $preset, ...array_merge($defaults, $settings)];
+    }
+
+    public function formatMoney(string|float|int $amount): string
+    {
+        $currency = in_array($this->currency, config('currencies.supported', []), true)
+            ? $this->currency
+            : config('currencies.default', 'USD');
+        $decimals = $currency === 'KHR' ? 0 : 2;
+        $symbol = $currency === 'KHR' ? '៛' : '$';
+
+        $formatted = number_format((float) $amount, $decimals, '.', ',');
+
+        return $currency === 'KHR' ? $formatted.$symbol : $symbol.$formatted;
     }
 
     public function logoUrl(): ?string

@@ -36,6 +36,8 @@ import {
   inputClass 
 } from "../components/dashboard/DashboardUI";
 import { ProgressiveImage } from "../components/ui/ProgressiveImage";
+import { useAuth } from "../components/Auth/AuthContext";
+import { activeStoreCurrency, currencySymbol, formatCurrency } from "../lib/currency";
 
 type ProductForm = {
   category_id: number;
@@ -56,6 +58,7 @@ const blank: ProductForm = {
 };
 
 export function ProductsPage() {
+  const { user } = useAuth();
   const reduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { productUuid } = useParams<{ productUuid?: string }>();
@@ -481,14 +484,14 @@ export function ProductsPage() {
                       label="Regular price" 
                       required 
                       type="number" 
-                      prefix="$" 
+                      prefix={currencySymbol(user?.business?.currency)}
                       value={form.price} 
                       onChange={(price) => setForm((current) => ({ ...current, price }))}
                     />
                     <Field 
                       label="Discount price" 
                       type="number" 
-                      prefix="$" 
+                      prefix={currencySymbol(user?.business?.currency)}
                       value={form.discount_price} 
                       onChange={(discount_price) => setForm((current) => ({ ...current, discount_price }))}
                     />
@@ -636,11 +639,11 @@ function ProductCard({ product, edit, remove }: { product: Product; edit: (produ
         <div className="flex items-center justify-between">
           <div>
             <p className="font-bold text-violet-600">
-              ${Number(product.discount_price || product.price).toFixed(2)}
+              {formatCurrency(product.discount_price || product.price, activeStoreCurrency())}
             </p>
             {product.discount_price && (
               <p className="text-xs text-slate-400 line-through">
-                ${Number(product.price).toFixed(2)}
+                {formatCurrency(product.price, activeStoreCurrency())}
               </p>
             )}
           </div>
@@ -834,11 +837,11 @@ function ProductTable({ products, edit, remove }: { products: Product[]; edit: (
                 </td>
                 <td className="px-5 py-4">
                   <p className="font-semibold text-slate-900">
-                    ${Number(product.discount_price || product.price).toFixed(2)}
+                    {formatCurrency(product.discount_price || product.price, activeStoreCurrency())}
                   </p>
                   {product.discount_price && (
                     <p className="mt-0.5 text-xs text-slate-400 line-through">
-                      ${Number(product.price).toFixed(2)}
+                      {formatCurrency(product.price, activeStoreCurrency())}
                     </p>
                   )}
                 </td>
