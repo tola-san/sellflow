@@ -160,8 +160,8 @@ export function CheckoutPage() {
           </p>
 
           <div className="mt-6 rounded-2xl bg-slate-50 p-5 text-left sm:mt-8 sm:p-6">
-            <p className="text-xs uppercase tracking-wider text-slate-400">Order Number</p>
-            <p className="mt-1 break-all font-mono text-xl font-bold leading-tight text-slate-900 sm:text-2xl">{order.order_number}</p>
+            <p className="text-xs uppercase tracking-wider text-slate-400">Ticket Number</p>
+            <p className="mt-1 break-all font-mono text-xl font-bold leading-tight text-slate-900 sm:text-2xl">#{order.order_number}</p>
 
             <div className="mt-6 space-y-3">
               <div className="flex justify-between">

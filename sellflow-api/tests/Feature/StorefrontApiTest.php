@@ -112,6 +112,7 @@ class StorefrontApiTest extends TestCase
         ]);
 
         $response->assertCreated()
+            ->assertJsonPath('data.order_number', '001')
             ->assertJsonPath('data.total', '9.00')
             ->assertJsonPath('data.items.0.unit_price', '4.50')
             ->assertJsonPath('data.items.0.quantity', 2);
@@ -127,6 +128,43 @@ class StorefrontApiTest extends TestCase
             SendNewOrderTelegramNotification::class,
             fn (SendNewOrderTelegramNotification $job) => $job->orderId === $order->id
         );
+    }
+
+    public function test_order_ticket_numbers_are_sequential_and_scoped_to_each_store(): void
+    {
+        Bus::fake([SendNewOrderTelegramNotification::class]);
+
+        $firstStore = $this->business('First Ticket Store', 'first-ticket-store');
+        $firstCategory = $this->category($firstStore, 'Products', true);
+        $this->product($firstStore, $firstCategory, 'First Product', 'first-product', true)
+            ->update(['stock' => 5]);
+
+        $secondStore = $this->business('Second Ticket Store', 'second-ticket-store');
+        $secondCategory = $this->category($secondStore, 'Products', true);
+        $this->product($secondStore, $secondCategory, 'Second Product', 'second-product', true)
+            ->update(['stock' => 5]);
+
+        $payload = [
+            'customer_name' => 'Ticket Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Phnom Penh',
+            'payment_method' => 'cash',
+            'items' => [['product_slug' => 'first-product', 'quantity' => 1]],
+        ];
+
+        $this->postJson('/api/v1/store/first-ticket-store/checkout', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.order_number', '001');
+
+        $this->postJson('/api/v1/store/first-ticket-store/checkout', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.order_number', '002');
+
+        $payload['items'][0]['product_slug'] = 'second-product';
+
+        $this->postJson('/api/v1/store/second-ticket-store/checkout', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.order_number', '001');
     }
 
     public function test_restaurant_modifiers_are_published_validated_and_priced_by_the_server(): void
