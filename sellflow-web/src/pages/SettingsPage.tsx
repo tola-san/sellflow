@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { authService } from "../Services/auth";
+import { getAuthToken } from "../lib/authSession";
 import { useAuth } from "../components/Auth/AuthContext";
 import { ErrorMessage } from "../components/dashboard/DashboardUI";
 import { useToast } from "../components/ui/ToastContext";
@@ -129,7 +130,7 @@ function AccountSettings() {
     setError(null);
     try {
       const updated = await authService.updateProfile(form);
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       if (token) setSession(token, updated);
       showToast("Account profile updated.");
     } catch (requestError) {

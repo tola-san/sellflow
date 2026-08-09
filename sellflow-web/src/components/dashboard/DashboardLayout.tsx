@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { authService } from "../../Services/auth";
+import { getAuthToken } from "../../lib/authSession";
 import { useToast } from "../ui/ToastContext";
 import { useAuth } from "../../components/Auth/AuthContext";
 import { DASHBOARD_THEMES, DASHBOARD_THEME_EVENT, dashboardThemeVariables, getDashboardThemeId, type DashboardThemeId } from "../../theme/dashboardThemes";
@@ -337,7 +338,7 @@ export function DashboardLayout() {
   };
 
   const logout = async () => {
-    const token = localStorage.getItem("token") || "";
+    const token = getAuthToken() || "";
     try {
       await authService.logout(token);
     } catch {

@@ -8,6 +8,7 @@ import { ErrorMessage, PageHeader, buttonPrimary, inputClass } from "../componen
 import { withHexOpacity } from "../lib/color";
 import { useAuth } from "../components/Auth/AuthContext";
 import { STORE_CURRENCIES, type StoreCurrency } from "../lib/currency";
+import { getAuthToken } from "../lib/authSession";
 
 const emptyBusiness: Business = {
   id: 0,
@@ -87,7 +88,7 @@ export function BusinessPage() {
       setRemoveLogo(false);
       setRemoveBanner(false);
       setBannerOverlayOpacity(saved.theme.banner_overlay_opacity ?? bannerOverlayOpacity);
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       if (token && user) {
         setSession(token, {
           ...user,

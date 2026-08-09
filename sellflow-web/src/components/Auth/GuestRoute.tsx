@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { authService } from "../../Services/auth";
 import { useAuth } from "./AuthContext";
+import { getAuthToken } from "../../lib/authSession";
 
 type SessionState = "checking" | "authenticated" | "guest";
 
@@ -11,7 +12,7 @@ export function GuestRoute() {
 
   useEffect(() => {
     let active = true;
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
 
     if (!token) {
       setSession("guest");

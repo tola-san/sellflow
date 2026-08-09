@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import axios from "axios";
+import { getAuthToken } from "./authSession";
 
 const configuredBaseUrl = import.meta.env.VITE_API_URL
     || (import.meta.env.PROD ? "/api/v1" : "http://127.0.0.1:8000/api/v1");
@@ -13,7 +14,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
 });

@@ -18,6 +18,7 @@ import { BUSINESS_TYPES, type BusinessType } from "../types/businessTypes";
 import { useAuth } from "../components/Auth/AuthContext";
 import { useToast } from "../components/ui/ToastContext";
 import { STORE_CURRENCIES, type StoreCurrency } from "../lib/currency";
+import { getAuthToken } from "../lib/authSession";
 
 type BusinessIcon = ComponentType<{ className?: string; size?: number }>;
 
@@ -102,7 +103,7 @@ export function OnboardingPage() {
         false,
       );
 
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       if (token && user) {
         setSession(token, {
           ...user,

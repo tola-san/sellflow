@@ -114,12 +114,12 @@ export function CheckoutPage() {
   // Success Screen
   if (order) {
     return (
-      <div className="customer-flow-theme min-h-screen bg-slate-50 flex items-center justify-center p-5" style={themeVariables}>
+      <div className="customer-flow-theme flex min-h-screen items-center justify-center bg-slate-50 p-4 sm:p-5" style={themeVariables}>
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl"
+          className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-5 text-center shadow-xl sm:p-8"
         >
           <div className="relative mx-auto h-24 w-24">
             {!reduceMotion && Array.from({ length: 10 }).map((_, index) => {
@@ -151,7 +151,7 @@ export function CheckoutPage() {
               <BadgeCheck size={48} />
             </motion.div>
           </div>
-          <h1 className="mt-6 text-3xl font-bold">Order Received</h1>
+          <h1 className="mt-5 text-2xl font-bold sm:mt-6 sm:text-3xl">Order Received</h1>
           <p className="mt-3 text-slate-600">Thank you, <strong>{order.customer_name}</strong>!</p>
           <p className="mt-1 text-sm text-slate-500">
             {order.telegram_receipt_sent
@@ -159,9 +159,9 @@ export function CheckoutPage() {
               : "Your order is confirmed. Choose Telegram below for instant receipt and live status updates."}
           </p>
 
-          <div className="mt-8 rounded-2xl bg-slate-50 p-6 text-left">
+          <div className="mt-6 rounded-2xl bg-slate-50 p-5 text-left sm:mt-8 sm:p-6">
             <p className="text-xs uppercase tracking-wider text-slate-400">Order Number</p>
-            <p className="mt-1 font-mono text-2xl font-bold text-slate-900">{order.order_number}</p>
+            <p className="mt-1 break-all font-mono text-xl font-bold leading-tight text-slate-900 sm:text-2xl">{order.order_number}</p>
 
             <div className="mt-6 space-y-3">
               <div className="flex justify-between">
@@ -180,14 +180,15 @@ export function CheckoutPage() {
               href={order.telegram_link_url}
               target="_blank"
               rel="noreferrer"
-              className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#229ED9] py-4 text-lg font-semibold text-white transition hover:bg-[#168acd]"
+              className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#229ED9] px-3 py-3 text-sm font-semibold text-white transition hover:bg-[#168acd] sm:mt-8 sm:min-h-14 sm:rounded-2xl sm:px-4 sm:text-base"
             >
-              <Send size={20} />
-              Get live updates on Telegram
+              <Send size={19} className="shrink-0" aria-hidden="true" />
+              <span className="whitespace-nowrap sm:hidden">Updates on Telegram</span>
+              <span className="hidden whitespace-nowrap sm:inline">Get live updates on Telegram</span>
             </a>
           )}
           {!order.telegram_receipt_sent && order.telegram_link_url && !isTelegramClient && (
-            <p className="mt-2 text-xs leading-5 text-slate-500">Instant receipt, payment confirmation, and order updates. No password required.</p>
+            <p className="mt-2 px-1 text-xs leading-5 text-slate-500">Instant receipt, payment confirmation, and order updates. No password required.</p>
           )}
 
           <Link
@@ -230,21 +231,22 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="customer-flow-theme min-h-screen bg-slate-50 pb-12 text-slate-900" style={themeVariables}>
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 flex items-center">
-          <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 text-sm font-medium hover:text-slate-900">
+    <div className="customer-flow-theme min-h-screen bg-slate-50 pb-32 text-slate-900 sm:pb-12" style={themeVariables}>
+      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center px-4 py-3.5 sm:px-6 sm:py-4">
+          <Link to={storePath(slug, "/cart")} className="flex min-h-10 items-center gap-2 rounded-xl pr-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900">
             <ArrowLeft size={18} />
-            Back to Cart
+            <span className="sm:hidden">Cart</span>
+            <span className="hidden sm:inline">Back to Cart</span>
           </Link>
-          <strong className="ml-auto text-lg">{store.business.name}</strong>
+          <strong className="ml-auto max-w-[55vw] truncate text-base sm:text-lg">{store.business.name}</strong>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight">Checkout</h1>
-          <p className="mt-2 text-slate-600">Please fill in your details to complete the order</p>
+      <main className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Checkout</h1>
+          <p className="mt-1.5 text-sm leading-6 text-slate-600 sm:mt-2 sm:text-base">Please fill in your details to complete the order</p>
         </div>
 
         <ErrorMessage error={error} />
@@ -252,10 +254,10 @@ export function CheckoutPage() {
         <div className="grid gap-8 lg:grid-cols-5">
           {/* Form */}
           <div className="lg:col-span-3">
-            <form ref={formRef} onSubmit={submit} className="space-y-8">
+            <form ref={formRef} onSubmit={submit} className="space-y-5 sm:space-y-8">
               {/* Customer Info */}
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-6">Customer Information</h2>
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
+                <h2 className="mb-5 text-lg font-semibold sm:mb-6 sm:text-xl">Customer Information</h2>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field
                     name="customer_name"
@@ -327,8 +329,8 @@ export function CheckoutPage() {
               </div>
 
               {/* Payment Method */}
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-5">Payment Method</h2>
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
+                <h2 className="mb-4 text-lg font-semibold sm:mb-5 sm:text-xl">Payment Method</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <PaymentOption
                     value="cash"
@@ -352,10 +354,11 @@ export function CheckoutPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className={`${isTelegramClient ? "hidden" : "block"} w-full rounded-2xl py-4 text-lg font-semibold text-white disabled:opacity-70 transition`}
+                className={`${isTelegramClient ? "hidden" : "hidden sm:flex"} min-h-14 w-full items-center justify-center gap-2 rounded-2xl px-6 text-base font-semibold text-white shadow-lg transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70`}
                 style={{ backgroundColor: primary }}
               >
-                {submitting ? "Placing Order..." : "Place Order"}
+                <ShoppingBag size={19} aria-hidden="true" />
+                {submitting ? "Placing order..." : `Place order · ${formatCurrency(subtotal, store?.business.currency)}`}
               </button>
             </form>
           </div>
@@ -400,6 +403,32 @@ export function CheckoutPage() {
           </div>
         </div>
       </main>
+
+      {!isTelegramClient && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/80 bg-white/95 px-4 pt-3 shadow-[0_-12px_32px_-20px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        >
+          <div className="mx-auto flex max-w-lg items-center gap-3">
+            <div className="min-w-0 shrink-0">
+              <span className="block text-[11px] font-medium uppercase tracking-wide text-slate-500">Total</span>
+              <strong className="block truncate text-base text-slate-950">
+                {formatCurrency(subtotal, store?.business.currency)}
+              </strong>
+            </div>
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={() => formRef.current?.requestSubmit()}
+              className="ml-auto flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white shadow-md transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+              style={{ backgroundColor: primary }}
+            >
+              <ShoppingBag size={18} aria-hidden="true" />
+              {submitting ? "Placing order..." : "Place order"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -471,7 +500,7 @@ function PaymentOption({
 }) {
   return (
     <label
-      className={`flex w-full gap-4 rounded-2xl border p-5 text-left transition-all ${
+      className={`flex min-h-[84px] w-full cursor-pointer items-center gap-3 rounded-2xl border p-4 text-left transition-all sm:gap-4 sm:p-5 ${
         checked
           ? "border-purple-500 bg-purple-50 ring-2 ring-purple-100" 
           : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"

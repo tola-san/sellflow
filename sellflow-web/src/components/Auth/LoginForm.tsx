@@ -118,14 +118,7 @@ export function LoginForm({ onSwitch }: LoginFormProps) {
         />
 
         <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              className="rounded border-line text-brand"
-            />
-            Remember me
-          </label>
-
+          <span className="text-xs text-muted">Signed in for this browser session</span>
           <button
             type="button"
             className="text-brand hover:underline"

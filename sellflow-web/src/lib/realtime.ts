@@ -1,6 +1,7 @@
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 import api from "./Axios";
+import { getAuthToken } from "./authSession";
 import {
   notifyNotificationsChanged,
   type BusinessNotification,
@@ -38,7 +39,7 @@ function echo(): Echo<"reverb"> | null {
   const scheme = import.meta.env.VITE_REVERB_SCHEME || "https";
   const secure = scheme === "https";
   const port = Number(import.meta.env.VITE_REVERB_PORT || (secure ? 443 : 8080));
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
 
   window.Pusher = Pusher;
   echoInstance = new Echo({
