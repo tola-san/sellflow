@@ -208,10 +208,11 @@ function StorePreview({ business, theme, mobile, template }: { business: Busines
   const font = theme.font_family === "classic"
     ? "Georgia, 'Kantumruy Pro', serif"
     : "'Plus Jakarta Sans', 'Kantumruy Pro', ui-sans-serif, system-ui";
-  const previewHasBanner = Boolean(business.banner);
-  const previewOverlayOpacity = theme.banner_overlay_opacity ?? 35;
+  const previewBanner = business.banner || (template === "angkor" ? "/theme-backgrounds/angkor-default-banner-v1.webp" : null);
+  const previewHasBanner = Boolean(previewBanner);
+  const previewOverlayOpacity = business.banner ? (theme.banner_overlay_opacity ?? 35) : 18;
   const previewHeroBackground = previewHasBanner
-    ? `linear-gradient(90deg, ${withHexOpacity(theme.secondary_color, previewOverlayOpacity)}, ${withHexOpacity(theme.primary_color, previewOverlayOpacity * 0.36)}), url("${business.banner}") center / cover`
+    ? `linear-gradient(90deg, ${withHexOpacity(theme.secondary_color, previewOverlayOpacity)}, ${withHexOpacity(theme.primary_color, previewOverlayOpacity * 0.36)}), url("${previewBanner}") center / cover`
     : theme.hero_style === "gradient"
       ? `linear-gradient(135deg, ${theme.primary_color}, ${theme.secondary_color})`
       : theme.hero_style === "banner"

@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
+  Check,
   ChevronDown,
   MessageCircleMore,
   MoreHorizontal,
   PackageCheck,
+  Palette,
   Plus,
   QrCode,
   Search,
   Send,
   ShoppingBag,
+  Smartphone,
   Sparkles,
   Store,
 } from "lucide-react";
@@ -82,6 +85,8 @@ export function ModernLanding() {
       <TrustedCompanies />
 
       <BusinessModelStrip />
+
+      <MobileStorefrontShowcase />
 
       <section className="relative mx-auto max-w-7xl overflow-hidden px-3 py-20 sm:px-8 lg:py-28">
         <DotField gap={38} className="-z-10 opacity-45 [mask-image:radial-gradient(circle_at_center,black,transparent_74%)]" />
@@ -239,6 +244,162 @@ function BusinessModelStrip() {
         </div>
       </div>
     </section>
+  );
+}
+
+function MobileStorefrontShowcase() {
+  const benefits = [
+    { icon: Smartphone, title: "Designed for every phone", copy: "A fast storefront customers can browse without downloading an app." },
+    { icon: Palette, title: "Your brand, your menu", copy: "Use your logo, colors, banner, categories, and product photography." },
+    { icon: ShoppingBag, title: "Ready for real orders", copy: "Customers move from browsing to cart and checkout in one simple flow." },
+  ];
+
+  return (
+    <section aria-labelledby="mobile-storefront-heading" className="relative isolate overflow-hidden bg-white px-5 py-20 sm:px-8 lg:py-28">
+      <DotField gap={34} className="-z-20 opacity-35 [mask-image:radial-gradient(circle_at_72%_48%,black,transparent_62%)]" />
+      <div aria-hidden="true" className="absolute right-[-8rem] top-1/2 -z-10 h-[34rem] w-[34rem] -translate-y-1/2 rounded-full bg-gradient-to-br from-violet-200/65 to-cyan-200/65 blur-[105px]" />
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
+        <motion.div {...reveal}>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#f1edff] px-3 py-1.5 text-[10px] font-semibold text-[#6954d0]"><Smartphone className="h-3 w-3" /> Live mobile storefront</span>
+          <h2 id="mobile-storefront-heading" className="mt-5 max-w-xl text-4xl font-medium leading-[1.06] tracking-[-.05em] sm:text-6xl">Your store looks ready<br /><span className="gradient-word">in every customer’s hand.</span></h2>
+          <p className="mt-5 max-w-lg text-sm leading-7 text-[#716a79]">Give customers a clean, familiar mobile shopping experience from the moment they open your link to the moment they place an order.</p>
+          <div className="mt-8 space-y-4">
+            {benefits.map(({ icon: Icon, title, copy }, index) => (
+              <motion.div key={title} {...reveal} transition={{ ...reveal.transition, delay: index * 0.08 }} className="flex gap-4 rounded-2xl border border-[#ebe7f0] bg-white/80 p-4 shadow-[0_16px_36px_-30px_rgba(74,51,117,.45)] backdrop-blur">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-violet-100 to-cyan-100 text-[#6f55cf]"><Icon className="h-[18px] w-[18px]" /></span>
+                <div><h3 className="text-sm font-semibold">{title}</h3><p className="mt-1 text-xs leading-5 text-[#807987]">{copy}</p></div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 44, scale: 0.96 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }} className="relative mx-auto w-full max-w-[430px]">
+          <div aria-hidden="true" className="absolute inset-[8%_-10%_5%] -z-10 rounded-[45%] bg-gradient-to-br from-violet-300/45 to-cyan-300/45 blur-3xl" />
+          <LiveStorefrontPhone />
+          <motion.div animate={{ y: [-4, 4, -4] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }} className="absolute -left-5 top-[34%] hidden rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-xl backdrop-blur sm:block">
+            <p className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#8d8497]">Browse quickly</p><p className="mt-1 text-xs font-semibold">Categories stay one tap away</p>
+          </motion.div>
+          <motion.div animate={{ y: [5, -5, 5] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="absolute -right-7 bottom-[22%] hidden rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-xl backdrop-blur sm:block">
+            <p className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#8d8497]">Mobile first</p><p className="mt-1 text-xs font-semibold">Clear products and pricing</p>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+const liveDemoThemes = {
+  modern: { label: "SellFlow", primary: "#7952CC", secondary: "#201B29", background: "#F7F7F8", surface: "#FFFFFF", text: "#172033", muted: "#7B8494" },
+  angkor: { label: "Angkor", primary: "#E7B84B", secondary: "#17130F", background: "#100D0B", surface: "#29241C", text: "#FFF0BF", muted: "#C2A875" },
+  coffee: { label: "Coffee", primary: "#B86932", secondary: "#3B2419", background: "#F5EBDD", surface: "#FFF9F1", text: "#352017", muted: "#8A6D5D" },
+  ocean: { label: "Ocean", primary: "#0891B2", secondary: "#164E63", background: "#ECFEFF", surface: "#FFFFFF", text: "#153E4A", muted: "#62838C" },
+} as const;
+
+type LiveDemoThemeId = keyof typeof liveDemoThemes;
+
+const liveDemoProducts = [
+  { name: "Garden crunch bowl", category: "Fresh bowls", price: "$4.50", emoji: "🥗", tone: "from-emerald-100 via-lime-50 to-amber-50" },
+  { name: "Classic smash burger", category: "Quick bites", price: "$5.90", emoji: "🍔", tone: "from-amber-100 via-orange-50 to-rose-50" },
+  { name: "Khmer iced coffee", category: "Cold drinks", price: "$2.25", emoji: "🧋", tone: "from-stone-200 via-amber-50 to-orange-100" },
+  { name: "Coconut layer cake", category: "Desserts", price: "$3.80", emoji: "🍰", tone: "from-pink-100 via-rose-50 to-amber-50" },
+  { name: "Aromatic noodle soup", category: "Khmer favorites", price: "$4.75", emoji: "🍜", tone: "from-orange-100 via-yellow-50 to-emerald-50" },
+  { name: "Grilled club sandwich", category: "Quick bites", price: "$4.20", emoji: "🥪", tone: "from-yellow-100 via-amber-50 to-lime-50" },
+  { name: "Mango sticky rice", category: "Desserts", price: "$3.25", emoji: "🥭", tone: "from-yellow-100 via-orange-50 to-violet-50" },
+  { name: "Sparkling lime tea", category: "Cold drinks", price: "$2.60", emoji: "🍹", tone: "from-lime-100 via-cyan-50 to-emerald-50" },
+];
+
+function LiveStorefrontPhone() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [themeId, setThemeId] = useState<LiveDemoThemeId>(() => {
+    const saved = window.localStorage.getItem("sellflow:landing-demo-theme");
+    return saved && saved in liveDemoThemes ? saved as LiveDemoThemeId : "modern";
+  });
+  const demoTheme = liveDemoThemes[themeId];
+
+  useEffect(() => {
+    if (paused) return;
+    const interval = window.setInterval(() => {
+      const scroller = scrollerRef.current;
+      if (!scroller) return;
+      const atEnd = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 36;
+      scroller.scrollTo({ top: atEnd ? 0 : scroller.scrollTop + 235, behavior: "smooth" });
+    }, 2600);
+    return () => window.clearInterval(interval);
+  }, [paused]);
+
+  useEffect(() => {
+    window.localStorage.setItem("sellflow:landing-demo-theme", themeId);
+  }, [themeId]);
+
+  return (
+    <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="live-phone-shell relative mx-auto aspect-[9/18.9] w-full max-w-[370px] rounded-[3.4rem] border-[10px] border-[#4b5563] bg-[#f8fafc] p-0 shadow-[0_35px_55px_rgba(35,31,45,0.24)]">
+      <div className="pointer-events-none absolute left-1/2 top-2 z-30 h-5 w-24 -translate-x-1/2 rounded-full bg-[#303741]" />
+      <div className="absolute inset-0 overflow-hidden rounded-[2.75rem] bg-[#f8fafc]">
+        <div className="flex h-10 items-center justify-between bg-white px-6 pt-1 text-[10px] font-bold text-slate-800"><span>9:41</span><span className="flex items-center gap-1"><span className="flex items-end gap-[2px]">{[3,5,7,9].map(height => <i key={height} className="block w-[2px] rounded bg-slate-800" style={{ height }} />)}</span><span>◉</span><span className="h-2.5 w-5 rounded-[3px] border border-slate-700 p-[1px]"><i className="block h-full w-3.5 rounded-[1px] bg-slate-800" /></span></span></div>
+        <div className="flex h-11 items-center gap-2 border-y border-slate-200 bg-[#f1f2f4] px-3"><span className="text-xs font-semibold text-slate-500">AA</span><div className="flex h-7 flex-1 items-center justify-center gap-1.5 rounded-lg bg-white text-[11px] font-medium text-slate-600 shadow-sm"><span className="text-[9px]">●</span> demo.sellflow.store</div><span className="text-lg text-slate-600">↻</span></div>
+
+        <div
+          ref={scrollerRef}
+          role="region"
+          aria-label="Scrollable live mobile storefront demo"
+          tabIndex={0}
+          onPointerEnter={() => setPaused(true)}
+          onPointerLeave={() => setPaused(false)}
+          onPointerDown={() => setPaused(true)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+          className="absolute inset-x-0 bottom-0 top-[84px] overflow-y-auto scroll-smooth text-left transition-colors duration-500 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ backgroundColor: demoTheme.background, color: demoTheme.text }}
+        >
+          <div className="px-4 pb-5 pt-4 text-white transition-colors duration-500" style={{ background: `linear-gradient(135deg, ${demoTheme.secondary}, ${demoTheme.primary})` }}>
+            <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl text-sm font-black shadow-lg" style={{ backgroundColor: demoTheme.surface, color: demoTheme.primary }}>SF</span><div className="min-w-0"><p className="truncate text-sm font-bold">SellFlow Kitchen</p><p className="mt-0.5 text-[9px] text-white/70">Fresh favorites · Phnom Penh</p></div><div className="ml-auto flex items-center gap-1.5"><button type="button" onClick={() => { setThemeOpen(true); setPaused(true); }} aria-label="Choose demo storefront theme" className="grid h-9 w-9 place-items-center rounded-full bg-white/15 backdrop-blur transition hover:bg-white/25"><Palette className="h-3.5 w-3.5" /></button><motion.span key={cartCount} initial={{ scale: 0.7 }} animate={{ scale: 1 }} className="grid h-9 min-w-9 place-items-center rounded-full bg-white/15 px-2 text-[10px] font-bold backdrop-blur">🛍 {cartCount}</motion.span></div></div>
+            <p className="mt-4 text-lg font-semibold leading-tight">Good food, ready when you are.</p><p className="mt-1 text-[9px] leading-4 text-white/65">Browse the menu and add your favorites—no account needed.</p>
+          </div>
+
+          <div className="sticky top-0 z-20 border-b px-3 py-3 shadow-sm backdrop-blur transition-colors duration-500" style={{ backgroundColor: demoTheme.surface, borderColor: `${demoTheme.muted}35` }}>
+            <div className="mb-2.5 flex h-8 items-center gap-2 rounded-xl px-3 text-[10px]" style={{ backgroundColor: demoTheme.background, color: demoTheme.muted }}><Search className="h-3.5 w-3.5" /> Search the menu...</div>
+            <div className="flex gap-1.5 overflow-hidden"><span className="shrink-0 rounded-full px-3 py-1.5 text-[9px] font-semibold text-white" style={{ backgroundColor: demoTheme.primary }}>Full menu</span>{["Bowls", "Drinks", "Desserts"].map(category => <span key={category} className="shrink-0 rounded-full border px-3 py-1.5 text-[9px] font-semibold" style={{ backgroundColor: demoTheme.surface, borderColor: `${demoTheme.muted}45`, color: demoTheme.text }}>{category}</span>)}</div>
+          </div>
+
+          <div className="px-3 pb-6 pt-4">
+            <div className="mb-3 flex items-end justify-between"><div><p className="text-[9px] font-bold uppercase tracking-[.14em]" style={{ color: demoTheme.primary }}>Guest storefront</p><h3 className="mt-1 text-base font-bold">Popular today</h3></div><span className="text-[9px]" style={{ color: demoTheme.muted }}>8 items</span></div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {liveDemoProducts.map((product, index) => (
+                <motion.article key={product.name} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ root: scrollerRef, once: true, amount: 0.2 }} transition={{ delay: (index % 2) * 0.06 }} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border p-2 shadow-sm duration-500" style={{ backgroundColor: demoTheme.surface, borderColor: `${demoTheme.muted}35` }}>
+                  <div className={`grid aspect-square place-items-center rounded-xl bg-gradient-to-br ${product.tone}`}><motion.span whileHover={{ scale: 1.08, rotate: 2 }} className="text-[3.2rem] drop-shadow-sm">{product.emoji}</motion.span></div>
+                  <div className="flex flex-1 flex-col px-1 pb-0.5 pt-2"><h4 className="line-clamp-2 min-h-8 text-[10px] font-bold leading-4">{product.name}</h4><p className="mt-0.5 truncate text-[8px]" style={{ color: demoTheme.muted }}>{product.category}</p><div className="mt-2 flex items-center justify-between gap-1"><strong className="text-xs">{product.price}</strong><motion.button whileTap={{ scale: 0.82 }} onClick={() => setCartCount(count => count + 1)} aria-label={`Add ${product.name} to demo cart`} className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ backgroundColor: demoTheme.primary }}><Plus className="h-3.5 w-3.5" /></motion.button></div></div>
+                </motion.article>
+              ))}
+            </div>
+            <p className="py-7 text-center text-[9px] font-medium" style={{ color: demoTheme.muted }}>Built with SellFlow · Guest checkout enabled</p>
+          </div>
+        </div>
+        <AnimatePresence>
+          {themeOpen && (
+            <>
+              <motion.button type="button" aria-label="Close theme picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setThemeOpen(false); setPaused(false); }} className="absolute inset-0 z-40 bg-black/35 backdrop-blur-[1px]" />
+              <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 360, damping: 34 }} className="absolute inset-x-0 bottom-0 z-50 rounded-t-[2rem] border-t p-4 pb-8 shadow-2xl" style={{ backgroundColor: demoTheme.surface, borderColor: `${demoTheme.muted}35`, color: demoTheme.text }}>
+                <span className="mx-auto block h-1 w-10 rounded-full" style={{ backgroundColor: `${demoTheme.muted}55` }} />
+                <div className="mt-4 flex items-center justify-between"><div><p className="text-[9px] font-bold uppercase tracking-[.16em]" style={{ color: demoTheme.primary }}>Storefront theme</p><h3 className="mt-1 text-sm font-bold">Choose your shopping style</h3></div><button type="button" onClick={() => { setThemeOpen(false); setPaused(false); }} className="grid h-8 w-8 place-items-center rounded-full text-xs" style={{ backgroundColor: demoTheme.background }}>✕</button></div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {(Object.keys(liveDemoThemes) as LiveDemoThemeId[]).map(optionId => {
+                    const option = liveDemoThemes[optionId];
+                    const selected = optionId === themeId;
+                    return <button key={optionId} type="button" onClick={() => setThemeId(optionId)} className="flex items-center gap-2.5 rounded-xl border p-2.5 text-left text-[10px] font-semibold transition" style={{ borderColor: selected ? option.primary : `${demoTheme.muted}35`, backgroundColor: selected ? `${option.primary}15` : demoTheme.background }}><span className="flex h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-black/5"><i className="h-full flex-1" style={{ backgroundColor: option.primary }} /><i className="h-full flex-1" style={{ backgroundColor: option.surface }} /></span><span className="flex-1">{option.label}</span>{selected && <Check className="h-3.5 w-3.5" style={{ color: option.primary }} />}</button>;
+                  })}
+                </div>
+                <p className="mt-3 text-center text-[8px]" style={{ color: demoTheme.muted }}>Your guest preference is saved on this device.</p>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-12" style={{ background: `linear-gradient(to top, ${demoTheme.surface}, transparent)` }} />
+        <div className="pointer-events-none absolute bottom-2 left-1/2 z-30 h-1 w-24 -translate-x-1/2 rounded-full bg-slate-800/80" />
+      </div>
+    </motion.div>
   );
 }
 
