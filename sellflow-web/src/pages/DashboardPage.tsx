@@ -20,6 +20,16 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  type TooltipContentProps,
+} from "recharts";
 import { dashboardService, type DashboardOverview } from "../Services/dashboard";
 import { orderService } from "../Services/order";
 import type { Order, OrderListResponse } from "../types/order";
@@ -484,27 +494,8 @@ function SalesPulse({ data }: { data: DailySales[] }) {
   const totalRevenue = data.reduce((sum, item) => sum + item.revenue, 0);
   const totalOrders = data.reduce((sum, item) => sum + item.orders, 0);
   const chartMetric = totalRevenue > 0 || totalOrders === 0 ? "revenue" : "orders";
-  const maxValue = Math.max(
-    ...data.map((item) => chartMetric === "revenue" ? item.revenue : item.orders),
-    1,
-  );
   const showingOrderVolume = chartMetric === "orders";
   const hasSalesActivity = totalOrders > 0 || totalRevenue > 0;
-  const points = data.map((item, index) => {
-    const value = chartMetric === "revenue" ? item.revenue : item.orders;
-    return {
-      x: data.length === 1 ? 450 : 44 + (index / Math.max(data.length - 1, 1)) * 812,
-      y: 22 + (1 - value / maxValue) * 205,
-      item,
-    };
-  });
-  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
-  const peak = points.reduce<typeof points[number] | null>((best, point) => {
-    if (!best) return point;
-    const value = chartMetric === "revenue" ? point.item.revenue : point.item.orders;
-    const bestValue = chartMetric === "revenue" ? best.item.revenue : best.item.orders;
-    return value > bestValue ? point : best;
-  }, null);
 
   return (
     <motion.article
@@ -552,44 +543,54 @@ function SalesPulse({ data }: { data: DailySales[] }) {
         </div>
 
         {hasSalesActivity ? (
-          <div className="mt-6 overflow-hidden">
-            <svg viewBox="0 0 900 235" className="h-[190px] w-full sm:h-[250px]" role="img" aria-label="Seven day sales trend">
-            <defs>
-              <linearGradient id="overview-sales-area" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {[73, 124, 175, 226].map((y) => <line key={y} x1="44" x2="856" y1={y} y2={y} stroke="#e8e9ee" strokeDasharray="3 7" />)}
-            {points.length > 1 && (
-              <motion.polygon
-                points={`44,227 ${line} 856,227`}
-                fill="url(#overview-sales-area)"
-                initial={reduceMotion ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.45, delay: reduceMotion ? 0 : 0.65 }}
-              />
-            )}
-            <motion.polyline
-              points={line}
-              fill="none"
-              stroke="#6d4aff"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              initial={reduceMotion ? false : { pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 0.9, delay: reduceMotion ? 0 : 0.25, ease: "easeOut" }}
-            />
-            {peak && <circle cx={peak.x} cy={peak.y} r="7" fill="#6d4aff" stroke="white" strokeWidth="4"><title>{`${peak.item.label}: ${peak.item.orders} orders · ${money(peak.item.revenue)}`}</title></circle>}
-            </svg>
-            <div className="grid grid-cols-7 px-1 text-center text-[10px] font-medium text-slate-400 sm:text-[11px]">
-              {points.map((point, index) => (
-                <span key={point.item.key} className={index !== 0 && index !== 3 && index !== points.length - 1 ? "text-transparent sm:text-slate-400" : ""}>
-                  {point.item.day}
-                </span>
-              ))}
-            </div>
+          <div className="mt-6 h-[220px] w-full sm:h-[270px]" role="img" aria-label="Seven day sales trend">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 12, right: 8, left: -8, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="overview-sales-area" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6d4aff" stopOpacity={0.3} />
+                    <stop offset="72%" stopColor="#8b5cf6" stopOpacity={0.06} />
+                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} stroke="#e8e9ee" strokeDasharray="3 7" />
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 500 }}
+                  tickMargin={12}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8", fontSize: 10 }}
+                  tickFormatter={(value: number) => showingOrderVolume ? String(value) : money(value, true)}
+                  allowDecimals={!showingOrderVolume}
+                  domain={[0, (maximum: number) => maximum <= 0 ? 1 : maximum * 1.15]}
+                  tickCount={4}
+                  width={52}
+                />
+                <Tooltip
+                  cursor={{ stroke: "#c4b5fd", strokeWidth: 1, strokeDasharray: "4 4" }}
+                  content={(props) => <SalesPulseTooltip {...props} metric={chartMetric} />}
+                />
+                <Area
+                  type="monotone"
+                  dataKey={chartMetric}
+                  stroke="#6d4aff"
+                  strokeWidth={3}
+                  fill="url(#overview-sales-area)"
+                  fillOpacity={1}
+                  dot={false}
+                  activeDot={{ r: 5, fill: "#6d4aff", stroke: "#fff", strokeWidth: 3 }}
+                  isAnimationActive={!reduceMotion}
+                  animationDuration={850}
+                  animationEasing="ease-out"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         ) : (
           <div className="mt-6 flex min-h-[220px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-6 py-10 text-center sm:min-h-[286px]">
@@ -605,6 +606,31 @@ function SalesPulse({ data }: { data: DailySales[] }) {
         )}
       </div>
     </motion.article>
+  );
+}
+
+function SalesPulseTooltip({
+  active,
+  payload,
+  metric,
+}: TooltipContentProps<number, string> & { metric: "revenue" | "orders" }) {
+  if (!active || !payload?.length) return null;
+
+  const point = payload[0]?.payload as DailySales | undefined;
+  if (!point) return null;
+
+  return (
+    <div className="min-w-36 rounded-xl border border-slate-200 bg-white/95 px-3.5 py-3 shadow-xl shadow-slate-950/10 backdrop-blur">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">{point.label}</p>
+      <p className="mt-1.5 text-sm font-semibold text-slate-950">
+        {metric === "revenue" ? money(point.revenue) : `${point.orders} ${point.orders === 1 ? "order" : "orders"}`}
+      </p>
+      <p className="mt-1 text-[11px] text-slate-500">
+        {metric === "revenue"
+          ? `${point.orders} ${point.orders === 1 ? "order" : "orders"}`
+          : `${money(point.revenue)} paid revenue`}
+      </p>
+    </div>
   );
 }
 
