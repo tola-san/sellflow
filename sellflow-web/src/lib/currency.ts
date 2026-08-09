@@ -20,7 +20,7 @@ export function currencyDecimals(currency?: string | null): number {
 export function activeStoreCurrency(): StoreCurrency {
   if (typeof window === "undefined") return "USD";
   try {
-    const user = JSON.parse(window.localStorage.getItem("user") || "null") as { business?: { currency?: string } } | null;
+    const user = JSON.parse(window.sessionStorage.getItem("user") || "null") as { business?: { currency?: string } } | null;
     return normalizeCurrency(user?.business?.currency);
   } catch {
     return "USD";

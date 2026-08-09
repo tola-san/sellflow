@@ -36,8 +36,8 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth.register');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth.login');
     Route::get('/billing/plans', [BillingController::class, 'plans']);
     Route::post('/integrations/telegram/webhook', TelegramWebhookController::class)
         ->middleware('throttle:60,1')
@@ -55,7 +55,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
         Route::patch('/profile', [ProfileController::class, 'update']);
-        Route::patch('/profile/password', [ProfileController::class, 'updatePassword']);
+        Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])
+            ->middleware('throttle:auth.password');
 
         // Subscription and billing
         Route::get('/billing', [BillingController::class, 'overview']);

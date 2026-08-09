@@ -1,6 +1,13 @@
 import React, { useCallback, useEffect, useState, createContext, useContext } from 'react';
 import type { BusinessType } from '../../types/businessTypes';
 import type { StoreCurrency } from '../../lib/currency';
+import {
+  clearAuthSession,
+  clearLegacyAuthStorage,
+  getAuthToken,
+  getAuthUser,
+  storeAuthSession,
+} from '../../lib/authSession';
 export type AuthMode = 'login' | 'register';
 
 export interface AuthBusiness {
@@ -38,12 +45,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 function storedUser(): AuthUser | null {
-  try {
-    const value = localStorage.getItem('user');
-    return value ? JSON.parse(value) : null;
-  } catch {
-    return null;
-  }
+  return getAuthUser<AuthUser>();
 }
 
 export function AuthProvider({ children }: {children: React.ReactNode;}) {
@@ -58,25 +60,17 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
   const closeAuth = useCallback(() => setIsOpen(false), []);
 
   const setSession = useCallback((token: string, nextUser: AuthUser) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(nextUser));
+    storeAuthSession(token, nextUser);
     setUser(nextUser);
   }, []);
 
   const clearSession = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthSession();
     setUser(null);
   }, []);
 
   useEffect(() => {
-    const syncSession = (event: StorageEvent) => {
-      if (event.key === 'token' || event.key === 'user' || event.key === null) {
-        setUser(storedUser());
-      }
-    };
-    window.addEventListener('storage', syncSession);
-    return () => window.removeEventListener('storage', syncSession);
+    clearLegacyAuthStorage();
   }, []);
 
   return (
@@ -85,7 +79,7 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
         isOpen,
         mode,
         user,
-        isAuthenticated: Boolean(user && localStorage.getItem('token')),
+        isAuthenticated: Boolean(user && getAuthToken()),
         openAuth,
         closeAuth,
         setMode,
