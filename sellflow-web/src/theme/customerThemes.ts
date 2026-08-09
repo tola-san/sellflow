@@ -13,7 +13,7 @@ export const CUSTOMER_THEMES = {
   candy: { preset: "modern", primary_color: "#EC4899", secondary_color: "#8B5CF6", background_color: "#FDF4FF", surface_color: "#FFFFFF", text_color: "#4A044E", muted_color: "#9D659F", font_family: "modern", card_style: "elevated", button_style: "pill", hero_style: "gradient", banner_overlay_opacity: 38, grid_columns: 4 },
   lemon: { preset: "minimal", primary_color: "#65A30D", secondary_color: "#EAB308", background_color: "#FEFCE8", surface_color: "#FFFFFF", text_color: "#365314", muted_color: "#71864B", font_family: "system", card_style: "flat", button_style: "square", hero_style: "minimal", banner_overlay_opacity: 35, grid_columns: 4 },
   graphite: { preset: "minimal", primary_color: "#52525B", secondary_color: "#18181B", background_color: "#F4F4F5", surface_color: "#FFFFFF", text_color: "#18181B", muted_color: "#71717A", font_family: "system", card_style: "bordered", button_style: "square", hero_style: "minimal", banner_overlay_opacity: 48, grid_columns: 4 },
-  angkor: { preset: "classic", primary_color: "#C88A2A", secondary_color: "#4A2418", background_color: "#F5E9D3", surface_color: "#FFFDF7", text_color: "#351A12", muted_color: "#846B5D", font_family: "classic", card_style: "bordered", button_style: "rounded", hero_style: "banner", banner_overlay_opacity: 56, grid_columns: 4 },
+  angkor: { preset: "classic", primary_color: "#E7B84B", secondary_color: "#17130F", background_color: "#100D0B", surface_color: "#29241C", text_color: "#FFF0BF", muted_color: "#C2A875", font_family: "modern", card_style: "bordered", button_style: "rounded", hero_style: "banner", banner_overlay_opacity: 62, grid_columns: 4 },
   krama: { preset: "classic", primary_color: "#A73832", secondary_color: "#23345B", background_color: "#FAF4E8", surface_color: "#FFFDF8", text_color: "#18233E", muted_color: "#8C7165", font_family: "classic", card_style: "elevated", button_style: "pill", hero_style: "gradient", banner_overlay_opacity: 52, grid_columns: 4 },
 } as const satisfies Record<string, ThemeSettings>;
 
@@ -33,7 +33,7 @@ export function isCustomerTheme(value: string): value is CustomerThemeId {
 export const KHMER_THEME_IDS = ["angkor", "krama"] as const satisfies readonly CustomerThemeId[];
 
 export const CUSTOMER_THEME_DESCRIPTIONS: Partial<Record<CustomerThemeId, string>> = {
-  angkor: "Sandstone, antique gold, and temple-inspired geometry.",
+  angkor: "Night-market charcoal, antique gold, and temple-inspired geometry.",
   krama: "Indigo, krama red, and a subtle handwoven rhythm.",
 };
 

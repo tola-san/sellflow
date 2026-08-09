@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import axios from "axios";
-import { Check, ChevronDown, ExternalLink, MapPin, Phone, Search, ShoppingBag, Store, X } from "lucide-react";
+import { BriefcaseBusiness, Check, ChevronDown, Download, ExternalLink, MapPin, Phone, Search, Shirt, ShoppingBag, ShoppingBasket, Smartphone, Sparkles, Store, Utensils, X } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok } from "react-icons/fa";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -15,6 +15,7 @@ import { withHexOpacity } from "../lib/color";
 import { StoreProfileDrawer } from "../components/ui/StoreProfileDrawer";
 import { ProgressiveImage } from "../components/ui/ProgressiveImage";
 import { formatCurrency, type StoreCurrency } from "../lib/currency";
+import type { BusinessType } from "../types/businessTypes";
 
 export function StorefrontPage() {
   const { slug = "" } = useParams();
@@ -92,7 +93,7 @@ export function StorefrontPage() {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         const navHeight = categoryNav.current?.offsetHeight || 0;
-        const threshold = navHeight + 40;
+        const threshold = navHeight + 88;
 
         let current = "all";
         for (const item of storefront.categories) {
@@ -139,7 +140,7 @@ export function StorefrontPage() {
     if (!target) return;
 
     const navHeight = categoryNav.current?.offsetHeight || 0;
-    const top = target.getBoundingClientRect().top + window.scrollY - (navHeight + 20);
+    const top = target.getBoundingClientRect().top + window.scrollY - (navHeight + 84);
     window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
   };
 
@@ -153,17 +154,19 @@ export function StorefrontPage() {
   if (!storefront) return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-purple-600" /></div>;
 
   const { business, categories } = storefront;
+  const businessPresentation = getBusinessPresentation(business.business_type);
+  const isFashionStore = business.business_type === "fashion";
   const theme = resolveCustomerTheme(business.theme, customerTheme);
   const resolvedThemeId = customerTheme === "store" ? findCustomerTheme(business.theme) : customerTheme;
   const isKhmerTheme = resolvedThemeId === "angkor" || resolvedThemeId === "krama";
   const primary = theme.primary_color;
   const cartItems = cart.items(slug);
   const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.product.discount_price || item.product.price) * item.quantity, 0);
-  // Uploaded branding takes priority over the preset hero background. This
-  // prevents a valid banner from being saved but hidden behind another preset.
-  const hasBannerHero = Boolean(business.banner);
-  const isMinimalHero = theme.hero_style === "minimal" && !hasBannerHero;
+  // Uploaded branding always wins; Angkor supplies an illustrated fallback.
+  const heroBanner = business.banner || (resolvedThemeId === "angkor" ? "/theme-backgrounds/angkor-default-banner-v1.webp" : null);
+  const hasBannerHero = Boolean(heroBanner);
   const bannerOverlayOpacity = theme.banner_overlay_opacity ?? 35;
+  const effectiveBannerOverlayOpacity = business.banner ? bannerOverlayOpacity : 18;
   
   const fontFamily = theme.font_family === "classic"
     ? "Georgia, 'Kantumruy Pro', Cambria, serif"
@@ -186,9 +189,8 @@ export function StorefrontPage() {
 
   return (
     <div className={`min-h-screen ${isMiniAppRoute && cartItems.length ? "pb-24" : ""}`} data-customer-theme={resolvedThemeId || undefined} style={themeVariables}>
-      {/* Header */}
-      <header className="relative z-[60] border-b" style={{ backgroundColor: theme.surface_color, borderColor: `${theme.muted_color}35` }}>
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
+      <header className="sticky top-0 z-[60] border-b backdrop-blur-xl" style={{ backgroundColor: `${theme.surface_color}EE`, borderColor: `${theme.muted_color}28` }}>
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
           <button
             type="button"
             onClick={() => setIsProfileOpen(true)}
@@ -197,16 +199,12 @@ export function StorefrontPage() {
             className="flex min-w-0 items-center gap-3 rounded-xl text-left transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             style={{ color: theme.text_color }}
           >
-            {business.logo ? (
-              <img src={business.logo} alt={`${business.name} logo`} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
-            ) : (
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-white" style={{ backgroundColor: primary }}>
-                <Store size={20} />
-              </span>
-            )}
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ backgroundColor: `${primary}12`, color: primary }}>
+              <businessPresentation.icon size={18} />
+            </span>
             <span className="min-w-0">
               <span className="block truncate font-bold leading-tight">{business.name}</span>
-              <span className="hidden text-xs sm:block" style={{ color: theme.muted_color }}>Powered by SellFlow</span>
+              <span className="block text-[11px] font-medium" style={{ color: theme.muted_color }}>{businessPresentation.label}</span>
             </span>
           </button>
           <div className="ml-auto">
@@ -217,7 +215,7 @@ export function StorefrontPage() {
             onChange={selectCustomerTheme}
             />
           </div>
-          <Link to={storePath(slug, "/cart")} className="flex items-center gap-2 px-3 py-2 text-sm" style={{ borderRadius: "var(--store-radius)", backgroundColor: `${primary}12` }}><ShoppingBag size={17} /><span className="hidden sm:inline">Cart</span><motion.span key={cart.count(slug)} initial={{ scale: 0.65 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 520, damping: 20 }} className="grid h-5 min-w-5 place-items-center rounded-xl px-1 text-xs text-white" style={{ backgroundColor: primary }}>{cart.count(slug)}</motion.span></Link>
+          <Link to={storePath(slug, "/cart")} aria-label={`Cart with ${cart.count(slug)} items`} className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full" style={{ backgroundColor: `${primary}12`, color: primary }}><ShoppingBag size={18} /><motion.span key={cart.count(slug)} initial={{ scale: 0.65 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 520, damping: 20 }} className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full border-2 px-1 text-[10px] font-bold text-white" style={{ backgroundColor: primary, borderColor: theme.surface_color }}>{cart.count(slug)}</motion.span></Link>
         </div>
       </header>
 
@@ -237,47 +235,47 @@ export function StorefrontPage() {
         </div>
       )}
 
-      {/* Hero */}
-      <section className={`relative overflow-hidden ${hasBannerHero ? "storefront-banner-hero" : ""} ${isKhmerTheme ? `khmer-hero khmer-hero--${resolvedThemeId}` : ""}`} style={{ color: isMinimalHero ? theme.text_color : "white", background: isMinimalHero ? theme.surface_color : `linear-gradient(125deg, ${theme.secondary_color}, ${theme.primary_color})` }}>
-        {hasBannerHero && <img src={business.banner!} alt={`${business.name} storefront banner`} className="absolute inset-0 h-full w-full object-cover" />}
+      <section className={`storefront-cover-hero relative h-56 overflow-hidden sm:h-80 ${hasBannerHero ? "storefront-banner-hero" : ""} ${isKhmerTheme ? `khmer-hero khmer-hero--${resolvedThemeId}` : ""}`} style={{ background: `linear-gradient(135deg, ${theme.secondary_color}, ${theme.primary_color})` }}>
+        {heroBanner && <img src={heroBanner} alt={business.banner ? `${business.name} storefront banner` : "Illustrated Cambodian countryside with Angkor temples"} className="absolute inset-0 h-full w-full object-cover" />}
         {hasBannerHero && (
           <div
             className="storefront-banner-overlay absolute inset-0"
             style={{
-              background: `linear-gradient(90deg, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity)} 0%, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity * 0.66)} 45%, ${withHexOpacity(theme.primary_color, bannerOverlayOpacity * 0.36)} 100%), linear-gradient(0deg, ${withHexOpacity(theme.secondary_color, bannerOverlayOpacity * 0.28)} 0%, transparent 55%)`,
+              background: `linear-gradient(90deg, ${withHexOpacity(theme.secondary_color, effectiveBannerOverlayOpacity)} 0%, ${withHexOpacity(theme.secondary_color, effectiveBannerOverlayOpacity * 0.66)} 45%, ${withHexOpacity(theme.primary_color, effectiveBannerOverlayOpacity * 0.36)} 100%), linear-gradient(0deg, ${withHexOpacity(theme.secondary_color, effectiveBannerOverlayOpacity * 0.28)} 0%, transparent 55%)`,
             }}
           />
         )}
-        {!hasBannerHero && theme.hero_style === "gradient" && <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 80% 10%, white 0, transparent 35%)" }} />}
-        <div className={`storefront-banner-content relative mx-auto max-w-7xl px-4 drop-shadow-sm sm:px-6 ${isMiniAppRoute ? "py-9" : "py-16 sm:py-24"}`}>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: isMinimalHero ? primary : "currentColor", opacity: isMinimalHero ? 1 : 0.8 }}>Welcome to</p>
-          <h1 className={`mt-3 max-w-3xl font-bold ${isMiniAppRoute ? "text-3xl" : "text-4xl sm:text-6xl"}`}>{business.name}</h1>
-          {business.description && <p className="mt-5 max-w-2xl text-base leading-7 opacity-80 sm:text-lg">{business.description}</p>}
-          <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm opacity-75">
-            {business.address && <span className="flex items-center gap-2"><MapPin size={16} />{[business.address, business.city, business.country].filter(Boolean).join(", ")}</span>}
-            {business.phone && <a className="flex items-center gap-2 hover:text-white" href={`tel:${business.phone}`}><Phone size={16} />{business.phone}</a>}
-            {business.website && <a className="flex items-center gap-2 hover:text-white" href={business.website} target="_blank" rel="noreferrer"><ExternalLink size={16} />Website</a>}
+        {!hasBannerHero && <div className="absolute inset-0 opacity-35" style={{ backgroundImage: "radial-gradient(circle at 78% 18%, white 0, transparent 34%), radial-gradient(circle at 15% 85%, white 0, transparent 28%)" }} />}
+      </section>
+
+      <section className="relative z-40 -mt-9 rounded-t-[2.25rem] px-4 pb-5 pt-14 shadow-[0_-12px_36px_rgba(15,23,42,0.08)] sm:-mt-12 sm:rounded-t-[3rem] sm:pb-7 sm:pt-16" style={{ backgroundColor: theme.surface_color }}>
+        <button type="button" onClick={() => setIsProfileOpen(true)} className="absolute left-1/2 top-0 grid h-24 w-24 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-[5px] shadow-xl transition hover:scale-105 sm:h-28 sm:w-28" style={{ borderColor: theme.surface_color, backgroundColor: theme.surface_color, color: primary }} aria-label={`View ${business.name} information`}>
+          {business.logo ? <img src={business.logo} alt={`${business.name} logo`} className="h-full w-full rounded-full object-cover" /> : <businessPresentation.icon size={38} />}
+          {resolvedThemeId === "angkor" && <img src="/theme-backgrounds/angkor-palm-hat-overlay-v1.png" alt="" aria-hidden="true" className="khmer-hat-overlay" />}
+        </button>
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: primary }}>{businessPresentation.eyebrow}</p>
+          <h1 className="mt-1.5 text-balance text-2xl font-bold leading-tight sm:text-4xl">{business.name}</h1>
+          {business.description && <p className="mx-auto mt-2 max-w-xl text-xs leading-5 sm:text-sm" style={{ color: theme.muted_color }}>{business.description}</p>}
+          {business.address && <p className="mt-2 flex items-start justify-center gap-1.5 text-[11px] sm:text-xs" style={{ color: theme.muted_color }}><MapPin className="mt-0.5 shrink-0" size={13} />{[business.address, business.city, business.country].filter(Boolean).join(", ")}</p>}
+          <div className="mt-4 flex flex-wrap justify-center gap-2" aria-label="Store contact actions">
+            {business.phone && <HeroAction href={`tel:${business.phone}`} label="Call" color={primary}><Phone size={17} /></HeroAction>}
+            {business.website && <HeroAction href={business.website} label="Website" external color={primary}><ExternalLink size={17} /></HeroAction>}
+            {business.facebook_url && <HeroAction href={business.facebook_url} label="Facebook" external color={primary}><FaFacebookF /></HeroAction>}
+            {business.instagram_url && <HeroAction href={business.instagram_url} label="Instagram" external color={primary}><FaInstagram /></HeroAction>}
+            {business.telegram_url && <HeroAction href={business.telegram_url} label="Telegram" external color={primary}><FaTelegramPlane /></HeroAction>}
+            {business.tiktok_url && <HeroAction href={business.tiktok_url} label="TikTok" external color={primary}><FaTiktok /></HeroAction>}
           </div>
-          {(business.facebook_url || business.instagram_url || business.telegram_url || business.tiktok_url) && (
-            <div className="mt-5 flex w-fit flex-wrap items-center gap-2 rounded-2xl border border-white/15 bg-black/10 p-1.5 shadow-sm backdrop-blur-md" aria-label="Store social media">
-              <SocialLink href={business.facebook_url} label="Facebook"><FaFacebookF /></SocialLink>
-              <SocialLink href={business.instagram_url} label="Instagram"><FaInstagram /></SocialLink>
-              <SocialLink href={business.telegram_url} label="Telegram"><FaTelegramPlane /></SocialLink>
-              <SocialLink href={business.tiktok_url} label="TikTok"><FaTiktok /></SocialLink>
-            </div>
-          )}
         </div>
       </section>
 
-      {/* FIXED STICKY NAVIGATION */}
       <div 
         ref={categoryNav} 
-        className={`sticky top-0 z-50 border-b shadow-sm backdrop-blur-md ${isKhmerTheme ? "mb-0" : "mb-8"}`}
+        className="sticky top-16 z-50 border-b shadow-sm backdrop-blur-xl"
         style={{ backgroundColor: `${theme.surface_color}F2`, borderColor: `${theme.muted_color}35` }}
       >
-        <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-5">
-          <div className="flex flex-col gap-3 sm:gap-5 lg:flex-row lg:items-center">
-            {/* Prominent Category Chips */}
+        <div className="mx-auto max-w-6xl px-3 py-3 sm:px-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <nav aria-label="Product categories " className="flex-1 overflow-hidden">
               <div className="flex touch-pan-x snap-x snap-proximity gap-2 overflow-x-auto overscroll-x-contain scroll-smooth scroll-px-1 px-1 pb-0.5 sm:gap-3 sm:pb-1 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
                 <Filter
@@ -286,7 +284,7 @@ export function StorefrontPage() {
                   theme={theme}
                   onClick={() => scrollToCategory("all")}
                 >
-                  All Products
+                  {businessPresentation.allLabel}
                 </Filter>
                 {categories.map((item) => (
                   <Filter
@@ -302,15 +300,14 @@ export function StorefrontPage() {
               </div>
             </nav>
 
-            {/* Search Bar */}
             <div className="relative w-full max-w-md lg:max-w-xs">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input
                 ref={searchInputRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search products..."
-                className="w-full border py-2.5 pl-10 pr-10 text-sm outline-none transition-all focus:ring-2 sm:py-3 sm:pl-11"
+                placeholder={businessPresentation.searchPlaceholder}
+                className="w-full border py-2.5 pl-10 pr-10 text-sm outline-none transition-all focus:ring-2"
                 style={{ borderRadius: "var(--store-radius)", borderColor: `${theme.muted_color}45`, backgroundColor: theme.surface_color, color: theme.text_color }}
               />
               {search && (
@@ -325,23 +322,23 @@ export function StorefrontPage() {
 
       <div id="catalog-start" className="h-0" />
 
-      <main className={`khmer-storefront-body relative mx-auto max-w-7xl px-4 pb-10 sm:px-6 ${isKhmerTheme ? "pt-5 sm:pt-6" : "pt-10"}`}>
+      <main className={`khmer-storefront-body relative mx-auto max-w-6xl px-3 pb-10 sm:px-6 ${isKhmerTheme ? "pt-5 sm:pt-6" : "pt-6 sm:pt-10"}`}>
         {products.length > 0 ? (
-          <div className="relative z-10 space-y-16">
+          <div className="relative z-10 space-y-8 sm:space-y-14">
             {categories.map((item) => {
               const categoryProducts = products.filter((product) => product.category.slug === item.slug);
               if (!categoryProducts.length) return null;
               return (
-                <section id={`category-${item.slug}`} key={item.slug} className="scroll-mt-28">
-                  <div className="mb-6 flex items-end justify-between border-b border-slate-200 pb-4">
+                <section id={`category-${item.slug}`} key={item.slug} className={`scroll-mt-40 ${isFashionStore ? "p-0" : "rounded-[1.75rem] p-3 sm:rounded-none sm:p-0"}`} style={{ backgroundColor: isFashionStore ? "transparent" : theme.surface_color }}>
+                  <div className="mb-2 flex items-end justify-between px-2 pb-3 sm:mb-6 sm:border-b sm:px-0 sm:pb-4" style={{ borderColor: `${theme.muted_color}28` }}>
                     <div>
-                      <h2 className="text-2xl font-bold">{item.name}</h2>
-                      {item.description && <p className="mt-1 text-sm text-slate-500">{item.description}</p>}
+                      <h2 className="text-xl font-bold sm:text-2xl">{item.name}</h2>
+                      {item.description && <p className="mt-1 text-xs sm:text-sm" style={{ color: theme.muted_color }}>{item.description}</p>}
                     </div>
-                    <span className="text-sm text-slate-400">{categoryProducts.length} items</span>
+                    <span className="shrink-0 text-xs" style={{ color: theme.muted_color }}>{categoryProducts.length} {businessPresentation.itemNoun}</span>
                   </div>
-                  <div className={`grid grid-cols-2 gap-4 sm:gap-6 ${theme.grid_columns === 2 ? "lg:grid-cols-2" : theme.grid_columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
-                    {categoryProducts.map((product) => <ProductCard key={product.slug} product={product} theme={theme} currency={business.currency} onAdd={() => {
+                  <div className={isFashionStore ? "columns-2 gap-3 sm:columns-3 sm:gap-5 lg:columns-4" : `grid grid-cols-2 gap-3 sm:gap-5 ${theme.grid_columns === 2 ? "lg:grid-cols-2" : theme.grid_columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-4"}`}>
+                    {categoryProducts.map((product, productIndex) => <ProductCard key={product.slug} product={product} theme={theme} currency={business.currency} gallery={isFashionStore} galleryIndex={productIndex} onAdd={() => {
                       if (!product.is_available_now) return false;
                       if ((product.modifier_groups || []).length > 0 || (product.variants || []).length > 0) {
                         navigate(storePath(slug, `/products/${product.slug}`));
@@ -512,46 +509,45 @@ function Filter({ active, theme, onClick, children, buttonRef }: {
   );
 }
 
-function ProductCard({ product, theme, currency, onAdd }: { product: Storefront["products"][number]; theme: ThemeSettings; currency: StoreCurrency; onAdd: () => boolean }) {
+function ProductCard({ product, theme, currency, onAdd, gallery = false, galleryIndex = 0 }: { product: Storefront["products"][number]; theme: ThemeSettings; currency: StoreCurrency; onAdd: () => boolean; gallery?: boolean; galleryIndex?: number }) {
   const reduceMotion = useReducedMotion();
   const [added, setAdded] = useState(false);
-  const cardStyle = theme.card_style === "elevated"
-    ? { borderColor: "transparent", boxShadow: "0 12px 30px rgba(15,23,42,.10)" }
-    : theme.card_style === "flat"
-      ? { borderColor: "transparent", boxShadow: "none" }
-      : { borderColor: `${theme.muted_color}40`, boxShadow: "none" };
+  const galleryRatio = ["aspect-[4/5]", "aspect-[3/4]", "aspect-square", "aspect-[5/7]"][galleryIndex % 4];
   const add = () => {
     if (!onAdd()) return;
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1100);
   };
   return (
-    <article className="min-w-0 overflow-hidden border transition hover:-translate-y-1" style={{ ...cardStyle, borderRadius: theme.button_style === "square" ? "7px" : "16px", backgroundColor: theme.surface_color }}>
-      <Link to={`products/${product.slug}`} aria-label={`View ${product.name}`} className="block aspect-square overflow-hidden" style={{ backgroundColor: `${theme.muted_color}12` }}>
+    <article className={gallery ? "group mb-4 inline-flex w-full break-inside-avoid flex-col overflow-hidden align-top transition hover:-translate-y-1" : "group flex min-w-0 flex-col overflow-hidden border p-2.5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-3"} style={{ borderColor: gallery ? "transparent" : `${theme.muted_color}28`, borderRadius: theme.button_style === "square" ? "8px" : "20px", backgroundColor: gallery ? "transparent" : theme.surface_color }}>
+      <Link to={`products/${product.slug}`} aria-label={`View ${product.name}`} className={`block w-full shrink-0 overflow-hidden shadow-sm transition group-hover:shadow-lg ${gallery ? `${galleryRatio} rounded-[1.15rem] sm:rounded-[1.4rem]` : "aspect-square rounded-[0.9rem] sm:rounded-2xl"}`} style={{ backgroundColor: `${theme.muted_color}12` }}>
         {product.thumbnail ? <ProgressiveImage src={product.thumbnail} alt={product.name} className="h-full w-full" imageClassName="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-slate-300"><ShoppingBag className="h-12 w-12" /></div>}
       </Link>
-      <div className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: theme.primary_color }}>{product.category.name}</p>
-        <h3 className="mt-1 line-clamp-2 font-semibold leading-tight"><Link to={`products/${product.slug}`} className="transition hover:opacity-70">{product.name}</Link></h3>
-        <div className="mt-3 flex items-baseline justify-between">
-          <strong className="text-xl">{formatCurrency(product.discount_price || product.price, currency)}</strong>
-          {product.discount_price && <span className="text-xs text-slate-400 line-through">{formatCurrency(product.price, currency)}</span>}
-        </div>
+      <div className={`flex min-w-0 flex-1 flex-col px-1 pb-0.5 ${gallery ? "pt-2.5" : "pt-3"}`}>
+        <h3 className={`line-clamp-2 text-sm font-semibold leading-snug sm:text-base ${gallery ? "" : "min-h-10 sm:min-h-12"}`}><Link to={`products/${product.slug}`} className="transition hover:opacity-70">{product.name}</Link></h3>
+        <p className="mt-0.5 truncate text-[10px] font-medium sm:text-xs" style={{ color: theme.muted_color }}>{product.category.name}</p>
+        {product.description && !gallery && <p className="mt-1 hidden line-clamp-2 text-xs sm:block" style={{ color: theme.muted_color }}>{product.description}</p>}
+        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+          <div className="min-w-0">
+            <strong className="block truncate text-base sm:text-xl">{formatCurrency(product.discount_price || product.price, currency)}</strong>
+            {product.discount_price && <span className="block truncate text-[10px] line-through sm:text-xs" style={{ color: theme.muted_color }}>{formatCurrency(product.price, currency)}</span>}
+          </div>
         <motion.button
           disabled={product.stock < 1 || !product.is_available_now}
           onClick={add}
           whileTap={reduceMotion ? undefined : { scale: 0.96 }}
           animate={added && !reduceMotion ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-          className="mt-4 w-full overflow-hidden px-3 py-2 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-          style={{ backgroundColor: theme.primary_color, borderRadius: "var(--store-radius)" }}
+          aria-label={`Add ${product.name} to cart`}
+          className={`grid shrink-0 place-items-center overflow-hidden text-xs font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-40 ${gallery ? "h-9 w-9 sm:h-10 sm:w-10" : "h-10 w-10 sm:h-11 sm:w-11"}`}
+          style={{ backgroundColor: theme.primary_color, borderRadius: theme.button_style === "square" ? "8px" : "14px" }}
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.span key={added ? "added" : "add"} initial={reduceMotion ? false : { opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0, y: -5 }} className="flex items-center justify-center gap-1.5">
-              {added && <Check size={14} />}
-              {added ? "Added" : product.is_available_now && product.stock > 0 ? "Add to cart" : product.availability_status === "sold_out" ? "Sold out" : "Currently unavailable"}
+              {added ? <Check size={17} /> : <ShoppingBag size={17} />}
             </motion.span>
           </AnimatePresence>
         </motion.button>
+        </div>
       </div>
     </article>
   );
@@ -568,53 +564,47 @@ function StoreUnavailable() {
 
 
 
-function SocialLink({ href, label, children }: {
-  href: string | null;
-  label: "Facebook" | "Instagram" | "Telegram" | "TikTok";
+function HeroAction({ href, label, external = false, color, children }: {
+  href: string;
+  label: string;
+  external?: boolean;
+  color?: string;
   children: React.ReactNode;
 }) {
-  if (!href) return null;
-
-  const brandStyles: Record<typeof label, CSSProperties> = {
-    Facebook: {
-      background: "#1877F2",
-      borderColor: "rgba(255,255,255,.32)",
-      boxShadow: "0 8px 20px rgba(24,119,242,.28)",
-    },
-    Instagram: {
-      background: "linear-gradient(135deg, #833AB4 0%, #C13584 30%, #E1306C 52%, #F77737 76%, #FCAF45 100%)",
-      borderColor: "rgba(255,255,255,.32)",
-      boxShadow: "0 8px 20px rgba(225,48,108,.28)",
-    },
-    Telegram: {
-      background: "#229ED9",
-      borderColor: "rgba(255,255,255,.32)",
-      boxShadow: "0 8px 20px rgba(34,158,217,.28)",
-    },
-    TikTok: {
-      background: "#010101",
-      borderColor: "rgba(255,255,255,.28)",
-      boxShadow: "inset 2px 0 #25F4EE, inset -2px 0 #FE2C55, 0 8px 20px rgba(0,0,0,.3)",
-    },
-  };
-
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={`Visit ${label}`}
-      title={label}
-      className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-xl border text-lg text-white transition duration-200 hover:-translate-y-0.5 hover:scale-105 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent active:translate-y-0 active:scale-95"
-      style={brandStyles[label]}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noreferrer" : undefined}
+      className="flex min-h-10 items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      style={color ? { color, borderColor: withHexOpacity(color, 25), backgroundColor: withHexOpacity(color, 10) } : undefined}
     >
-      {label === "TikTok" ? (
-        <>
-          <span className="absolute translate-x-[1.5px] text-[#25F4EE]" aria-hidden="true">{children}</span>
-          <span className="absolute -translate-x-[1.5px] text-[#FE2C55]" aria-hidden="true">{children}</span>
-          <span className="relative text-white" aria-hidden="true">{children}</span>
-        </>
-      ) : <span aria-hidden="true">{children}</span>}
+      <span className="text-sm" aria-hidden="true">{children}</span>
+      {label}
     </a>
   );
+}
+
+type BusinessPresentation = {
+  label: string;
+  eyebrow: string;
+  allLabel: string;
+  searchPlaceholder: string;
+  itemNoun: string;
+  icon: typeof Store;
+};
+
+const BUSINESS_PRESENTATIONS: Record<BusinessType, BusinessPresentation> = {
+  food_beverage: { label: "Food & beverage", eyebrow: "Fresh from our menu", allLabel: "Full menu", searchPlaceholder: "Search the menu...", itemNoun: "items", icon: Utensils },
+  fashion: { label: "Fashion & clothing", eyebrow: "Shop the collection", allLabel: "All styles", searchPlaceholder: "Search the collection...", itemNoun: "styles", icon: Shirt },
+  beauty: { label: "Beauty & cosmetics", eyebrow: "Your beauty edit", allLabel: "All beauty", searchPlaceholder: "Search beauty products...", itemNoun: "products", icon: Sparkles },
+  electronics: { label: "Electronics", eyebrow: "Discover better tech", allLabel: "All tech", searchPlaceholder: "Search electronics...", itemNoun: "products", icon: Smartphone },
+  grocery_retail: { label: "Grocery & retail", eyebrow: "Everyday essentials", allLabel: "Shop all", searchPlaceholder: "Search the store...", itemNoun: "items", icon: ShoppingBasket },
+  services: { label: "Services", eyebrow: "How we can help", allLabel: "All services", searchPlaceholder: "Search services...", itemNoun: "services", icon: BriefcaseBusiness },
+  digital_products: { label: "Digital products", eyebrow: "Made for your next idea", allLabel: "All downloads", searchPlaceholder: "Search digital products...", itemNoun: "downloads", icon: Download },
+  other: { label: "Independent business", eyebrow: "Explore our store", allLabel: "Shop all", searchPlaceholder: "Search products...", itemNoun: "items", icon: Store },
+};
+
+function getBusinessPresentation(type: BusinessType): BusinessPresentation {
+  return BUSINESS_PRESENTATIONS[type] ?? BUSINESS_PRESENTATIONS.other;
 }
