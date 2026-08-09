@@ -46,6 +46,7 @@ class Business extends Model
         'is_active' => 'boolean',
         'show_map' => 'boolean',
         'theme_settings' => 'array',
+        'next_order_number' => 'integer',
     ];
 
     public function resolvedTheme(): array

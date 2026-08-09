@@ -8,7 +8,6 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\RestaurantTable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutService
@@ -19,6 +18,7 @@ class CheckoutService
             $business = Business::query()
                 ->where('slug', $businessSlug)
                 ->where('is_active', true)
+                ->lockForUpdate()
                 ->firstOrFail();
 
             $restaurantTable = null;
@@ -156,7 +156,7 @@ class CheckoutService
             $order = $business->orders()->create([
                 'restaurant_table_id' => $restaurantTable?->id,
                 'order_type' => $restaurantTable ? 'dine_in' : 'delivery',
-                'order_number' => $this->orderNumber(),
+                'order_number' => $this->orderNumber($business),
                 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'],
                 'telegram_user_id' => $data['telegram_user_id'] ?? null,
@@ -269,12 +269,11 @@ class CheckoutService
         return number_format($cents / 100, 2, '.', '');
     }
 
-    private function orderNumber(): string
+    private function orderNumber(Business $business): string
     {
-        do {
-            $number = 'SF-'.now()->format('ymd').'-'.Str::upper(Str::random(7));
-        } while (Order::query()->where('order_number', $number)->exists());
+        $number = max(1, (int) $business->next_order_number);
+        $business->increment('next_order_number');
 
-        return $number;
+        return str_pad((string) $number, 3, '0', STR_PAD_LEFT);
     }
 }
