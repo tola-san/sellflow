@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://sellflow-1-59iy.onrender.com/api/:path*"
+      "destination": "https://sellflow-platform.onrender.com/api/:path*"
     },
     {
       "source": "/:path*",
