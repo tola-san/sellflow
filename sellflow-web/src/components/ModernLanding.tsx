@@ -23,6 +23,7 @@ import {
 import { useAuth } from "./Auth/AuthContext";
 import { Pricing } from "./Pricing";
 import { BrandLogo } from "./ui/BrandLogo";
+import { Marquee } from "./ui/marquee";
 import "./landing.css";
 
 type HeroView = "orders" | "products" | "analytics";
@@ -251,5 +252,12 @@ function Integrations() {
 }
 
 function Testimonials() {
-  return <section className="mondai-section px-5 sm:px-8"><div className="mx-auto max-w-5xl"><div className="text-center"><SectionTag>Customer stories</SectionTag><h2 className="mondai-heading mt-4">Built for real local businesses.</h2><p className="mondai-copy mt-3">How sellers use SellFlow to make everyday work simpler.</p></div><div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{testimonials.map((item,index)=><motion.blockquote key={item.name} {...reveal} transition={{...reveal.transition,delay:index*.04}} className="rounded-xl border border-[#e6e2e9] bg-white p-5"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#efeaff] text-xs font-semibold text-[#7557e8]">{item.name[0]}</span><div><p className="text-xs font-semibold">{item.name}</p><p className="text-[10px] text-[#928b97]">{item.business}</p></div></div><p className="mt-4 text-xs leading-6 text-[#6f6875]">“{item.quote}”</p></motion.blockquote>)}</div></div></section>;
+  const firstRow = testimonials.slice(0, 3);
+  const secondRow = testimonials.slice(3);
+
+  return <section className="mondai-section overflow-hidden px-5 sm:px-8"><div className="mx-auto max-w-5xl"><div className="text-center"><SectionTag>Customer stories</SectionTag><h2 className="mondai-heading mt-4">Built for real local businesses.</h2><p className="mondai-copy mt-3">How sellers use SellFlow to make everyday work simpler.</p></div><motion.div {...reveal} className="relative mt-10 overflow-hidden"><Marquee pauseOnHover repeat={4} className="[--duration:42s]">{firstRow.map(item=><TestimonialCard key={item.name} item={item} />)}</Marquee><Marquee reverse pauseOnHover repeat={4} className="mt-2 [--duration:46s]">{secondRow.map(item=><TestimonialCard key={item.name} item={item} />)}</Marquee><div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent sm:w-28" /><div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent sm:w-28" /></motion.div></div></section>;
+}
+
+function TestimonialCard({ item }: { item: (typeof testimonials)[number] }) {
+  return <blockquote className="w-[280px] shrink-0 rounded-xl border border-[#e6e2e9] bg-white p-5 shadow-[0_14px_32px_-28px_rgba(65,45,95,.5)] transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-1 hover:border-[#cfc3e6] hover:shadow-[0_20px_38px_-28px_rgba(65,45,95,.58)] sm:w-[320px]"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#efeaff] text-xs font-semibold text-[#7557e8]">{item.name[0]}</span><div><p className="text-xs font-semibold">{item.name}</p><p className="text-[10px] text-[#928b97]">{item.business}</p></div></div><p className="mt-4 text-xs leading-6 text-[#6f6875]">“{item.quote}”</p></blockquote>;
 }
