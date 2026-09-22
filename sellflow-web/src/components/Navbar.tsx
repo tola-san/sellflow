@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "./Auth/AuthContext";
 import { BrandLogo } from "./ui/BrandLogo";
 
 const navLinks = [
-  { name: "Features", href: "#features" },
+  { name: "Product", href: "#features" },
   { name: "How it works", href: "#how-it-works" },
   { name: "Pricing", href: "#pricing" },
   { name: "FAQ", href: "#faq" },
@@ -37,23 +37,23 @@ export function Navbar() {
       initial={{ opacity: 0, y: -24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.65, ease: "easeOut" }}
-      className="fixed inset-x-0 top-2 z-50 px-5 py-3 sm:top-5"
+      className="fixed inset-x-0 top-0 z-50 border-b border-transparent px-5 py-3 sm:px-8"
     >
       <div
-        className={`mx-auto flex h-14 max-w-5xl items-center justify-between rounded-full px-3 transition-all duration-500 sm:px-4 ${
+        className={`mx-auto flex h-12 max-w-5xl items-center justify-between px-0 transition-all duration-300 ${
           scrolled
-            ? "border border-white bg-white/90 shadow-[0_16px_45px_-22px_rgba(45,30,110,.45)] backdrop-blur-2xl"
-            : "border border-white/50 bg-white/90 shadow-[0_12px_35px_-24px_rgba(32,22,90,.5)] backdrop-blur-xl"
+            ? "rounded-xl border border-[#ece8f0] bg-white/95 px-3 shadow-[0_14px_35px_-28px_rgba(45,30,80,.5)] backdrop-blur-xl sm:px-4"
+            : "bg-white/80 backdrop-blur-md"
         }`}
       >
         <Link to="/" className="transition hover:-translate-y-0.5" aria-label="SellFlow home"><BrandLogo /></Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="rounded-full px-4 py-2 text-xs font-medium text-slate-600 transition hover:bg-[#f3edfa] hover:text-[#7543bd]"
+              className="rounded-md px-3 py-2 text-[11px] font-medium text-slate-600 transition hover:bg-[#f3edfa] hover:text-[#7543bd]"
             >
               {link.name}
             </a>
@@ -61,19 +61,16 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 sm:flex">
-          <button onClick={() => openAuth("login")} className="rounded-full px-4 border border-slate-200 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white">
+          <button onClick={() => openAuth("login")} className="rounded-md px-3 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-[#f6f3f9]">
             Sign in
           </button>
           <motion.button
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => openAuth("register")}
-            className="group relative inline-flex h-10 items-center overflow-hidden rounded-full bg-gradient-to-r from-[#7655df] via-[#8269e8] to-cyan-400 py-1 pl-4 pr-11 text-sm font-semibold text-white shadow-lg shadow-violet-200 transition-all duration-500 hover:pl-11 hover:pr-4"
+            className="group inline-flex h-9 items-center gap-2 rounded-md bg-[#7557e8] px-4 text-[11px] font-semibold text-white shadow-[0_8px_18px_-10px_rgba(78,51,166,.7)] transition hover:bg-[#6549d3]"
           >
-            <span className="relative z-10">Start trial</span>
-            <span className="absolute right-1 grid h-8 w-8 place-items-center rounded-full bg-white text-slate-950 transition-all duration-500 group-hover:right-[calc(100%-36px)] group-hover:rotate-45">
-              <ArrowUpRight className="h-4 w-4" />
-            </span>
+            <span>Start trial</span><ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </motion.button>
         </div>
 
@@ -82,7 +79,7 @@ export function Navbar() {
           aria-label="Toggle navigation"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((value) => !value)}
-          className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white/80 sm:hidden"
+          className="grid h-9 w-9 place-items-center rounded-md border border-slate-200 bg-white sm:hidden"
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
