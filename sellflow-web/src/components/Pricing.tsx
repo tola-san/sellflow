@@ -57,7 +57,7 @@ export function Pricing() {
       <div className="pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(99,78,140,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(99,78,140,.08)_1px,transparent_1px)] [background-size:110px_110px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#ded6f5] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#6954d0] shadow-sm">
+          <div className="inline-flex items-center gap-2 rounded-lg border border-[#ded6f5] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#6954d0] shadow-sm">
             <Sparkles className="h-3.5 w-3.5" />
             30-day Business trial
           </div>
@@ -96,7 +96,7 @@ export function Pricing() {
           ))}
         </div>
 
-        <div className="mx-auto mt-8 flex max-w-2xl items-start gap-3 rounded-2xl border border-[#ddd4f4] bg-white/75 px-4 py-3.5 text-left shadow-sm backdrop-blur">
+        <div className="mx-auto mt-8 flex max-w-2xl items-start gap-3 rounded-xl border border-[#ddd4f4] bg-white/75 px-4 py-3.5 text-left shadow-sm backdrop-blur">
           <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[#7058d4]" />
           <p className="text-xs leading-5 text-[#514565]">
             Your trial begins with <strong>Business</strong>. After 30 days, select Starter, Business, or Pro to keep full access.
@@ -123,14 +123,14 @@ function PlanCard({
   return (
     <motion.article
       initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} whileHover={{ y: -7 }}
-      className={`relative flex h-full flex-col overflow-hidden rounded-[22px] border bg-white p-6 shadow-[0_20px_55px_-40px_rgba(66,45,112,.5)] transition duration-300 hover:shadow-[0_30px_65px_-35px_rgba(82,54,145,.5)] sm:p-7 ${
+      className={`relative flex h-full flex-col overflow-hidden rounded-xl border bg-white p-6 shadow-[0_20px_55px_-40px_rgba(66,45,112,.5)] transition duration-300 hover:shadow-[0_30px_65px_-35px_rgba(82,54,145,.5)] sm:p-7 ${
         plan.is_popular
           ? "border-[#745bd8] bg-gradient-to-b from-[#f5f1ff] to-white ring-4 ring-[#ece7ff] md:col-span-2 lg:col-span-1 lg:-translate-y-3"
           : "border-[#e4e0ea]"
       }`}
     >
       {plan.is_popular && (
-        <span className="absolute right-5 top-5 rounded-full bg-[#6c55d2] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white shadow-lg shadow-violet-200">
+        <span className="absolute right-5 top-5 rounded-lg bg-[#6c55d2]/50 outline-dashed outline-1 outline-[#6c55d2] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white shadow-lg shadow-violet-200">
           Most popular
         </span>
       )}
@@ -176,7 +176,7 @@ function PlanCard({
       <ul className="flex-1 space-y-3">
         {features.map((feature) => (
           <li key={feature.label} className="flex items-start gap-3 text-sm">
-            <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${
+            <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-lg ${
               feature.included ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
             }`}>
               {feature.included ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
@@ -206,13 +206,13 @@ function CycleToggle({
   onChange: (cycle: BillingCycle) => void;
 }) {
   return (
-    <div className="mt-7 inline-flex rounded-full border border-[#ded9e8] bg-white p-1 shadow-sm">
+    <div className="mt-7 inline-flex rounded-xl border border-[#ded9e8] bg-white p-1 shadow-sm">
       {(["monthly", "yearly"] as const).map((option) => (
         <button
           type="button"
           key={option}
           onClick={() => onChange(option)}
-          className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition ${
+          className={`rounded-xl px-4 py-2 text-xs font-semibold capitalize transition ${
             cycle === option ? "bg-[#6c55d2] text-white shadow-sm" : "text-slate-500 hover:bg-[#f4f0fa]"
           }`}
         >
@@ -232,7 +232,7 @@ function PricingSkeleton() {
   return (
     <div className="mt-14 grid animate-pulse gap-5 md:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 3 }).map((_, index) => (
-        <div key={index} className="h-[590px] rounded-2xl border border-slate-200 bg-white" />
+        <div key={index} className="h-[590px] rounded-xl border border-slate-200 bg-white" />
       ))}
     </div>
   );
