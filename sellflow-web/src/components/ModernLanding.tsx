@@ -6,20 +6,26 @@ import {
   BellRing,
   Check,
   ChevronDown,
+  ChevronRight,
   CircleDollarSign,
+  Clock3,
   Globe2,
   LayoutDashboard,
   MessageCircleMore,
+  MoreHorizontal,
   PackageCheck,
   Palette,
   QrCode,
+  Search,
   Send,
   ShoppingBag,
   Smartphone,
   Sparkles,
   Store,
+  TrendingUp,
   UsersRound,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useAuth } from "./Auth/AuthContext";
 import { Pricing } from "./Pricing";
 import { BrandLogo } from "./ui/BrandLogo";
@@ -131,7 +137,6 @@ export function ModernLanding() {
                 <span className="mondai-icon"><Icon className="h-4 w-4" /></span>
                 <h3 className="mt-5 text-base font-semibold tracking-[-.02em]">{title}</h3>
                 <p className="mt-2 text-xs leading-5 text-[#7a7480]">{copy}</p>
-                <span className="mt-5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#7557e8]">Learn more <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" /></span>
               </motion.article>
             ))}
           </div>
@@ -197,29 +202,45 @@ function SectionTag({ children }: { children: React.ReactNode }) {
 }
 
 function DashboardFrame({ view }: { view: HeroView }) {
-  const title = view === "orders" ? "Order management" : view === "products" ? "Product catalog" : "Business analytics";
+  const title = view === "orders" ? "Good morning, Marina" : view === "products" ? "Your product catalog" : "Business performance";
+  const subtitle = view === "orders" ? "Here is what is happening with Bloom today." : view === "products" ? "Keep every product visible, priced, and in stock." : "A clear view of sales across every channel.";
+  const navigation: Array<[string, LucideIcon, HeroView | null]> = [
+    ["Overview", LayoutDashboard, "orders"],
+    ["Products", ShoppingBag, "products"],
+    ["Orders", PackageCheck, "orders"],
+    ["Inventory", Store, null],
+    ["Analytics", BarChart3, "analytics"],
+  ];
   return (
     <motion.div initial={{ opacity: 0, y: 35, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: .28, duration: .7 }} className="mondai-dashboard mx-auto mt-8 max-w-5xl text-left">
-      <div className="flex h-9 items-center gap-1.5 border-b border-[#ebe8ef] px-3"><i /><i /><i /><span className="mx-auto rounded-md bg-[#f4f2f6] px-16 py-1 text-[7px] text-[#aaa4af]">app.sellflow.store</span></div>
-      <div className="grid min-h-[340px] grid-cols-[55px_1fr] sm:grid-cols-[160px_1fr]">
-        <aside className="border-r border-[#ece9ef] bg-[#fbfafc] p-3 sm:p-4"><BrandLogo markClassName="h-7 w-7" wordmarkClassName="hidden text-xs sm:block" /><div className="mt-7 space-y-1">{["Overview", "Products", "Orders", "Inventory", "Analytics"].map(item => <div key={item} className={`rounded-md px-2 py-2 text-[9px] ${item.toLowerCase() === view || (item === "Overview" && view === "orders") ? "bg-[#eee9ff] font-semibold text-[#694fc2]" : "text-[#9a949f]"}`}>{item}</div>)}</div></aside>
-        <main className="min-w-0 p-4 sm:p-6"><div className="flex items-center justify-between"><div><p className="text-[8px] text-[#9a949f]">Your workspace</p><h3 className="mt-1 text-base font-semibold sm:text-xl">{title}</h3></div><span className="rounded-md bg-[#7557e8] px-3 py-2 text-[8px] font-semibold text-white">+ New</span></div><AnimatePresence mode="wait"><motion.div key={view} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: .2 }}>{view === "orders" ? <OrdersPanel /> : view === "products" ? <ProductsPanel /> : <AnalyticsPanel />}</motion.div></AnimatePresence></main>
+      <div className="flex h-10 items-center gap-1.5 border-b border-[#ebe8ef] bg-white/90 px-3"><i /><i /><i /><span className="mx-auto flex items-center gap-1.5 rounded-md border border-[#edeaf0] bg-[#f8f7f9] px-7 py-1 text-[7px] text-[#9d97a2] sm:px-16"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />app.sellflow.store</span><MoreHorizontal className="h-3.5 w-3.5 text-[#b4aeb8]" /></div>
+      <div className="grid min-h-[390px] grid-cols-[58px_1fr] sm:grid-cols-[164px_1fr]">
+        <aside className="flex flex-col border-r border-[#ece9ef] bg-[#fbfafc] p-2.5 sm:p-4">
+          <BrandLogo markClassName="h-7 w-7" wordmarkClassName="hidden text-xs sm:block" />
+          <div className="mt-7 space-y-1">{navigation.map(([item, Icon, route]) => { const active = route === view && (view !== "orders" || item === "Overview"); return <div key={item} className={`flex items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-[9px] transition-[background-color,color] duration-150 sm:justify-start ${active ? "bg-[#eee9ff] font-semibold text-[#694fc2] shadow-[inset_2px_0_0_#7557e8]" : "text-[#918a97]"}`}><Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={active ? 2 : 1.5} /><span className="hidden sm:inline">{item}</span></div>; })}</div>
+          <div className="mt-auto hidden rounded-lg border border-[#e8e3ee] bg-white p-2.5 sm:block"><p className="text-[7px] font-semibold uppercase tracking-[.12em] text-[#a19aa7]">Store status</p><div className="mt-2 flex items-center gap-2"><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" /><span className="relative h-2 w-2 rounded-full bg-emerald-500" /></span><span className="text-[8px] font-semibold text-[#5b5560]">Live & accepting orders</span></div></div>
+        </aside>
+        <main className="min-w-0 bg-[#fdfcfe] p-3.5 sm:p-6">
+          <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-medium text-[#928b98]">Friday, September 25</p><h3 className="mt-1 text-sm font-semibold tracking-[-.02em] sm:text-xl">{title}</h3><p className="mt-1 hidden text-[8px] text-[#9a949f] sm:block">{subtitle}</p></div><div className="flex items-center gap-1.5"><span className="hidden h-8 items-center gap-1.5 rounded-lg border border-[#e9e4ed] bg-white px-2.5 text-[8px] text-[#928b98] shadow-sm sm:flex"><Search className="h-3 w-3" /> Search</span><span className="grid h-8 w-8 place-items-center rounded-lg border border-[#e9e4ed] bg-white text-[#817a87] shadow-sm"><BellRing className="h-3.5 w-3.5" /></span><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#7557e8] text-[8px] font-semibold text-white shadow-[0_8px_20px_-10px_rgba(87,59,181,.9)]">MB</span></div></div>
+          <AnimatePresence mode="wait"><motion.div key={view} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: .2, ease: "easeOut" }}>{view === "orders" ? <OrdersPanel /> : view === "products" ? <ProductsPanel /> : <AnalyticsPanel />}</motion.div></AnimatePresence>
+        </main>
       </div>
     </motion.div>
   );
 }
 
 function OrdersPanel() {
-  const rows = [["#1048", "Sokha Lim", "$84.00", "Paid"], ["#1047", "Dara Kim", "$42.50", "Packing"], ["#1046", "Maly Chan", "$126.00", "Paid"], ["#1045", "Nita Heng", "$38.00", "Delivered"]];
-  return <div className="mt-6 overflow-hidden rounded-lg border border-[#ece9ef]"><div className="grid grid-cols-4 bg-[#faf9fb] px-3 py-2 text-[7px] uppercase text-[#aaa4af]"><span>Order</span><span>Customer</span><span>Total</span><span>Status</span></div>{rows.map(row => <div key={row[0]} className="grid grid-cols-4 border-t border-[#efecf2] px-3 py-3 text-[8px] sm:text-[9px]"><strong>{row[0]}</strong><span>{row[1]}</span><strong>{row[2]}</strong><span className="text-[#684fc0]">{row[3]}</span></div>)}</div>;
+  const rows = [["#1048", "Sokha Lim", "3 items", "$84.00", "Paid"], ["#1047", "Dara Kim", "2 items", "$42.50", "Packing"], ["#1046", "Maly Chan", "5 items", "$126.00", "Paid"]];
+  return <div className="mt-4 sm:mt-5"><div className="grid grid-cols-3 gap-2.5">{[["Today's sales", "$1,284", "+18.2%", CircleDollarSign], ["New orders", "24", "+6 today", ShoppingBag], ["To fulfill", "7", "2 urgent", Clock3]].map(([label, value, change, Icon]) => { const MetricIcon = Icon as LucideIcon; return <div key={label as string} className="rounded-xl border border-[#ebe7ef] bg-white p-2.5 shadow-[0_10px_24px_-22px_rgba(54,37,82,.65)] sm:p-3"><div className="flex items-center justify-between"><span className="text-[7px] font-medium text-[#96909c] sm:text-[8px]">{label as string}</span><span className="grid h-5 w-5 place-items-center rounded-md bg-[#f1edff] text-[#7557e8]"><MetricIcon className="h-3 w-3" /></span></div><p className="mt-2 text-sm font-semibold tracking-[-.03em] sm:text-base">{value as string}</p><p className={`mt-0.5 text-[7px] font-medium ${label === "To fulfill" ? "text-amber-600" : "text-emerald-600"}`}>{change as string}</p></div>; })}</div><div className="mt-2.5 overflow-hidden rounded-xl border border-[#e9e5ed] bg-white"><div className="flex items-center justify-between border-b border-[#efecf2] px-3 py-2.5"><div><p className="text-[9px] font-semibold">Recent orders</p><p className="mt-0.5 hidden text-[7px] text-[#9b95a0] sm:block">Latest purchases across your storefront</p></div><span className="flex items-center gap-0.5 text-[7px] font-semibold text-[#7557e8]">View all <ChevronRight className="h-2.5 w-2.5" /></span></div>{rows.map((row, index) => <div key={row[0]} className="grid grid-cols-[.65fr_1.2fr_.65fr] items-center border-t border-[#f0edf2] px-3 py-2.5 text-[8px] first:border-t-0 sm:grid-cols-[.6fr_1.2fr_.7fr_.65fr]"><strong>{row[0]}</strong><span><span className="font-medium text-[#5f5865]">{row[1]}</span><span className="ml-1 hidden text-[#aaa4ae] sm:inline">· {row[2]}</span></span><strong className="hidden sm:block">{row[3]}</strong><span className={`w-fit rounded-full px-2 py-1 text-[7px] font-semibold ${index === 1 ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}`}>{row[4]}</span></div>)}</div></div>;
 }
 
 function ProductsPanel() {
-  return <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">{["Daily tote", "Cloud mug", "Studio cap", "Soft tee"].map((item, index) => <div key={item} className="rounded-lg border border-[#ece9ef] p-2"><div className={`grid aspect-square place-items-center rounded-md ${index % 2 ? "bg-cyan-50" : "bg-violet-50"}`}><ShoppingBag className="h-5 w-5 text-[#8467dd]" /></div><p className="mt-2 text-[9px] font-semibold">{item}</p><p className="text-[8px] text-[#9a949f]">{24 + index * 8} in stock</p></div>)}</div>;
+  const products = [["Daily tote", "$18.00", "24", "bg-[#eee8ff]"], ["Cloud mug", "$12.50", "8", "bg-[#e7f7f5]"], ["Studio cap", "$16.00", "32", "bg-[#fff2dd]"], ["Soft tee", "$22.00", "40", "bg-[#f9e8ef]"]];
+  return <div className="mt-4 sm:mt-5"><div className="flex items-center justify-between rounded-xl border border-[#e9e5ed] bg-white px-3 py-2.5"><div><p className="text-[9px] font-semibold">32 active products</p><p className="mt-0.5 text-[7px] text-[#9b95a0]">4 categories · 104 variants</p></div><span className="rounded-lg bg-[#7557e8] px-3 py-2 text-[7px] font-semibold text-white shadow-[0_8px_18px_-11px_rgba(87,59,181,.85)]">+ Add product</span></div><div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">{products.map(([item, price, stock, color], index) => <div key={item} className="group rounded-xl border border-[#ebe7ef] bg-white p-2 shadow-[0_10px_24px_-22px_rgba(54,37,82,.65)] transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-[#d1c6e4] hover:shadow-[0_14px_28px_-20px_rgba(54,37,82,.55)]"><div className={`relative grid aspect-[1.15] place-items-center overflow-hidden rounded-lg ${color}`}><span className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-white/45" /><ShoppingBag className="h-5 w-5 text-[#7658d5]" strokeWidth={1.5} />{index === 1 && <span className="absolute bottom-1.5 left-1.5 rounded bg-amber-50 px-1.5 py-0.5 text-[6px] font-semibold text-amber-700">Low stock</span>}</div><div className="mt-2 flex items-start justify-between gap-1"><div><p className="text-[8px] font-semibold">{item}</p><p className="mt-0.5 text-[7px] text-[#9a949f]">{stock} in stock</p></div><p className="text-[8px] font-semibold text-[#655c6b]">{price}</p></div></div>)}</div></div>;
 }
 
 function AnalyticsPanel() {
-  return <div className="mt-6 grid gap-3 sm:grid-cols-[1.35fr_.65fr]"><div className="rounded-lg border border-[#ece9ef] p-4"><p className="text-[8px] text-[#99929f]">Paid revenue</p><p className="mt-1 text-xl font-semibold">$8,420</p><div className="mt-5 flex h-28 items-end gap-2">{[32, 48, 40, 68, 54, 82, 70, 94].map((h, i) => <motion.span key={i} initial={{ height: 0 }} animate={{ height: `${h}%` }} className="flex-1 rounded-t bg-[#8062e8]" />)}</div></div><div className="grid grid-cols-2 gap-2 sm:grid-cols-1">{[["Orders", "284"], ["Customers", "1,248"], ["Conversion", "6.8%"]].map(([l, v]) => <div key={l} className="rounded-lg bg-[#f5f1ff] p-3"><p className="text-[8px] text-[#99929f]">{l}</p><p className="mt-1 text-sm font-semibold">{v}</p></div>)}</div></div>;
+  return <div className="mt-4 grid gap-2.5 sm:mt-5 sm:grid-cols-[1.45fr_.75fr]"><div className="rounded-xl border border-[#e9e5ed] bg-white p-3.5 shadow-[0_10px_24px_-22px_rgba(54,37,82,.65)]"><div className="flex items-start justify-between"><div><p className="text-[8px] font-medium text-[#99929f]">Paid revenue</p><div className="mt-1 flex items-end gap-2"><p className="text-lg font-semibold tracking-[-.04em] sm:text-xl">$8,420</p><span className="mb-0.5 flex items-center gap-0.5 text-[7px] font-semibold text-emerald-600"><TrendingUp className="h-2.5 w-2.5" />18.2%</span></div></div><span className="rounded-md border border-[#ebe7ef] px-2 py-1 text-[7px] text-[#8e8794]">Last 7 days</span></div><div className="relative mt-4 flex h-28 items-end gap-2 border-b border-[#eeeaf1] before:absolute before:inset-x-0 before:top-1/3 before:border-t before:border-dashed before:border-[#eeeaf1] after:absolute after:inset-x-0 after:top-2/3 after:border-t after:border-dashed after:border-[#eeeaf1]">{[32, 48, 40, 68, 54, 82, 70, 94].map((h, i) => <motion.span key={i} initial={{ height: 0 }} animate={{ height: `${h}%` }} transition={{ duration: .45, delay: i * .035, ease: "easeOut" }} className={`relative z-10 flex-1 rounded-t-sm ${i === 7 ? "bg-[#7557e8]" : "bg-[#dcd2fb]"}`} />)}</div><div className="mt-2 flex justify-between text-[6px] text-[#aaa4af]"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span><span>Today</span></div></div><div className="grid grid-cols-3 gap-2 sm:grid-cols-1">{[["Orders", "284", "+12%"], ["Customers", "1,248", "+8.4%"], ["Conversion", "6.8%", "+1.2%"]].map(([l, v, c]) => <div key={l} className="rounded-xl border border-[#ebe7ef] bg-gradient-to-br from-white to-[#f6f2ff] p-2.5 sm:p-3"><p className="text-[7px] text-[#99929f] sm:text-[8px]">{l}</p><p className="mt-1 text-xs font-semibold sm:text-sm">{v}</p><p className="mt-1 text-[6px] font-semibold text-emerald-600 sm:text-[7px]">{c} this week</p></div>)}</div></div>;
 }
 
 function BusinessStrip() {
